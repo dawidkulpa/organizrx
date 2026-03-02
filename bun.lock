@@ -39,6 +39,7 @@
         "@hello-pangea/dnd": "^18.0.1",
         "@hookform/resolvers": "^5.2.2",
         "@remix-run/router": "^1.23.2",
+        "@types/react-resizable": "^3.0.8",
         "axios": "^1.13.6",
         "clsx": "^2.1.1",
         "lucide-react": "^0.576.0",
@@ -46,6 +47,7 @@
         "react-dom": "^18.2.0",
         "react-grid-layout": "^2.2.2",
         "react-hook-form": "^7.71.2",
+        "react-resizable": "^3.1.3",
         "react-router-dom": "^6.20.0",
         "sonner": "^2.0.7",
         "tailwind-merge": "^3.5.0",
@@ -342,6 +344,8 @@
     "@types/react-dom": ["@types/react-dom@18.3.7", "", { "peerDependencies": { "@types/react": "^18.0.0" } }, "sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ=="],
 
     "@types/react-grid-layout": ["@types/react-grid-layout@2.1.0", "", { "dependencies": { "react-grid-layout": "*" } }, "sha512-pHEjVg9ert6BDFHFQ1IEdLUkd2gasJvyti5lV2kE46N/R07ZiaSZpAXeXJAA1MXy/Qby23fZmiuEgZkITxPXug=="],
+
+    "@types/react-resizable": ["@types/react-resizable@3.0.8", "", { "dependencies": { "@types/react": "*" } }, "sha512-Pcvt2eGA7KNXldt1hkhVhAgZ8hK41m0mp89mFgQi7LAAEZiaLgm4fHJ5zbJZ/4m2LVaAyYrrRRv1LHDcrGQanA=="],
 
     "@types/use-sync-external-store": ["@types/use-sync-external-store@0.0.6", "", {}, "sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg=="],
 

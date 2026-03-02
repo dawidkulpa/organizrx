@@ -47,6 +47,7 @@ export default function Login() {
         setAuthSettings(settingsMap);
       } catch {
         // Graceful degradation — external auth buttons won't show
+      }
     };
     fetchSettings();
   }, []);
