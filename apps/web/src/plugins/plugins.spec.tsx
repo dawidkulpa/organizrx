@@ -165,7 +165,7 @@ describe('widget API', () => {
   afterEach(() => {
     mockFetch.mockRestore()
     globalThis.fetch = originalFetch
-    useAuthStore.getState().logout()
+    useAuthStore.getState().clearAuth()
   })
 
   it('should have correct pluginId', () => {
@@ -200,7 +200,7 @@ describe('widget API', () => {
   })
 
   it('should not include auth header when no token', async () => {
-    useAuthStore.getState().logout()
+    useAuthStore.getState().clearAuth()
 
     const api = createWidgetAPI('plex')
     await api.fetch('status')
@@ -327,7 +327,7 @@ describe('PluginWidget', () => {
 
   afterEach(() => {
     _resetRegistry()
-    useAuthStore.getState().logout()
+    useAuthStore.getState().clearAuth()
   })
 
   it('should render loading placeholder then widget content', async () => {

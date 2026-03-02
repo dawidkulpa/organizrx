@@ -99,12 +99,12 @@ export default function Layout() {
         <div className="p-4 border-t border-border">
           <div className={cn("flex items-center", !sidebarOpen && "justify-center")}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold shrink-0">
-              {user?.name?.[0] || 'U'}
+              {user?.username?.[0] || 'U'}
             </div>
             
             {sidebarOpen && (
               <div className="ml-3 overflow-hidden">
-                <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
+                <p className="text-sm font-medium truncate">{user?.username || 'User'}</p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email || 'user@example.com'}</p>
               </div>
             )}

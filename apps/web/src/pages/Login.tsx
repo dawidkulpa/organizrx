@@ -4,21 +4,25 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const login = useAuthStore((state) => state.setToken);
+  const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      // Mock login
-      login('mock-token');
-      useAuthStore.getState().setUser({ id: '1', name: 'Demo User', email });
-      toast.success('Logged in successfully');
-      navigate('/');
+    if (username && password) {
+      const result = await login(username, password);
+      if (result.ok) {
+        toast.success('Logged in successfully');
+        navigate('/');
+      } else if (result.requires2fa) {
+        toast.info('2FA verification required');
+      } else {
+        toast.error(result.error);
+      }
     } else {
-      toast.error('Please enter email and password');
+      toast.error('Please enter username and password');
     }
   };
 
@@ -30,13 +34,13 @@ export default function Login() {
         </h2>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-muted-foreground">Email</label>
+            <label className="block text-sm font-medium text-muted-foreground">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="mt-1 block w-full rounded-md border border-input bg-muted px-3 py-2 text-foreground focus:border-primary focus:ring-primary sm:text-sm"
-              placeholder="you@example.com"
+              placeholder="username"
             />
           </div>
           <div>
