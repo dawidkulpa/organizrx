@@ -1,0 +1,88 @@
+import { Hono } from 'hono'
+import { z } from 'zod'
+import { listUsers, createUser } from '../services/users'
+import { hashPassword } from '../services/auth'
+import { setSetting, setSettings } from '../services/settings'
+
+const wizard = new Hono()
+
+// ── GET /api/wizard/status ─────────────────────────────────────
+// Returns whether the application needs initial setup (no users exist).
+wizard.get('/status', async (c) => {
+  const { total } = await listUsers(1, 1)
+  return c.json({
+    data: { needsSetup: total === 0 },
+  })
+})
+
+// ── Wizard completion schema ───────────────────────────────────
+const wizardCompleteSchema = z.object({
+  // Admin user
+  username: z.string().min(3).max(64),
+  password: z.string().min(8).max(128),
+  email: z.string().email().optional(),
+
+  // Basic settings
+  siteTitle: z.string().min(1).max(128).optional(),
+
+  // Database (informational — connection is already established)
+  dbDialect: z.enum(['sqlite', 'mysql', 'postgresql']).optional(),
+})
+
+// ── POST /api/wizard/complete ──────────────────────────────────
+// Creates the admin user and saves initial settings. Only works
+// when no users exist yet (first-run guard).
+wizard.post('/complete', async (c) => {
+  // Guard: only allow wizard when no users exist
+  const { total } = await listUsers(1, 1)
+  if (total > 0) {
+    return c.json(
+      { error: { code: 'WIZARD_COMPLETED', message: 'Setup has already been completed' } },
+      403,
+    )
+  }
+
+  const body = await c.req.json()
+  const parsed = wizardCompleteSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return c.json(
+      { error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input' } },
+      400,
+    )
+  }
+
+  const { username, password, email, siteTitle } = parsed.data
+
+  // Create admin user (group_id 0 = admin)
+  const hashedPassword = await hashPassword(password)
+  const adminUser = await createUser({
+    username,
+    password: hashedPassword,
+    email: email ?? null,
+    group: 'Admin',
+    group_id: 0,
+  })
+
+  // Save initial settings
+  const initialSettings: Record<string, string> = {
+    WIZARD_COMPLETED: 'true',
+  }
+  if (siteTitle) {
+    initialSettings.SITE_TITLE = siteTitle
+  }
+  await setSettings(initialSettings)
+
+  return c.json({
+    data: {
+      success: true,
+      user: {
+        id: adminUser.id,
+        username: adminUser.username,
+        email: adminUser.email,
+      },
+    },
+  })
+})
+
+export default wizard

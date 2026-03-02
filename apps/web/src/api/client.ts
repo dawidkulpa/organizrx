@@ -162,4 +162,9 @@ export const api = {
     update: (id: number, data: Record<string, unknown>) => client.put(`/bookmarks/${id}`, data),
     delete: (id: number) => client.delete(`/bookmarks/${id}`),
   },
+  wizard: {
+    status: () => client.get('/wizard/status'),
+    complete: (data: { username: string; password: string; email?: string; siteTitle?: string }) =>
+      client.post('/wizard/complete', data),
+  },
 }
