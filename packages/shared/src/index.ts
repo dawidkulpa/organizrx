@@ -19,12 +19,14 @@ export type {
 // Authentication types
 export type {
   JWTPayload,
+  AuthUser,
   LoginRequest,
   LoginResponse,
   AuthState,
   RefreshTokenRequest,
+  RefreshTokenResponse,
+  LogoutRequest,
 } from './types/auth';
-
 // API types
 export type {
   ApiError,
@@ -106,10 +108,13 @@ export { type PluginHook } from './types/plugin';
 // Auth schemas
 export {
   jwtPayloadSchema,
+  authUserSchema,
   loginRequestSchema,
   loginResponseSchema,
   authStateSchema,
   refreshTokenRequestSchema,
+  refreshTokenResponseSchema,
+  logoutRequestSchema,
 } from './schemas/auth';
 
 // Database schemas

@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { initConfig } from './config'
 import { initDb, healthCheck, closeDb } from './db'
+import authRoutes from './routes/auth'
 
 const { env } = await initConfig()
 
@@ -11,6 +12,8 @@ await initDb({
 })
 
 const app = new Hono()
+
+app.route('/api/auth', authRoutes)
 
 // Health check endpoint — includes DB status
 app.get('/api/health', async (c) => {
