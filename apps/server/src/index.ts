@@ -2,6 +2,11 @@ import { Hono } from 'hono'
 import { initConfig } from './config'
 import { initDb, healthCheck, closeDb } from './db'
 import authRoutes from './routes/auth'
+import userRoutes from './routes/users'
+import categoryRoutes from './routes/categories'
+import groupRoutes from './routes/groups'
+import bookmarkRoutes from './routes/bookmarks'
+import settingsRoutes from './routes/settings'
 
 const { env } = await initConfig()
 
@@ -14,6 +19,11 @@ await initDb({
 const app = new Hono()
 
 app.route('/api/auth', authRoutes)
+app.route('/api/users', userRoutes)
+app.route('/api/categories', categoryRoutes)
+app.route('/api/groups', groupRoutes)
+app.route('/api/settings', settingsRoutes)
+app.route('/api/bookmarks', bookmarkRoutes)
 
 // Health check endpoint — includes DB status
 app.get('/api/health', async (c) => {
