@@ -4,13 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --format esm",
+    "build": "bun build src/index.ts --outdir dist --format esm --target bun",
     "start": "bun dist/index.js",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",
     "hono": "^4.0.0",
+    "mysql2": "^3.18.2",
+    "postgres": "^3.4.8",
     "zod": "^4.3.6"
   },
   "devDependencies": {

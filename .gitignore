@@ -37,3 +37,9 @@ Thumbs.db
 # Test coverage
 coverage/
 .nyc_output/
+
+# Test artifacts
+.test-data/
+
+# Windows artifacts
+nul

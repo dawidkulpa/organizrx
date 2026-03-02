@@ -3,11 +3,17 @@
  * Creates 6 groups with exact IDs matching legacy Organizr schema.
  */
 
+import { getRawDb, getDialect } from './connection'
+import type { SqliteDb, MysqlDb, PostgresDb } from './connection'
+import * as sqliteSchema from './schema/sqlite'
+import * as mysqlSchema from './schema/mysql'
+import * as pgSchema from './schema/pg'
+
 export interface GroupSeed {
-  group: string;
-  group_id: number;
-  default: number;
-  image: string;
+  group: string
+  group_id: number
+  default: number
+  image: string
 }
 
 export const defaultGroups: GroupSeed[] = [
@@ -47,17 +53,33 @@ export const defaultGroups: GroupSeed[] = [
     default: 0,
     image: 'plugins/images/groups/guest.png',
   },
-];
+]
 
 /**
  * Seeds the groups table with default groups.
- * This function will be used by the DB connection manager (T8).
- * 
- * @param db - Drizzle database instance
- * @param schema - Schema containing the groups table
+ * Dispatches to the correct dialect-specific insert based on the active dialect.
  */
-export async function seedDefaultGroups(db: any, schema: any) {
+export async function seedDefaultGroups(): Promise<void> {
+  const db = getRawDb()
+  const dialect = getDialect()
+
   for (const group of defaultGroups) {
-    await db.insert(schema.groups).values(group);
+    switch (dialect) {
+      case 'sqlite': {
+        const sqliteDb = db as SqliteDb
+        await sqliteDb.insert(sqliteSchema.groups).values(group)
+        break
+      }
+      case 'mysql': {
+        const mysqlDb = db as MysqlDb
+        await mysqlDb.insert(mysqlSchema.groups).values(group)
+        break
+      }
+      case 'postgresql': {
+        const pgDb = db as PostgresDb
+        await pgDb.insert(pgSchema.groups).values(group)
+        break
+      }
+    }
   }
 }

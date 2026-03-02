@@ -134,61 +134,6 @@ describe('config', () => {
 // ============================================
 
 describe('settings', () => {
-  function createMockDb() {
-    const store = new Map<string, string>()
-
-    return {
-      store,
-      select() {
-        return {
-          from(_table: unknown) {
-            return {
-              where(condition: unknown) {
-                // Extract key from condition via closure
-                return {
-                  async get() {
-                    const key = (condition as { key: string }).key
-                    const value = store.get(key)
-                    return value !== undefined ? { name: key, value } : undefined
-                  },
-                }
-              },
-              async all() {
-                return Array.from(store.entries()).map(([name, value]) => ({ name, value }))
-              },
-            }
-          },
-        }
-      },
-      insert(_table: unknown) {
-        return {
-          values(data: { name: string; value: string }) {
-            return {
-              onConflictDoUpdate(_config: unknown) {
-                return {
-                  async run() {
-                    store.set(data.name, data.value)
-                  },
-                }
-              },
-            }
-          },
-        }
-      },
-      delete(_table: unknown) {
-        return {
-          where(condition: unknown) {
-            return {
-              async run() {
-                const key = (condition as { key: string }).key
-                store.delete(key)
-              },
-            }
-          },
-        }
-      },
-    }
-  }
 
   // Since the real functions use drizzle's `eq()` which generates
   // internal condition objects, we test the function signatures
