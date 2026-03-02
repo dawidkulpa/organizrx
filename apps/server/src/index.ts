@@ -7,6 +7,7 @@ import categoryRoutes from './routes/categories'
 import groupRoutes from './routes/groups'
 import bookmarkRoutes from './routes/bookmarks'
 import settingsRoutes from './routes/settings'
+import tabRoutes from './routes/tabs'
 
 const { env } = await initConfig()
 
@@ -24,6 +25,7 @@ app.route('/api/categories', categoryRoutes)
 app.route('/api/groups', groupRoutes)
 app.route('/api/settings', settingsRoutes)
 app.route('/api/bookmarks', bookmarkRoutes)
+app.route('/api/tabs', tabRoutes)
 
 // Health check endpoint — includes DB status
 app.get('/api/health', async (c) => {
