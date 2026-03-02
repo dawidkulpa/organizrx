@@ -1,19 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-
+// App.tsx is not used directly — main.tsx renders via RouterProvider.
+// This file exists only as a fallback/reference.
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div style={{ padding: '2rem', textAlign: 'center' }}>
-              <h1>Hello OrganizrX</h1>
-              <p>Welcome to the OrganizrX platform</p>
-            </div>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
-  )
+  return <div>OrganizrX</div>
 }
