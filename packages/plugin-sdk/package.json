@@ -2,14 +2,17 @@
   "name": "@organizrx/plugin-sdk",
   "version": "0.0.1",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint src --ext .ts"
-  },
-  "dependencies": {
-    "@organizrx/shared": "*"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
