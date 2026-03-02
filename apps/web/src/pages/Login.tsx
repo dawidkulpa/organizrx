@@ -33,18 +33,12 @@ export default function Login() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await api.settings.getAll('auth');
-        // Handle both array and object responses for robustness
-        let settingsMap: Record<string, string> = {};
-        if (Array.isArray(res.data.data)) {
-          settingsMap = (res.data.data as Array<{ key: string; value: string }>).reduce<Record<string, string>>((acc, curr) => {
-            acc[curr.key] = curr.value;
-            return acc;
-          }, {});
-        } else if (typeof res.data.data === 'object') {
-           settingsMap = res.data.data;
+        // Use the public settings endpoint (no auth required)
+        const res = await client.get('/settings/public');
+        const data = res.data.data;
+        if (typeof data === 'object' && data !== null) {
+          setAuthSettings(data as Record<string, string>);
         }
-        setAuthSettings(settingsMap);
       } catch {
         // Graceful degradation — external auth buttons won't show
       }

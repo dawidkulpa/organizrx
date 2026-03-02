@@ -64,22 +64,26 @@ export async function seedDefaultGroups(): Promise<void> {
   const dialect = getDialect()
 
   for (const group of defaultGroups) {
-    switch (dialect) {
-      case 'sqlite': {
-        const sqliteDb = db as SqliteDb
-        await sqliteDb.insert(sqliteSchema.groups).values(group)
-        break
+    try {
+      switch (dialect) {
+        case 'sqlite': {
+          const sqliteDb = db as SqliteDb
+          await sqliteDb.insert(sqliteSchema.groups).values(group).onConflictDoNothing()
+          break
+        }
+        case 'mysql': {
+          const mysqlDb = db as MysqlDb
+          await mysqlDb.insert(mysqlSchema.groups).values(group).onDuplicateKeyUpdate({ set: { group: group.group } })
+          break
+        }
+        case 'postgresql': {
+          const pgDb = db as PostgresDb
+          await pgDb.insert(pgSchema.groups).values(group).onConflictDoNothing()
+          break
+        }
       }
-      case 'mysql': {
-        const mysqlDb = db as MysqlDb
-        await mysqlDb.insert(mysqlSchema.groups).values(group)
-        break
-      }
-      case 'postgresql': {
-        const pgDb = db as PostgresDb
-        await pgDb.insert(pgSchema.groups).values(group)
-        break
-      }
+    } catch {
+      // Group already exists — skip silently
     }
   }
 }

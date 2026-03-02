@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { initConfig } from './config'
-import { initDb, healthCheck, closeDb } from './db'
+import { initDb, healthCheck, closeDb, runMigrations, seedDefaultGroups } from './db'
 import authRoutes from './routes/auth'
 import plexAuthRoutes from './routes/auth-plex'
 import ldapAuthRoutes from './routes/auth-ldap'
@@ -18,6 +18,7 @@ import { authProxyMiddleware } from './middleware/auth-proxy'
 import { loadAllPlugins, mountPluginRoutes, unloadAllPlugins } from './plugins'
 import pluginManagementRoutes from './routes/plugins'
 import wizardRoutes from './routes/wizard'
+import { getSetting } from './services/settings'
 
 const { env } = await initConfig()
 
@@ -27,12 +28,33 @@ await initDb({
   url: env.DATABASE_URL!,
 })
 
+// Run pending migrations (auto-creates tables on first run)
+await runMigrations()
+
+// Seed default groups if they don't exist
+await seedDefaultGroups()
+
 // Load plugins (after DB, before route mounting)
 await loadAllPlugins()
 
 const app = new Hono()
 
 app.use('/api/*', authProxyMiddleware())
+
+
+// ── Public settings endpoint (no auth) ─────────────────────────
+// Exposes only allowlisted settings needed by the Login page.
+const PUBLIC_SETTINGS_KEYS = ['LDAP_ENABLED', 'PLEX_ENABLED', 'OIDC_ENABLED', 'SITE_TITLE']
+app.get('/api/settings/public', async (c) => {
+  const results: Record<string, string> = {}
+  for (const key of PUBLIC_SETTINGS_KEYS) {
+    const value = await getSetting(key)
+    if (value !== null) {
+      results[key] = value
+    }
+  }
+  return c.json({ data: results })
+})
 
 app.route('/api/auth', authRoutes)
 app.route('/api/auth', plexAuthRoutes)

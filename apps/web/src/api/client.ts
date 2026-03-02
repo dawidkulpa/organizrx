@@ -69,7 +69,11 @@ client.interceptors.response.use(
       if (!rt) {
         isRefreshing = false
         store.clearAuth()
-        window.location.href = '/login'
+        // Don't redirect if already on /login or /wizard — prevents infinite reload loop
+        const path = window.location.pathname
+        if (path !== '/login' && path !== '/wizard') {
+          window.location.href = '/login'
+        }
         return Promise.reject(error)
       }
 
@@ -84,7 +88,11 @@ client.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null)
         store.clearAuth()
-        window.location.href = '/login'
+        // Don't redirect if already on /login or /wizard — prevents infinite reload loop
+        const path = window.location.pathname
+        if (path !== '/login' && path !== '/wizard') {
+          window.location.href = '/login'
+        }
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
@@ -115,6 +123,7 @@ export const api = {
     me: () => client.get('/auth/me'),
   },
   settings: {
+    getPublic: () => client.get('/settings/public'),
     getAll: (key?: string) =>
       client.get('/settings', { params: key ? { key } : undefined }),
     update: (data: { key: string; value: string }) =>

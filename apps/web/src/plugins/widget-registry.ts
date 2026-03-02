@@ -1,3 +1,4 @@
+import client from '../api/client'
 import { lazy } from 'react'
 import type { ComponentType, LazyExoticComponent } from 'react'
 import type { PluginWidgetAPI } from './widget-api'
@@ -102,16 +103,11 @@ export function getWidgetsByPlugin(pluginId: string): PluginWidgetRegistration[]
  * Widgets are lazy-loaded from `@organizrx/plugin-{pluginId}/widgets/{widgetId}`.
  */
 export async function discoverWidgets(): Promise<PluginWidgetRegistration[]> {
-  const response = await fetch('/api/plugins')
+  const response = await client.get<PluginsApiResponse>('/plugins')
 
-  if (!response.ok) {
-    throw new Error(`Failed to discover plugins: ${response.status} ${response.statusText}`)
-  }
-
-  const body = (await response.json()) as PluginsApiResponse
   const discovered: PluginWidgetRegistration[] = []
 
-  for (const plugin of body.data) {
+  for (const plugin of response.data.data) {
     if (!plugin.widgets || plugin.widgets.length === 0) continue
 
     for (const widget of plugin.widgets) {

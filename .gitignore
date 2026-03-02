@@ -43,3 +43,9 @@ coverage/
 
 # Windows artifacts
 nul
+
+# Database files
+data/
+*.db
+*.db-wal
+*.db-shm
