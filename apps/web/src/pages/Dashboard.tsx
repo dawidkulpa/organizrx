@@ -1,52 +1,129 @@
-import { Activity, CreditCard, DollarSign, Users } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../api/client';
+import { discoverWidgets, PluginWidgetRegistration } from '../plugins/widget-registry';
+import { WidgetGrid } from '../components/WidgetGrid';
+import type { LayoutItem } from 'react-grid-layout';
+import { RefreshCw, LayoutGrid, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
-  const stats = [
-    { name: 'Total Revenue', value: '$45,231.89', change: '+20.1% from last month', icon: DollarSign },
-    { name: 'Subscriptions', value: '+2350', change: '+180.1% from last month', icon: Users },
-    { name: 'Sales', value: '+12,234', change: '+19% from last month', icon: CreditCard },
-    { name: 'Active Now', value: '+573', change: '+201 since last hour', icon: Activity },
-  ];
+  const [widgets, setWidgets] = useState<PluginWidgetRegistration[]>([]);
+  const [layout, setLayout] = useState<LayoutItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [discovered, settingsRes] = await Promise.all([
+        discoverWidgets(),
+        api.settings.getAll('dashboard_layout').catch(() => ({ data: [] })) 
+      ]);
+
+      setWidgets(discovered);
+
+      // Parse layout
+      // API typically returns an array of settings. Find the specific key.
+      const layoutSetting = Array.isArray(settingsRes.data) 
+        ? settingsRes.data.find((s: { key: string; value: string }) => s.key === 'dashboard_layout')
+        : settingsRes.data; // fallback if api returns object
+
+      if (layoutSetting?.value) {
+        try {
+          const parsed = JSON.parse(layoutSetting.value);
+          if (Array.isArray(parsed)) {
+            setLayout(parsed);
+          }
+        } catch {
+          // Layout parse failed — use defaults
+        }
+      }
+    } catch {
+      toast.error("Failed to load dashboard widgets");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleLayoutChange = (newLayout: LayoutItem[]) => {
+    setLayout(newLayout);
+    
+    // We only save if not loading to avoid overwriting with empty
+    if (!isLoading && widgets.length > 0) {
+        api.settings.update({ 
+            key: 'dashboard_layout', 
+            value: JSON.stringify(newLayout) 
+        }).catch(() => {
+            // Silent failure — non-critical save
+        });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-pulse p-8">
+        <div className="flex justify-between items-center mb-8">
+            <div className="h-8 w-32 bg-muted rounded"></div>
+            <div className="h-8 w-8 bg-muted rounded"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-48 bg-muted rounded-lg border border-border"></div>
+            ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="p-6 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors animate-reveal">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <h3 className="text-sm font-medium text-muted-foreground tracking-tight">{stat.name}</h3>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="text-2xl font-bold">{stat.value}</div>
-            <p className="text-xs text-muted-foreground">{stat.change}</p>
-          </div>
-        ))}
+    <div className="space-y-6 h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+            <LayoutGrid className="w-6 h-6 text-primary" />
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        </div>
+        <button 
+            onClick={loadData}
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+            title="Refresh Widgets"
+        >
+            <RefreshCw className="w-5 h-5" />
+        </button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 bg-card rounded-lg border border-border p-6 animate-reveal delay-100">
-          <h3 className="font-semibold text-lg mb-4">Overview</h3>
-          <div className="h-[300px] w-full bg-muted/20 rounded flex items-center justify-center text-muted-foreground border border-dashed border-border">
-            Chart Placeholder
+      {/* Content */}
+      <div className="flex-1 min-h-0">
+        {widgets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4 border-2 border-dashed border-border rounded-xl bg-muted/10">
+            <div className="p-4 bg-background rounded-full border border-border shadow-sm">
+                <LayoutGrid className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <div className="space-y-2 max-w-md">
+                <h3 className="text-lg font-semibold text-foreground">No widgets installed</h3>
+                <p className="text-sm text-muted-foreground">
+                    Install plugins to add widgets to your dashboard and customize your experience.
+                </p>
+            </div>
+            <Link 
+                to="/settings/plugins" 
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
+            >
+                <Plus className="w-4 h-4" />
+                Browse Plugins
+            </Link>
           </div>
-        </div>
-        <div className="col-span-3 bg-card rounded-lg border border-border p-6 animate-reveal delay-200">
-          <h3 className="font-semibold text-lg mb-4">Recent Sales</h3>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center">
-                <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-                  OM
-                </div>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Olivia Martin</p>
-                  <p className="text-sm text-muted-foreground">olivia.martin@email.com</p>
-                </div>
-                <div className="ml-auto font-medium">+$1,999.00</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        ) : (
+          <WidgetGrid 
+            widgets={widgets} 
+            layout={layout} 
+            onLayoutChange={handleLayoutChange} 
+          />
+        )}
       </div>
     </div>
   );
