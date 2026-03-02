@@ -16,6 +16,7 @@ import ssoRoutes from './routes/sso'
 import oidcAuthRoutes from './routes/auth-oidc'
 import { authProxyMiddleware } from './middleware/auth-proxy'
 import { loadAllPlugins, mountPluginRoutes, unloadAllPlugins } from './plugins'
+import pluginManagementRoutes from './routes/plugins'
 
 const { env } = await initConfig()
 
@@ -45,6 +46,9 @@ app.route('/api/bookmarks', bookmarkRoutes)
 app.route('/api/tabs', tabRoutes)
 app.route('/api/invites', inviteRoutes)
 app.route('/api/sso', ssoRoutes)
+
+// Plugin management routes (BEFORE individual plugin routes)
+app.route('/api/plugins', pluginManagementRoutes)
 
 // Mount plugin routes at /api/plugins/{pluginId}/
 mountPluginRoutes(app)

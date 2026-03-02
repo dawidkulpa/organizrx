@@ -14,3 +14,19 @@ export {
   type LoadedPlugin,
   type PluginStatus,
 } from './loader'
+export {
+  PLUGIN_PACKAGE_PATTERN,
+  validatePluginName,
+  searchAvailablePlugins,
+  getPluginInfo,
+  getInstalledPlugins,
+  installPlugin,
+  removePlugin,
+  updatePlugin,
+  getNeedsRestart,
+  clearNeedsRestart,
+  _resetRegistry,
+  type AvailablePlugin,
+  type InstalledPlugin,
+  type RegistryCommandResult,
+} from './registry'
