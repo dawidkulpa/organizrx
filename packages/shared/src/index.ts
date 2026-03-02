@@ -115,7 +115,15 @@ export {
   refreshTokenRequestSchema,
   refreshTokenResponseSchema,
   logoutRequestSchema,
-} from './schemas/auth';
+  setupTwoFactorRequestSchema,
+  verifySetupTwoFactorRequestSchema,
+  verifyTwoFactorRequestSchema,
+  disableTwoFactorRequestSchema,
+  setupTwoFactorResponseSchema,
+  verifySetupTwoFactorResponseSchema,
+  verifyTwoFactorResponseSchema,
+  disableTwoFactorResponseSchema,
+  } from './schemas/auth'
 
 // Database schemas
 export {

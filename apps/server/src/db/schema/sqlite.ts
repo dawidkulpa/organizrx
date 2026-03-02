@@ -16,6 +16,9 @@ export const users = sqliteTable('users', {
   image: text('image'),
   register_date: text('register_date'),
   auth_service: text('auth_service').default('internal'),
+  totp_secret: text('totp_secret'),
+  totp_enabled: integer('totp_enabled').default(0),
+  totp_backup_codes: text('totp_backup_codes'),
 });
 
 export const chatroom = sqliteTable('chatroom', {

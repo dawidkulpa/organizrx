@@ -22,6 +22,9 @@ export function createTables(adapter: DialectAdapter) {
       image: text(),
       register_date: datetime(),
       auth_service: text().default('internal'),
+      totp_secret: text(),
+      totp_enabled: integer().default(0),
+      totp_backup_codes: text(),
     },
 
     chatroom: {

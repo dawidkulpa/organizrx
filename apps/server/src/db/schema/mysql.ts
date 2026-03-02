@@ -16,6 +16,9 @@ export const users = mysqlTable('users', {
   image: text('image'),
   register_date: timestamp('register_date'),
   auth_service: text('auth_service').default('internal'),
+  totp_secret: text('totp_secret'),
+  totp_enabled: int('totp_enabled').default(0),
+  totp_backup_codes: text('totp_backup_codes'),
 });
 
 export const chatroom = mysqlTable('chatroom', {

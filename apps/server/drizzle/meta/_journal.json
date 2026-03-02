@@ -8,6 +8,13 @@
       "when": 1772457951249,
       "tag": "0000_young_young_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1772472022222,
+      "tag": "0001_wandering_hellion",
+      "breakpoints": true
     }
   ]
 }

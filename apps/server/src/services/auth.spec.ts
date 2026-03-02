@@ -62,7 +62,10 @@ async function setupDb() {
       locked INTEGER,
       image TEXT,
       register_date TEXT,
-      auth_service TEXT DEFAULT 'internal'
+      auth_service TEXT DEFAULT 'internal',
+      totp_secret TEXT,
+      totp_enabled INTEGER DEFAULT 0,
+      totp_backup_codes TEXT
     )
   `)
 
