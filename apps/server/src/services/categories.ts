@@ -113,11 +113,9 @@ export async function createCategory(data: CreateCategoryData): Promise<Category
   }
 
   if (ctx.dialect === 'sqlite') {
-    const result = ctx.db.insert(ctx.categories).values(insertData).run()
-    const id = result.lastInsertRowid as number
-    const created = await getCategoryById(id)
-    if (!created) throw new Error('Failed to retrieve created category')
-    return created
+    const rows = ctx.db.insert(ctx.categories).values(insertData).returning().all()
+    if (!rows[0]) throw new Error('Failed to retrieve created category')
+    return rows[0] as Category
   }
 
   if (ctx.dialect === 'mysql') {
@@ -173,8 +171,8 @@ export async function deleteCategory(id: number): Promise<boolean> {
   }
 
   if (ctx.dialect === 'sqlite') {
-    const result = ctx.db.delete(ctx.categories).where(eq(ctx.categories.id, id)).run()
-    return result.changes > 0
+    ctx.db.delete(ctx.categories).where(eq(ctx.categories.id, id)).run()
+    return true
   }
 
   if (ctx.dialect === 'mysql') {

@@ -121,8 +121,8 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
   let insertedId: number
 
   if (ctx.dialect === 'sqlite') {
-    const result = ctx.db.insert(ctx.groups).values(values).run()
-    insertedId = result.lastInsertRowid as number
+    const rows = ctx.db.insert(ctx.groups).values(values).returning().all()
+    insertedId = rows[0].id
   } else if (ctx.dialect === 'mysql') {
     const result = await ctx.db.insert(ctx.groups).values(values)
     insertedId = Number(result[0].insertId)

@@ -1,4 +1,4 @@
-import { eq, and, gte } from 'drizzle-orm'
+import { eq, gte } from 'drizzle-orm'
 
 import { getRawDb, getDialect, type SqliteDb, type MysqlDb, type PostgresDb } from '../db'
 import * as sqliteSchema from '../db/schema/sqlite'
@@ -150,17 +150,14 @@ export async function createBookmarkCategory(data: {
   const ctx = dialectCtx()
 
   if (ctx.dialect === 'sqlite') {
-    const result = ctx.db.insert(ctx.bookmarkCategories).values({
+    const rows = ctx.db.insert(ctx.bookmarkCategories).values({
       category: data.category,
       category_id: data.category_id,
       order: data.order ?? null,
       default: data.default ?? null,
-    }).run()
-
-    const id = Number(result.lastInsertRowid)
-    const created = await getBookmarkCategoryById(id)
-    if (!created) throw new Error('Failed to retrieve created bookmark category')
-    return created
+    }).returning().all()
+    if (!rows[0]) throw new Error('Failed to retrieve created bookmark category')
+    return rows[0] as BookmarkCategory
   } else if (ctx.dialect === 'mysql') {
     const result = await ctx.db.insert(ctx.bookmarkCategories).values({
       category: data.category,
@@ -169,7 +166,7 @@ export async function createBookmarkCategory(data: {
       default: data.default ?? null,
     })
 
-    const id = Number(result.insertId)
+    const id = Number(result[0].insertId)
     const created = await getBookmarkCategoryById(id)
     if (!created) throw new Error('Failed to retrieve created bookmark category')
     return created
@@ -379,7 +376,7 @@ export async function createBookmarkTab(data: {
   const ctx = dialectCtx()
 
   if (ctx.dialect === 'sqlite') {
-    const result = ctx.db.insert(ctx.bookmarkTabs).values({
+    const rows = ctx.db.insert(ctx.bookmarkTabs).values({
       name: data.name,
       url: data.url,
       category_id: data.category_id,
@@ -389,12 +386,9 @@ export async function createBookmarkTab(data: {
       image: data.image ?? null,
       background_color: data.background_color ?? null,
       text_color: data.text_color ?? null,
-    }).run()
-
-    const id = Number(result.lastInsertRowid)
-    const created = await getBookmarkTabById(id)
-    if (!created) throw new Error('Failed to retrieve created bookmark tab')
-    return created
+    }).returning().all()
+    if (!rows[0]) throw new Error('Failed to retrieve created bookmark tab')
+    return rows[0] as BookmarkTab
   } else if (ctx.dialect === 'mysql') {
     const result = await ctx.db.insert(ctx.bookmarkTabs).values({
       name: data.name,
@@ -408,7 +402,7 @@ export async function createBookmarkTab(data: {
       text_color: data.text_color ?? null,
     })
 
-    const id = Number(result.insertId)
+    const id = Number(result[0].insertId)
     const created = await getBookmarkTabById(id)
     if (!created) throw new Error('Failed to retrieve created bookmark tab')
     return created
