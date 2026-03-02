@@ -1,13 +1,13 @@
 import { Hono } from 'hono'
+import { initConfig } from './config'
+
+const { env } = await initConfig()
 
 const app = new Hono()
 
-const PORT = parseInt(process.env.PORT || '3001')
-const HOST = process.env.HOST || '0.0.0.0'
-
 // Health check endpoint
 app.get('/api/health', (c) => {
-  return c.json({ status: 'ok' })
+  return c.json({ status: 'ok', version: '0.0.1' })
 })
 
 // 404 handler
@@ -16,7 +16,7 @@ app.notFound((c) => {
 })
 
 export default {
-  port: PORT,
-  hostname: HOST,
+  port: env.PORT,
+  hostname: env.HOST,
   fetch: app.fetch,
 }
