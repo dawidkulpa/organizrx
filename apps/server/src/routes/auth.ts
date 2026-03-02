@@ -15,6 +15,8 @@ import {
   clearFailedAttempts,
   toAuthUser,
 } from '../services/auth'
+import { createTempToken, getUserTotpData } from '../services/auth-2fa'
+import { appendSsoCookies, appendClearSsoCookies } from '../services/sso'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
 
@@ -67,6 +69,18 @@ auth.post('/login', async (c) => {
 
   clearFailedAttempts(username)
 
+  // Check if user has 2FA enabled
+  const totpData = await getUserTotpData(user.id)
+  if (totpData?.totp_enabled === 1) {
+    const tempToken = await createTempToken(user.id)
+    return c.json({
+      data: {
+        requires_2fa: true,
+        temp_token: tempToken,
+      },
+    })
+  }
+
   const authUser = toAuthUser(user)
   const accessToken = await createAccessToken(authUser)
   const refreshToken = await createRefreshToken(user.id, rememberMe)
@@ -83,13 +97,18 @@ auth.post('/login', async (c) => {
     expiresAt,
   })
 
-  return c.json({
+  const response = c.json({
     data: {
       accessToken,
       refreshToken,
       user: authUser,
     },
   })
+
+  // Set SSO cookies for downstream services
+  await appendSsoCookies(user.id, response.headers)
+
+  return response
 })
 
 // POST /api/auth/refresh
@@ -161,7 +180,12 @@ auth.post('/logout', async (c) => {
     await revokeRefreshToken(parsed.data.refreshToken)
   }
 
-  return c.json({ data: { success: true } })
+  const response = c.json({ data: { success: true } })
+
+  // Clear SSO cookies for downstream services
+  await appendClearSsoCookies(response.headers)
+
+  return response
 })
 
 // GET /api/auth/me — requires valid access token
