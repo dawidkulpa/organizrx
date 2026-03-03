@@ -20,6 +20,7 @@ import pluginManagementRoutes from './routes/plugins'
 import wizardRoutes from './routes/wizard'
 import { getSetting } from './services/settings'
 import migrationRoutes from './routes/migration'
+import { getMigrationStatus, runMigration } from './migration'
 
 const { env } = await initConfig()
 
@@ -29,9 +30,26 @@ await initDb({
   url: env.DATABASE_URL!,
 })
 
-// Run pending migrations (auto-creates tables on first run)
+// Run pending Drizzle migrations (SQLite only; MySQL/PG skip)
 await runMigrations()
 
+// Auto-run in-place schema migration for old Organizr databases.
+// Detects missing TOTP columns and ALTER TABLEs them in.
+{
+  const status = await getMigrationStatus()
+  if (status.needsMigration) {
+    console.log('[migration] Old Organizr schema detected — running in-place migration…')
+    const result = await runMigration((step, current, total) => {
+      console.log(`[migration] ${step} (${current}/${total})`)
+    })
+    if (result.success) {
+      console.log(`[migration] Done in ${result.durationMs}ms — columns added: ${result.columnsAdded.join(', ') || 'none'}`)
+    } else {
+      console.error(`[migration] FAILED: ${result.error}`)
+      process.exit(1)
+    }
+  }
+}
 // Seed default groups if they don't exist
 await seedDefaultGroups()
 

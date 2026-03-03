@@ -5,19 +5,27 @@
  * from a configured directory and applies any that haven't run yet.
  *
  * Migration files are generated with `bunx drizzle-kit generate`.
+ *
+ * NOTE: The checked-in migration files are SQLite-only.  When the active
+ * dialect is MySQL or PostgreSQL the database is assumed to already exist
+ * (either from an old Organizr install or a manual setup).  The in-place
+ * migration system (`src/migration/`) handles schema updates for those
+ * dialects.  Drizzle migrations are therefore only applied for SQLite.
  */
 
 import { migrate as migrateBunSqlite } from 'drizzle-orm/bun-sqlite/migrator'
-import { migrate as migrateMysql } from 'drizzle-orm/mysql2/migrator'
-import { migrate as migratePostgres } from 'drizzle-orm/postgres-js/migrator'
 
 import { getRawDb, getDialect } from './connection'
-import type { SqliteDb, MysqlDb, PostgresDb } from './connection'
+import type { SqliteDb } from './connection'
 
 const DEFAULT_MIGRATIONS_DIR = './drizzle'
 
 /**
  * Run pending migrations for the active dialect.
+ *
+ * For SQLite: applies SQL migration files from the migrations folder.
+ * For MySQL / PostgreSQL: no-op — existing tables are expected, and the
+ * in-place migrator handles any schema updates.
  *
  * @param migrationsFolder — path to the folder containing `.sql` migration
  *   files (default: `./drizzle`). The folder is resolved relative to CWD.
@@ -34,15 +42,9 @@ export async function runMigrations(migrationsFolder = DEFAULT_MIGRATIONS_DIR): 
       break
 
     case 'mysql':
-      await migrateMysql(db as unknown as MysqlDb, {
-        migrationsFolder,
-      })
-      break
-
     case 'postgresql':
-      await migratePostgres(db as unknown as PostgresDb, {
-        migrationsFolder,
-      })
+      // Tables already exist (old Organizr or manual setup).
+      // Schema updates handled by src/migration/migrator.ts.
       break
 
     default:

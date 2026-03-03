@@ -76,7 +76,7 @@ export async function getExistingColumns(
     case 'mysql': {
       const rawDb = getRawDb() as MysqlDb
       const [rows] = await rawDb.$client.query(
-        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ?',
+        'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND TABLE_SCHEMA = DATABASE()',
         [tableName]
       )
       return (rows as Array<{ COLUMN_NAME: string }>).map((r) => r.COLUMN_NAME)

@@ -6,7 +6,7 @@
 
 import { type ColumnBuilderBaseConfig, type ColumnDataType, ColumnBuilder } from 'drizzle-orm/column-builder';
 import { integer as sqliteInteger, text as sqliteText } from 'drizzle-orm/sqlite-core';
-import { int as mysqlInt, text as mysqlText, timestamp as mysqlTimestamp } from 'drizzle-orm/mysql-core';
+import { int as mysqlInt, text as mysqlText, datetime as mysqlDatetime } from 'drizzle-orm/mysql-core';
 import { serial as pgSerial, text as pgText, integer as pgInteger, timestamp as pgTimestamp } from 'drizzle-orm/pg-core';
 
 export type Dialect = 'sqlite' | 'mysql' | 'postgresql';
@@ -41,7 +41,7 @@ export function createAdapter(dialect: Dialect): DialectAdapter {
         pk: () => mysqlInt('id').autoincrement().primaryKey() as unknown as AnyColumnBuilder,
         text: () => mysqlText('_') as unknown as AnyColumnBuilder,
         integer: () => mysqlInt('_') as unknown as AnyColumnBuilder,
-        datetime: () => mysqlTimestamp('_') as unknown as AnyColumnBuilder,
+        datetime: () => mysqlDatetime('_') as unknown as AnyColumnBuilder,
       };
     case 'postgresql':
       return {

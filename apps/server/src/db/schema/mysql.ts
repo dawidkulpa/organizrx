@@ -2,7 +2,7 @@
  * MySQL schema - Generated from unified table definitions.
  */
 
-import { mysqlTable, int, text, timestamp } from 'drizzle-orm/mysql-core';
+import { mysqlTable, int, text, datetime } from 'drizzle-orm/mysql-core';
 
 export const users = mysqlTable('users', {
   id: int('id').autoincrement().primaryKey(),
@@ -14,7 +14,7 @@ export const users = mysqlTable('users', {
   group_id: int('group_id'),
   locked: int('locked'),
   image: text('image'),
-  register_date: timestamp('register_date'),
+  register_date: datetime('register_date'),
   auth_service: text('auth_service').default('internal'),
   totp_secret: text('totp_secret'),
   totp_enabled: int('totp_enabled').default(0),
@@ -26,7 +26,7 @@ export const chatroom = mysqlTable('chatroom', {
   username: text('username'),
   gravatar: text('gravatar'),
   uid: text('uid'),
-  date: timestamp('date'),
+  date: datetime('date'),
   ip: text('ip'),
   message: text('message'),
 });
@@ -37,8 +37,8 @@ export const tokens = mysqlTable('tokens', {
   user_id: int('user_id'),
   browser: text('browser'),
   ip: text('ip'),
-  created: timestamp('created'),
-  expires: timestamp('expires'),
+  created: datetime('created'),
+  expires: datetime('expires'),
 });
 
 export const groups = mysqlTable('groups', {
@@ -89,10 +89,10 @@ export const options = mysqlTable('options', {
 export const invites = mysqlTable('invites', {
   id: int('id').autoincrement().primaryKey(),
   code: text('code').unique(),
-  date: timestamp('date'),
+  date: datetime('date'),
   email: text('email'),
   username: text('username'),
-  dateused: timestamp('dateused'),
+  dateused: datetime('dateused'),
   usedby: text('usedby'),
   ip: text('ip'),
   valid: text('valid'),

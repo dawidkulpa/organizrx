@@ -20,6 +20,13 @@ import {
   MIGRATION_COMPLETED_KEY,
 } from './column-map'
 
+/**
+ * Quote an identifier in a dialect-appropriate way.
+ * MySQL uses backticks, SQLite / PostgreSQL use double-quotes.
+ */
+function quoteId(dialect: DatabaseDialect, name: string): string {
+  return dialect === 'mysql' ? `\`${name}\`` : `"${name}"`
+}
 export type ProgressCallback = (step: string, current: number, total: number) => void
 
 export interface MigrationResult {
@@ -197,7 +204,7 @@ export async function runMigration(
       for (const col of migration.addColumns) {
         const exists = await columnExists(dialect, migration.table, col.name)
         if (!exists) {
-          let ddl = `ALTER TABLE "${migration.table}" ADD COLUMN "${col.name}" ${col.type}`
+          let ddl = `ALTER TABLE ${quoteId(dialect, migration.table)} ADD COLUMN ${quoteId(dialect, col.name)} ${col.type}`
           if (col.defaultValue !== undefined) {
             ddl += ` DEFAULT ${col.defaultValue}`
           } else if (col.nullable) {
@@ -221,7 +228,7 @@ export async function runMigration(
 
     // Step 4: Clear invalidated tables
     for (const table of TABLES_TO_CLEAR) {
-      await execRawSql(dialect, `DELETE FROM "${table}"`)
+      await execRawSql(dialect, `DELETE FROM ${quoteId(dialect, table)}`)
       tablesCleared.push(table)
       currentStep++
       onProgress?.('Clearing old data', currentStep, totalSteps)
