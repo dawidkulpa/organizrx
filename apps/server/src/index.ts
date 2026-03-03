@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { initConfig } from './config'
+import { getConfig } from './config'
 import { initDb, healthCheck, closeDb, runMigrations, seedDefaultGroups } from './db'
 import authRoutes from './routes/auth'
 import plexAuthRoutes from './routes/auth-plex'
@@ -57,6 +59,14 @@ await seedDefaultGroups()
 await loadAllPlugins()
 
 const app = new Hono()
+
+
+// ── CORS middleware (credentials: true for httpOnly refresh cookie) ──
+const { server: serverConfig } = getConfig()
+app.use('/api/*', cors({
+  origin: serverConfig.corsOrigins,
+  credentials: true,
+}))
 
 app.use('/api/*', authProxyMiddleware())
 

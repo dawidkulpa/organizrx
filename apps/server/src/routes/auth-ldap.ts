@@ -21,6 +21,7 @@ import {
   type LdapType,
 } from '../services/auth-ldap'
 import { getConfig } from '../config'
+import { buildRefreshCookie } from '../services/refresh-cookie'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -151,13 +152,17 @@ ldapAuth.post('/ldap/login', async (c) => {
       expiresAt,
     })
 
-    return c.json({
+    const response = c.json({
       data: {
         accessToken,
-        refreshToken,
         user: authUser,
       },
     })
+
+    // Set refresh token as httpOnly cookie
+    response.headers.append('Set-Cookie', buildRefreshCookie(refreshToken, days))
+
+    return response
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'LDAP authentication failed'
     return c.json({

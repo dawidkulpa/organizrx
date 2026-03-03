@@ -28,6 +28,7 @@ import {
 } from '../services/auth'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
+import { buildRefreshCookie } from '../services/refresh-cookie'
 
 const auth2fa = new Hono()
 
@@ -222,13 +223,19 @@ auth2fa.post('/verify', async (c) => {
     expiresAt,
   })
 
-  return c.json({
+  const days = authConfig.refreshTokenExpiryDays
+
+  const response = c.json({
     data: {
       accessToken,
-      refreshToken,
       user: authUser,
     },
   })
+
+  // Set refresh token as httpOnly cookie
+  response.headers.append('Set-Cookie', buildRefreshCookie(refreshToken, days))
+
+  return response
 })
 
 // DELETE /api/auth/2fa — Disable 2FA

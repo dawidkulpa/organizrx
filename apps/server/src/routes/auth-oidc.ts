@@ -21,6 +21,7 @@ import {
 } from '../services/auth'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
+import { buildRefreshCookie } from '../services/refresh-cookie'
 
 const oidcLinkSchema = z.object({
   oidcSub: z.string().min(1, 'OIDC subject identifier is required'),
@@ -187,13 +188,19 @@ oidc.get('/callback', async (c) => {
       expiresAt,
     })
 
-    return c.json({
+    const days = authConfig.refreshTokenExpiryDays
+
+    const response = c.json({
       data: {
         accessToken,
-        refreshToken,
         user,
       },
     })
+
+    // Set refresh token as httpOnly cookie
+    response.headers.append('Set-Cookie', buildRefreshCookie(refreshToken, days))
+
+    return response
   } catch (err) {
     const message = err instanceof Error ? err.message : 'OIDC authentication failed'
     return c.json({

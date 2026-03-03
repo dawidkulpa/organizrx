@@ -276,7 +276,7 @@ describe('auth-plex routes', () => {
 
       expect(res.status).toBe(200)
       expect(json.data.accessToken).toBeDefined()
-      expect(json.data.refreshToken).toBeDefined()
+      expect(res.headers.get('set-cookie')).toContain('organizrx_refresh=')
       expect(json.data.user.username).toBe('plexuser')
       expect(json.data.user.email).toBe('plex@test.com')
     })

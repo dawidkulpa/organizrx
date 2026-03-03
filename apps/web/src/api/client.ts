@@ -6,6 +6,7 @@ import { useAuthStore } from '../store'
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 })
 
 // ── Request interceptor — attach bearer token ───────────────────
@@ -64,24 +65,11 @@ client.interceptors.response.use(
       isRefreshing = true
 
       const store = useAuthStore.getState()
-      const rt = store.refreshToken
-
-      if (!rt) {
-        isRefreshing = false
-        store.clearAuth()
-        // Don't redirect if already on /login or /wizard — prevents infinite reload loop
-        const path = window.location.pathname
-        if (path !== '/login' && path !== '/wizard') {
-          window.location.href = '/login'
-        }
-        return Promise.reject(error)
-      }
 
       try {
-        const res = await client.post('/auth/refresh', { refreshToken: rt })
+        const res = await client.post('/auth/refresh')
         const { data } = res.data
         store.setToken(data.accessToken)
-        store.setRefreshToken(data.refreshToken)
         processQueue(null, data.accessToken)
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
         return client(originalRequest)
@@ -114,10 +102,10 @@ export const api = {
   auth: {
     login: (data: { username: string; password: string; rememberMe?: boolean }) =>
       client.post('/auth/login', data),
-    logout: (data?: { refreshToken?: string }) =>
-      client.post('/auth/logout', data ?? {}),
-    refresh: (data: { refreshToken: string }) =>
-      client.post('/auth/refresh', data),
+    logout: () =>
+      client.post('/auth/logout'),
+    refresh: () =>
+      client.post('/auth/refresh'),
     verify2fa: (data: { temp_token: string; totp_code?: string; backup_code?: string }) =>
       client.post('/auth/2fa/verify', data),
     me: () => client.get('/auth/me'),

@@ -11,6 +11,7 @@ import Migration from './pages/Migration'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import { useAuthStore } from './store'
+import { useSessionInit } from './hooks/useAuth'
 
 // ── Settings sub-pages (lazy-style but static for now) ──────────
 import SettingsGeneral from './pages/settings/General'
@@ -28,7 +29,18 @@ import SettingsAccount from './pages/settings/Account'
 
 // ── Route guards ────────────────────────────────────────────────
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  useSessionInit()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isInitializing = useAuthStore((s) => s.isInitializing)
+
+  if (isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return children
 }

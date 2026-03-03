@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
-import { loginRequestSchema, refreshTokenRequestSchema, logoutRequestSchema } from '@organizrx/shared'
+import { loginRequestSchema } from '@organizrx/shared'
+import { getCookie } from 'hono/cookie'
 import {
   findUserByUsername,
   findUserById,
@@ -19,6 +20,7 @@ import { createTempToken, getUserTotpData } from '../services/auth-2fa'
 import { appendSsoCookies, appendClearSsoCookies } from '../services/sso'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
+import { buildRefreshCookie, buildClearRefreshCookie } from '../services/refresh-cookie'
 
 const auth = new Hono()
 
@@ -100,10 +102,12 @@ auth.post('/login', async (c) => {
   const response = c.json({
     data: {
       accessToken,
-      refreshToken,
       user: authUser,
     },
   })
+
+  // Set refresh token as httpOnly cookie
+  response.headers.append('Set-Cookie', buildRefreshCookie(refreshToken, days))
 
   // Set SSO cookies for downstream services
   await appendSsoCookies(user.id, response.headers)
@@ -113,16 +117,13 @@ auth.post('/login', async (c) => {
 
 // POST /api/auth/refresh
 auth.post('/refresh', async (c) => {
-  const body = await c.req.json()
-  const parsed = refreshTokenRequestSchema.safeParse(body)
+  const oldToken = getCookie(c, 'organizrx_refresh')
 
-  if (!parsed.success) {
+  if (!oldToken) {
     return c.json({
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
-    }, 400)
+      error: { code: 'MISSING_TOKEN', message: 'No refresh token cookie' },
+    }, 401)
   }
-
-  const { refreshToken: oldToken } = parsed.data
 
   try {
     const payload = await verifyRefreshToken(oldToken)
@@ -148,7 +149,8 @@ auth.post('/refresh', async (c) => {
     const newRefreshToken = await createRefreshToken(user.id)
 
     const { auth: authConfig } = getConfig()
-    const expiresAt = new Date(Date.now() + authConfig.refreshTokenExpiryDays * 24 * 60 * 60 * 1000)
+    const days = authConfig.refreshTokenExpiryDays
+    const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
     await storeRefreshToken({
       userId: user.id,
@@ -158,12 +160,16 @@ auth.post('/refresh', async (c) => {
       expiresAt,
     })
 
-    return c.json({
+    const response = c.json({
       data: {
         accessToken,
-        refreshToken: newRefreshToken,
       },
     })
+
+    // Rotate the cookie
+    response.headers.append('Set-Cookie', buildRefreshCookie(newRefreshToken, days))
+
+    return response
   } catch {
     return c.json({
       error: { code: 'INVALID_TOKEN', message: 'Refresh token is invalid or expired' },
@@ -173,14 +179,16 @@ auth.post('/refresh', async (c) => {
 
 // POST /api/auth/logout
 auth.post('/logout', async (c) => {
-  const body = await c.req.json().catch(() => ({}))
-  const parsed = logoutRequestSchema.safeParse(body)
+  const oldToken = getCookie(c, 'organizrx_refresh')
 
-  if (parsed.success && parsed.data.refreshToken) {
-    await revokeRefreshToken(parsed.data.refreshToken)
+  if (oldToken) {
+    await revokeRefreshToken(oldToken)
   }
 
   const response = c.json({ data: { success: true } })
+
+  // Clear refresh token cookie
+  response.headers.append('Set-Cookie', buildClearRefreshCookie())
 
   // Clear SSO cookies for downstream services
   await appendClearSsoCookies(response.headers)

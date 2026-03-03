@@ -32,7 +32,6 @@ export const loginRequestSchema = z.object({
 
 export const loginResponseSchema = z.object({
   accessToken: z.string(),
-  refreshToken: z.string(),
   user: authUserSchema,
 })
 
@@ -48,7 +47,6 @@ export const refreshTokenRequestSchema = z.object({
 
 export const refreshTokenResponseSchema = z.object({
   accessToken: z.string(),
-  refreshToken: z.string(),
 })
 
 export const logoutRequestSchema = z.object({
@@ -80,7 +78,6 @@ export const verifyTwoFactorRequestSchema = z.object({
 
 export const verifyTwoFactorResponseSchema = z.object({
   accessToken: z.string(),
-  refreshToken: z.string(),
   user: authUserSchema,
 })
 

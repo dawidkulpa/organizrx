@@ -51,6 +51,20 @@ export function useAutoRefresh() {
   }, [token, scheduleRefresh])
 }
 
+// ── useSessionInit ──────────────────────────────────────────────
+// Call once at the app root. Attempts to restore an authenticated
+// session by hitting /auth/refresh (httpOnly cookie auto-sent).
+export function useSessionInit() {
+  const initSession = useAuthStore((s) => s.initSession)
+  const calledRef = useRef(false)
+
+  useEffect(() => {
+    if (calledRef.current) return
+    calledRef.current = true
+    initSession()
+  }, [initSession])
+}
+
 // ── useAuthGuard ─────────────────────────────────────────────────
 // Redirects unauthenticated users to /login.
 // Returns current auth loading / authenticated state.

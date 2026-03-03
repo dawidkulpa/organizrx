@@ -12,27 +12,27 @@ export type LoginResult =
 interface AuthState {
   user: AuthUser | null
   token: string | null
-  refreshToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  isInitializing: boolean
   login: (username: string, password: string, rememberMe?: boolean) => Promise<LoginResult>
   logout: () => Promise<void>
   refresh: () => Promise<boolean>
+  initSession: () => Promise<void>
   setToken: (token: string | null) => void
   setUser: (user: AuthUser | null) => void
-  setRefreshToken: (token: string | null) => void
   clearAuth: () => void
 }
 
 const initialAuthState = {
   user: null,
   token: null,
-  refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
+  isInitializing: true,
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   ...initialAuthState,
 
   login: async (username, password, rememberMe) => {
@@ -48,7 +48,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({
         token: data.accessToken,
-        refreshToken: data.refreshToken,
         user: data.user,
         isAuthenticated: true,
         isLoading: false,
@@ -64,39 +63,51 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return { ok: false as const, requires2fa: false as const, error: message }
     }
   },
-
   logout: async () => {
-    const { refreshToken: rt } = get()
     try {
-      await client.post('/auth/logout', { refreshToken: rt ?? undefined })
+      await client.post('/auth/logout')
     } catch {
       // Logout best-effort — clear local state regardless
     }
-    set(initialAuthState)
+    set({ ...initialAuthState, isInitializing: false })
   },
 
   refresh: async () => {
-    const { refreshToken: rt } = get()
-    if (!rt) return false
-
     try {
-      const res = await client.post('/auth/refresh', { refreshToken: rt })
+      const res = await client.post('/auth/refresh')
       const { data } = res.data
       set({
         token: data.accessToken,
-        refreshToken: data.refreshToken,
       })
       return true
     } catch {
-      set(initialAuthState)
+      set({ ...initialAuthState, isInitializing: false })
       return false
     }
   },
 
   setToken: (token) => set({ token, isAuthenticated: !!token }),
   setUser: (user) => set({ user }),
-  setRefreshToken: (refreshToken) => set({ refreshToken }),
-  clearAuth: () => set(initialAuthState),
+  clearAuth: () => set({ ...initialAuthState, isInitializing: false }),
+
+  initSession: async () => {
+    try {
+      const res = await client.post('/auth/refresh')
+      const { data } = res.data
+      // Fetch the full user profile after restoring session
+      const meRes = await client.get('/auth/me', {
+        headers: { Authorization: `Bearer ${data.accessToken}` },
+      })
+      set({
+        token: data.accessToken,
+        user: meRes.data.data.user,
+        isAuthenticated: true,
+        isInitializing: false,
+      })
+    } catch {
+      set({ ...initialAuthState, isInitializing: false })
+    }
+  },
 }))
 
 // ── Theme Store ─────────────────────────────────────────────────

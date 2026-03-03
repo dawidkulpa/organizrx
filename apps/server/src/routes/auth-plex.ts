@@ -15,6 +15,7 @@ import {
 import { createAccessToken, createRefreshToken, storeRefreshToken } from '../services/auth'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
+import { buildRefreshCookie } from '../services/refresh-cookie'
 
 const plexAuth = new Hono()
 
@@ -126,13 +127,19 @@ plexAuth.get('/plex/callback', async (c) => {
       expiresAt,
     })
 
-    return c.json({
+    const days = authConfig.refreshTokenExpiryDays
+
+    const response = c.json({
       data: {
         accessToken,
-        refreshToken,
         user,
       },
     })
+
+    // Set refresh token as httpOnly cookie
+    response.headers.append('Set-Cookie', buildRefreshCookie(refreshToken, days))
+
+    return response
   } catch (err) {
     return c.json({
       error: { code: 'PLEX_ERROR', message: err instanceof Error ? err.message : 'Failed to complete Plex auth' },

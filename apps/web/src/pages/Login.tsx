@@ -9,10 +9,8 @@ import { Lock, User, Key, Loader2, Eye, EyeOff, ExternalLink, Server } from 'luc
 export default function Login() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
-  const setToken = useAuthStore((state) => state.setToken);
-  const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
   const setUser = useAuthStore((state) => state.setUser);
-  
+  const setToken = useAuthStore((state) => state.setToken)
   // Local state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -91,7 +89,6 @@ export default function Login() {
         toast.info('Two-factor authentication required');
       } else {
         setToken(data.accessToken);
-        setRefreshToken(data.refreshToken);
         setUser(data.user);
         toast.success('Logged in with LDAP successfully');
         navigate('/');
@@ -122,10 +119,9 @@ export default function Login() {
       };
 
       const res = await api.auth.verify2fa(payload);
-      const { accessToken, refreshToken, user } = res.data.data;
+      const { accessToken, user } = res.data.data;
 
       setToken(accessToken);
-      setRefreshToken(refreshToken);
       setUser(user);
       
       toast.success('Two-factor authentication successful');
