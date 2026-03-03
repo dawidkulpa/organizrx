@@ -119,6 +119,8 @@ export const api = {
   },
   tabs: {
     getAll: () => client.get('/tabs'),
+    getById: (id: number) => client.get(`/tabs/${id}`),
+    sidebar: () => client.get('/tabs/sidebar'),
     create: (data: Record<string, unknown>) => client.post('/tabs', data),
     update: (id: number, data: Record<string, unknown>) => client.put(`/tabs/${id}`, data),
     delete: (id: number) => client.delete(`/tabs/${id}`),

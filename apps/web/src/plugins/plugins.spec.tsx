@@ -1,6 +1,6 @@
 import { GlobalWindow } from 'happy-dom'
 import { describe, it, expect, beforeEach, afterEach, spyOn } from 'bun:test'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, cleanup } from '@testing-library/react'
 import { lazy } from 'react'
 import type { ComponentType } from 'react'
 
@@ -258,6 +258,10 @@ describe('widget API', () => {
 // ============================================================================
 
 describe('WidgetErrorBoundary', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it('should render children when no error', () => {
     const { getByTestId, getByText } = render(
       <WidgetErrorBoundary widgetName="Test Widget">
@@ -326,6 +330,7 @@ describe('PluginWidget', () => {
   })
 
   afterEach(() => {
+    cleanup()
     _resetRegistry()
     useAuthStore.getState().clearAuth()
   })

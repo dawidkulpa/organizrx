@@ -3,7 +3,7 @@
 ## React & Routing
 - **Functional Components:** Use functional components and hooks for all state and effects.
 - **Routing:** Use React Router v7.
-- **Routes:** `/login`, `/` (dashboard), `/settings/*`, `/tabs`, `/users`, `/wizard`.
+- **Routes:** `/login`, `/` (dashboard), `/settings/*`, `/tab/:id`, `/users`, `/wizard`.
 
 ## Data Fetching & API
 - **API Client:** Use an Axios-based client that automatically injects the auth header.
@@ -12,7 +12,7 @@
 ## State Management
 - **Global:** Use Zustand for global state management (e.g., authentication, theme, and global UI).
 - **Local:** Use React's built-in state for component-local state.
-- **Auth State:** Store auth state in the Zustand store. Keep tokens in memory; do not store them in `localStorage` to prevent XSS. Refresh tokens via the API.
+- **Auth State:** Store access token in Zustand (memory only). Refresh token is stored as an httpOnly cookie set by the server — never accessible to JS. On app mount, `useSessionInit` calls `/auth/refresh` (cookie auto-sent) to restore the session. The `isInitializing` flag prevents premature redirect to `/login` during session restore.
 
 ## Form Handling
 - Use controlled components for all forms.

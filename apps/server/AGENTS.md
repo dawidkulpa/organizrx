@@ -17,6 +17,8 @@
 - Use the `jose` library for all JWT operations.
 - **Expiration:** Access tokens expire in 15 minutes; refresh tokens in 7 days.
 - **Tokens Table:** Store refresh tokens in the `tokens` database table.
+- **Refresh Token Cookie:** Refresh tokens are delivered as `Set-Cookie: organizrx_refresh=<token>; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=<seconds>`. Use `buildRefreshCookie()` / `buildClearRefreshCookie()` from `services/refresh-cookie.ts`. The `/auth/refresh` endpoint reads the token from the cookie via `getCookie(c, 'organizrx_refresh')`, NOT from the request body.
+- **CORS:** The server entry point (`index.ts`) applies `cors({ origin: corsOrigins, credentials: true })` to `/api/*` so that the browser sends the httpOnly cookie cross-origin.
 - **Legacy Migration:** Handle legacy PHP `$2y$` Bcrypt prefixes for password compatibility during migration.
 
 ## Database & Drizzle ORM

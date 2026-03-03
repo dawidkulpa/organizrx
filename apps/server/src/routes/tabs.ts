@@ -9,6 +9,7 @@ import {
   reorderTabs,
   getTabsByCategory,
 } from '../services/tabs'
+import { listCategories } from '../services/categories'
 import { authMiddleware, requireGroup } from '../middleware/auth'
 
 const tabs = new Hono()
@@ -38,6 +39,22 @@ tabs.get('/category/:categoryId', async (c) => {
     return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to list tabs by category' } }, 500)
   }
 })
+
+// GET /api/tabs/sidebar — Authenticated sidebar data (tabs + categories filtered by user group)
+tabs.get('/sidebar', authMiddleware(), async (c) => {
+  try {
+    const user = c.get('user')
+    const groupId = user.groupID ?? 0
+    const [tabsResult, categoriesResult] = await Promise.all([
+      listTabs(groupId),
+      listCategories(),
+    ])
+    return c.json({ data: { tabs: tabsResult, categories: categoriesResult } })
+  } catch (error) {
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to load sidebar data' } }, 500)
+  }
+})
+
 
 // GET /api/tabs/:id — Get tab by ID
 tabs.get('/:id', async (c) => {

@@ -81,7 +81,7 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
     errorElement: <ErrorBoundary />,
     children: [
       { index: true, element: <Dashboard /> },
-      { path: 'tabs', element: <Tabs /> },
+      { path: 'tab/:id', element: <Tabs /> },
       { path: 'users', element: <Users /> },
       {
         path: 'settings',
