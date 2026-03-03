@@ -1,0 +1,106 @@
+# Docker Compose configuration for OrganizrX
+
+services:
+  organizrx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: organizrx
+    ports:
+      - '3001:3001'
+    environment:
+      # Server configuration
+      PORT: 3001
+      HOST: 0.0.0.0
+      NODE_ENV: production
+
+      # Database configuration (default: SQLite)
+      DATABASE_DIALECT: sqlite
+      DATABASE_URL: /app/data/organizr.db
+
+      # Authentication & security
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      # Persistent data storage (databases, backups, logs)
+      - ./data:/app/data
+      # Configuration files
+      - ./config:/app/config
+    networks:
+      - organizrx-net
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'bun',
+          '--eval',
+          "fetch('http://localhost:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional MySQL service
+  # Uncomment to use MySQL instead of SQLite
+  # mysql:
+  #   image: mysql:8
+  #   container_name: organizrx-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE:-organizrx}
+  #     MYSQL_USER: ${MYSQL_USER:-organizrx}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+  #   volumes:
+  #     - mysql-data:/var/lib/mysql
+  #   networks:
+  #     - organizrx-net
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #
+  # To use MySQL, update organizrx service environment:
+  #   DATABASE_DIALECT: mysql
+  #   DATABASE_URL: mysql://${MYSQL_USER:-organizrx}:${MYSQL_PASSWORD:-password}@mysql:3306/${MYSQL_DATABASE:-organizrx}
+
+  # Optional PostgreSQL service
+  # Uncomment to use PostgreSQL instead of SQLite
+  # postgres:
+  #   image: postgres:16
+  #   container_name: organizrx-postgres
+  #   environment:
+  #     POSTGRES_DB: ${POSTGRES_DB:-organizrx}
+  #     POSTGRES_USER: ${POSTGRES_USER:-organizrx}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - organizrx-net
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-organizrx}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #
+  # To use PostgreSQL, update organizrx service environment:
+  #   DATABASE_DIALECT: postgres
+  #   DATABASE_URL: postgresql://${POSTGRES_USER:-organizrx}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-organizrx}
+
+networks:
+  organizrx-net:
+    driver: bridge
+
+volumes:
+  # Uncomment if using MySQL
+  # mysql-data:
+
+  # Uncomment if using PostgreSQL
+  # postgres-data:
