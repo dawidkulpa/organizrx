@@ -172,7 +172,7 @@ describe('Sidebar', () => {
                 enabled: 1,
                 group_id: 0,
                 image: null,
-                type: 0,
+                type: 1,
               },
               {
                 id: 2,
@@ -184,7 +184,7 @@ describe('Sidebar', () => {
                 enabled: 1,
                 group_id: 0,
                 image: null,
-                type: 0,
+                type: 1,
               },
             ],
             categories: [],

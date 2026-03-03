@@ -42,8 +42,9 @@ export default function TabContent({ tab, isLoading }: TabContentProps) {
     )
   }
 
-  // type === 0: iframe (external service)
-  if (tab.type === 0) {
+  // type === 1: iframe (external service) — legacy Organizr uses 1 for iframe tabs
+  // type === 0: internal page (built-in Organizr API pages)
+  if (tab.type === 1) {
     const src = tab.url || tab.url_local
     if (!src) {
       return (
@@ -79,7 +80,7 @@ export default function TabContent({ tab, isLoading }: TabContentProps) {
     )
   }
 
-  // type === 1: internal/native component
+  // type === 0 or other: internal/native component
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">
       <div className="p-6 rounded-xl border border-border bg-card shadow-sm max-w-md w-full text-center">
