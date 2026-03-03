@@ -56,3 +56,6 @@ packages/plugin-sdk/src/*.js
 packages/plugin-sdk/src/*.js.map
 packages/plugin-sdk/src/*.d.ts
 packages/plugin-sdk/src/*.d.ts.map
+
+# Temporary files / SQL dumps
+tmp/
