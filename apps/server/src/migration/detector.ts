@@ -15,6 +15,13 @@ export interface DetectionResult {
 
 const DEFAULT_PATHS = ['/config/www/db/organizr.db', './organizr.db']
 
+/**
+ * Detect an old Organizr SQLite database file on disk.
+ *
+ * This is used to find the DB file path for backup purposes.
+ * It does NOT need a separate DB connection — it opens the file
+ * read-only just to check if it has an options table.
+ */
 export function detectOldDb(legacyDbPath?: string): DetectionResult {
   const candidatePaths = legacyDbPath ? [legacyDbPath] : DEFAULT_PATHS
 

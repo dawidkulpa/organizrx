@@ -1,162 +1,71 @@
+/**
+ * Schema diff definitions for in-place migration.
+ *
+ * OrganizrX connects to the SAME database the old Organizr used and performs
+ * in-place ALTER TABLE operations to bring the schema up to date.  The only
+ * differences between old Organizr and OrganizrX are three new columns on the
+ * `users` table (TOTP support).
+ */
 
-export interface ColumnMapping {
-  /** Old column name in the legacy DB */
-  oldColumn: string
-  /** New column name in OrganizrX schema */
-  newColumn: string
-  /** Optional transform applied during migration */
-  transform?: (value: unknown) => unknown
+export interface ColumnAddition {
+  /** Column name to add */
+  name: string
+  /** SQL type (TEXT, INTEGER, etc.) */
+  type: string
+  /** DEFAULT clause value (as raw SQL literal) */
+  defaultValue?: string
+  /** Whether the column accepts NULL */
+  nullable?: boolean
 }
 
-export interface TableMapping {
-  /** Old table name in the legacy DB */
-  oldTable: string
-  /** New table name in OrganizrX schema */
-  newTable: string
-  /** Column-level mappings */
-  columns: ColumnMapping[]
-  /** Extra columns to add with default values during insert */
-  defaults?: Record<string, unknown>
-  /** Whether to skip this table entirely */
-  skip?: boolean
+export interface SchemaMigration {
+  /** Table to alter */
+  table: string
+  /** Columns to add via ALTER TABLE */
+  addColumns: ColumnAddition[]
 }
 
-// PHP bcrypt uses $2y$ prefix, Node.js uses $2a$ — functionally identical
-function swapBcryptPrefix(value: unknown): unknown {
+/**
+ * Schema migrations that bring an old Organizr DB up to OrganizrX spec.
+ * Currently only the `users` table needs new columns for TOTP 2FA.
+ */
+export const schemaMigrations: SchemaMigration[] = [
+  {
+    table: 'users',
+    addColumns: [
+      { name: 'totp_secret', type: 'TEXT', nullable: true },
+      { name: 'totp_enabled', type: 'INTEGER', defaultValue: '0' },
+      { name: 'totp_backup_codes', type: 'TEXT', nullable: true },
+    ],
+  },
+]
+
+/**
+ * Data transforms to run after schema changes.
+ * Each entry is a raw SQL statement executed against the app's own DB.
+ */
+export const DATA_TRANSFORMS = [
+  {
+    description: 'Swap PHP bcrypt $2y$ prefix to Node.js $2a$ (functionally identical)',
+    sql: "UPDATE users SET password = REPLACE(password, '$2y$', '$2a$') WHERE password LIKE '$2y$%'",
+  },
+]
+
+/**
+ * Tables whose data should be cleared during migration.
+ * Old PHP session tokens are invalid under the new JWT auth system.
+ */
+export const TABLES_TO_CLEAR = ['tokens']
+
+/** Migration completion marker key stored in the options table. */
+export const MIGRATION_COMPLETED_KEY = '_migration_completed'
+
+// PHP bcrypt uses $2y$ prefix, Node.js uses $2a$ — functionally identical.
+// Kept as a utility for tests.
+export function swapBcryptPrefix(value: unknown): unknown {
   if (typeof value !== 'string') return value
   if (value.startsWith('$2y$')) {
     return '$2a$' + value.slice(4)
   }
   return value
 }
-
-/** Identity columns — maps each column to itself with no transform. */
-function identity(...columns: string[]): ColumnMapping[] {
-  return columns.map((col) => ({ oldColumn: col, newColumn: col }))
-}
-
-export const tableMappings: TableMapping[] = [
-  {
-    oldTable: 'groups',
-    newTable: 'groups',
-    columns: [...identity('id', 'group', 'group_id', 'image', 'default')],
-  },
-  {
-    oldTable: 'users',
-    newTable: 'users',
-    columns: [
-      ...identity(
-        'id',
-        'username',
-        'email',
-        'plex_token',
-        'group',
-        'group_id',
-        'locked',
-        'image',
-        'register_date',
-        'auth_service'
-      ),
-      { oldColumn: 'password', newColumn: 'password', transform: swapBcryptPrefix },
-    ],
-    defaults: {
-      totp_secret: null,
-      totp_enabled: 0,
-      totp_backup_codes: null,
-    },
-  },
-  {
-    oldTable: 'tokens',
-    newTable: 'tokens',
-    columns: [],
-    skip: true, // Invalidate all old tokens — users must re-login
-  },
-  {
-    oldTable: 'categories',
-    newTable: 'categories',
-    columns: [...identity('id', 'order', 'category', 'category_id', 'image', 'default')],
-  },
-  {
-    oldTable: 'tabs',
-    newTable: 'tabs',
-    columns: [
-      ...identity(
-        'id',
-        'order',
-        'category_id',
-        'name',
-        'url',
-        'url_local',
-        'default',
-        'enabled',
-        'group_id',
-        'group_id_max',
-        'add_to_admin',
-        'image',
-        'type',
-        'splash',
-        'ping',
-        'ping_url',
-        'timeout',
-        'timeout_ms',
-        'preload'
-      ),
-    ],
-  },
-  {
-    oldTable: 'options',
-    newTable: 'options',
-    columns: [...identity('id', 'name', 'value')],
-  },
-  {
-    oldTable: 'chatroom',
-    newTable: 'chatroom',
-    columns: [...identity('id', 'username', 'gravatar', 'uid', 'date', 'ip', 'message')],
-  },
-  {
-    oldTable: 'invites',
-    newTable: 'invites',
-    columns: [
-      ...identity(
-        'id',
-        'code',
-        'date',
-        'email',
-        'username',
-        'dateused',
-        'usedby',
-        'ip',
-        'valid',
-        'type',
-        'invitedby'
-      ),
-    ],
-  },
-  {
-    oldTable: 'BOOKMARK-categories',
-    newTable: 'BOOKMARK-categories',
-    columns: [...identity('id', 'order', 'category', 'category_id', 'default')],
-  },
-  {
-    oldTable: 'BOOKMARK-tabs',
-    newTable: 'BOOKMARK-tabs',
-    columns: [
-      ...identity(
-        'id',
-        'order',
-        'category_id',
-        'name',
-        'url',
-        'enabled',
-        'group_id',
-        'image',
-        'background_color',
-        'text_color'
-      ),
-    ],
-  },
-]
-
-export const migratedTables = tableMappings.filter((t) => !t.skip)
-
-export const skippedTables = tableMappings.filter((t) => t.skip).map((t) => t.oldTable)

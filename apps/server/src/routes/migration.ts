@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-import { z } from 'zod'
 import { authMiddleware, requireGroup } from '../middleware/auth'
 import { getMigrationStatus, runMigration } from '../migration'
 
@@ -7,16 +6,11 @@ const migration = new Hono()
 
 migration.use('*', authMiddleware(), requireGroup(0))
 
-const migrationStartSchema = z.object({
-  legacyDbPath: z.string().optional(),
-})
-
-let currentProgress: { table: string; current: number; total: number } | null = null
+let currentProgress: { step: string; current: number; total: number } | null = null
 let migrationInProgress = false
 
 migration.get('/status', async (c) => {
-  const legacyDbPath = c.req.query('legacyDbPath')
-  const status = await getMigrationStatus(legacyDbPath || undefined)
+  const status = await getMigrationStatus()
   return c.json({ data: status })
 })
 
@@ -37,16 +31,6 @@ migration.post('/start', async (c) => {
     )
   }
 
-  const body = await c.req.json()
-  const parsed = migrationStartSchema.safeParse(body)
-
-  if (!parsed.success) {
-    return c.json(
-      { error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message } },
-      400
-    )
-  }
-
   migrationInProgress = true
   currentProgress = null
 
@@ -59,17 +43,17 @@ migration.post('/start', async (c) => {
       }
 
       try {
-        const result = await runMigration(parsed.data.legacyDbPath, (table, current, total) => {
-          currentProgress = { table, current, total }
-          sendEvent({ type: 'progress', table, current, total })
+        const result = await runMigration((step, current, total) => {
+          currentProgress = { step, current, total }
+          sendEvent({ type: 'progress', step, current, total })
         })
 
         if (result.success) {
           sendEvent({
             type: 'complete',
-            tablesProcessed: result.tablesProcessed,
-            tablesSkipped: result.tablesSkipped,
-            totalRows: result.totalRows,
+            columnsAdded: result.columnsAdded,
+            tablesCleared: result.tablesCleared,
+            transformsApplied: result.transformsApplied,
             backupPath: result.backupPath,
             durationMs: result.durationMs,
           })
@@ -77,7 +61,7 @@ migration.post('/start', async (c) => {
           sendEvent({
             type: 'error',
             error: result.error,
-            tablesProcessed: result.tablesProcessed,
+            columnsAdded: result.columnsAdded,
             backupPath: result.backupPath,
           })
         }

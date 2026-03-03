@@ -1,315 +1,264 @@
-import { Database } from 'bun:sqlite'
-import { copyFileSync, existsSync } from 'node:fs'
-import { getRawDb, getDialect, type SqliteDb, type MysqlDb, type PostgresDb } from '../db'
-import * as sqliteSchema from '../db/schema/sqlite'
-import * as mysqlSchema from '../db/schema/mysql'
-import * as pgSchema from '../db/schema/pg'
-import { migratedTables, type TableMapping } from './column-map'
-import { createBackup } from './backup'
-import { detectOldDb } from './detector'
+/**
+ * In-place schema migrator.
+ *
+ * OrganizrX connects to the SAME database the old Organizr used.  This module
+ * detects whether the connected DB has an old Organizr schema (missing TOTP
+ * columns), and performs ALTER TABLE operations to bring it up to date.
+ *
+ * No cross-database copying — everything happens in the app's own connection.
+ */
 
-export type ProgressCallback = (table: string, current: number, total: number) => void
+import { existsSync, copyFileSync } from 'node:fs'
+import { getDialect } from '../db'
+import type { DatabaseDialect } from '../config/env'
+import { createBackup } from './backup'
+import { execRawSql, queryRawSql, columnExists } from './sql-helpers'
+import {
+  schemaMigrations,
+  DATA_TRANSFORMS,
+  TABLES_TO_CLEAR,
+  MIGRATION_COMPLETED_KEY,
+} from './column-map'
+
+export type ProgressCallback = (step: string, current: number, total: number) => void
 
 export interface MigrationResult {
   success: boolean
-  tablesProcessed: string[]
-  tablesSkipped: string[]
-  totalRows: number
+  columnsAdded: string[]
+  tablesCleared: string[]
+  transformsApplied: string[]
   backupPath: string | null
   error?: string
   durationMs: number
 }
 
 export interface MigrationStatus {
-  detected: boolean
-  path: string | null
-  configVersion: string | null
+  /** Whether the connected DB needs an in-place schema update */
+  needsMigration: boolean
+  /** Whether migration was already completed */
   alreadyMigrated: boolean
+  /** CONFIG_VERSION from the options table, if found */
+  configVersion: string | null
+  /** Which columns are missing (empty = schema is current) */
+  missingColumns: string[]
   error?: string
 }
 
-const MIGRATION_COMPLETED_KEY = '_migration_completed'
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
 
-function getSchemaTable(tableName: string, dialect: string) {
-  const schemaMap: Record<string, Record<string, unknown>> = {
-    sqlite: sqliteSchema,
-    mysql: mysqlSchema,
-    postgresql: pgSchema,
-  }
-  const schema = schemaMap[dialect]
-  if (!schema) throw new Error(`Unsupported dialect: ${dialect}`)
-
-  const nameMap: Record<string, string> = {
-    users: 'users',
-    chatroom: 'chatroom',
-    tokens: 'tokens',
-    groups: 'groups',
-    categories: 'categories',
-    tabs: 'tabs',
-    options: 'options',
-    invites: 'invites',
-    'BOOKMARK-categories': 'bookmarkCategories',
-    'BOOKMARK-tabs': 'bookmarkTabs',
-  }
-
-  const schemaKey = nameMap[tableName]
-  if (!schemaKey || !schema[schemaKey]) {
-    throw new Error(`No schema found for table: ${tableName}`)
-  }
-
-  return schema[schemaKey]
-}
-
-function readOldTable(oldDb: Database, tableName: string): Record<string, unknown>[] {
+async function checkAlreadyMigrated(dialect: DatabaseDialect): Promise<boolean> {
   try {
-    const rows = oldDb.query(`SELECT * FROM "${tableName}"`).all()
-    return rows as Record<string, unknown>[]
+    const rows = await queryRawSql(dialect, 'SELECT name FROM options')
+    return rows.some((r) => r.name === MIGRATION_COMPLETED_KEY)
   } catch {
-    return []
+    return false
   }
 }
 
-function mapRow(row: Record<string, unknown>, mapping: TableMapping): Record<string, unknown> {
-  const mapped: Record<string, unknown> = {}
-
-  for (const col of mapping.columns) {
-    let value = row[col.oldColumn]
-    if (col.transform) {
-      value = col.transform(value)
-    }
-    mapped[col.newColumn] = value
-  }
-
-  if (mapping.defaults) {
-    for (const [key, defaultValue] of Object.entries(mapping.defaults)) {
-      if (!(key in mapped)) {
-        mapped[key] = defaultValue
-      }
-    }
-  }
-
-  return mapped
-}
-
-async function insertRows(
-  dialect: string,
-  tableName: string,
-  rows: Record<string, unknown>[]
-): Promise<void> {
-  if (rows.length === 0) return
-
-  const table = getSchemaTable(tableName, dialect)
-  const rawDb = getRawDb()
-
-  for (const row of rows) {
-    switch (dialect) {
-      case 'sqlite': {
-        const db = rawDb as SqliteDb
-        await db
-          .insert(table as typeof sqliteSchema.users)
-          .values(row)
-          .onConflictDoNothing()
-        break
-      }
-      case 'mysql': {
-        const db = rawDb as MysqlDb
-        await db
-          .insert(table as typeof mysqlSchema.users)
-          .values(row)
-          .onDuplicateKeyUpdate({ set: row })
-        break
-      }
-      case 'postgresql': {
-        const db = rawDb as PostgresDb
-        await db
-          .insert(table as typeof pgSchema.users)
-          .values(row)
-          .onConflictDoNothing()
-        break
-      }
-    }
+async function getConfigVersion(dialect: DatabaseDialect): Promise<string | null> {
+  try {
+    const rows = await queryRawSql(
+      dialect,
+      "SELECT value FROM options WHERE name = 'CONFIG_VERSION'"
+    )
+    if (rows.length > 0) return String(rows[0].value)
+    return null
+  } catch {
+    return null
   }
 }
 
-export async function getMigrationStatus(legacyDbPath?: string): Promise<MigrationStatus> {
-  const detection = detectOldDb(legacyDbPath)
+async function findMissingColumns(dialect: DatabaseDialect): Promise<string[]> {
+  const missing: string[] = []
 
-  if (!detection.found || !detection.path) {
-    return {
-      detected: false,
-      path: null,
-      configVersion: null,
-      alreadyMigrated: false,
-      error: detection.error,
+  for (const migration of schemaMigrations) {
+    for (const col of migration.addColumns) {
+      const exists = await columnExists(dialect, migration.table, col.name)
+      if (!exists) {
+        missing.push(`${migration.table}.${col.name}`)
+      }
     }
   }
 
-  let alreadyMigrated = false
+  return missing
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/**
+ * Check whether the connected database needs an in-place schema migration.
+ * Uses the app's own DB connection — no external paths needed.
+ */
+export async function getMigrationStatus(): Promise<MigrationStatus> {
   try {
     const dialect = getDialect()
-    const rawDb = getRawDb()
-    const optionsTable = getSchemaTable('options', dialect)
+    const alreadyMigrated = await checkAlreadyMigrated(dialect)
 
-    let rows: unknown[]
-    switch (dialect) {
-      case 'sqlite': {
-        const db = rawDb as SqliteDb
-        rows = db
-          .select()
-          .from(optionsTable as typeof sqliteSchema.options)
-          .all()
-        break
+    if (alreadyMigrated) {
+      return {
+        needsMigration: false,
+        alreadyMigrated: true,
+        configVersion: await getConfigVersion(dialect),
+        missingColumns: [],
       }
-      case 'mysql': {
-        const db = rawDb as MysqlDb
-        rows = await db.select().from(optionsTable as typeof mysqlSchema.options)
-        break
-      }
-      case 'postgresql': {
-        const db = rawDb as PostgresDb
-        rows = await db.select().from(optionsTable as typeof pgSchema.options)
-        break
-      }
-      default:
-        rows = []
     }
 
-    alreadyMigrated = (rows as Array<{ name: string | null }>).some(
-      (r) => r.name === MIGRATION_COMPLETED_KEY
-    )
-  } catch {
-  }
+    const configVersion = await getConfigVersion(dialect)
+    const missingColumns = await findMissingColumns(dialect)
 
-  return {
-    detected: true,
-    path: detection.path,
-    configVersion: detection.configVersion,
-    alreadyMigrated,
+    // DB needs migration if it has CONFIG_VERSION (old Organizr marker)
+    // OR if it's missing TOTP columns
+    const needsMigration = configVersion !== null || missingColumns.length > 0
+
+    return {
+      needsMigration,
+      alreadyMigrated: false,
+      configVersion,
+      missingColumns,
+    }
+  } catch (err) {
+    return {
+      needsMigration: false,
+      alreadyMigrated: false,
+      configVersion: null,
+      missingColumns: [],
+      error: err instanceof Error ? err.message : String(err),
+    }
   }
 }
 
+/**
+ * Run in-place schema migration on the connected database.
+ *
+ * 1. Backup (SQLite only: copy file)
+ * 2. ALTER TABLE ADD COLUMN for each missing column
+ * 3. Run data transforms (bcrypt prefix swap)
+ * 4. Clear invalidated tables (tokens)
+ * 5. Mark migration as completed in options table
+ */
 export async function runMigration(
-  legacyDbPath?: string,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  dbFilePath?: string
 ): Promise<MigrationResult> {
   const start = performance.now()
-  const tablesProcessed: string[] = []
-  const tablesSkipped: string[] = []
-  let totalRows = 0
+  const columnsAdded: string[] = []
+  const tablesCleared: string[] = []
+  const transformsApplied: string[] = []
   let backupPath: string | null = null
 
-  const status = await getMigrationStatus(legacyDbPath)
-
-  if (!status.detected || !status.path) {
-    return {
-      success: false,
-      tablesProcessed: [],
-      tablesSkipped: [],
-      totalRows: 0,
-      backupPath: null,
-      error: 'No legacy Organizr database found',
-      durationMs: Math.round(performance.now() - start),
-    }
-  }
-
-  if (status.alreadyMigrated) {
-    return {
-      success: true,
-      tablesProcessed: [],
-      tablesSkipped: [],
-      totalRows: 0,
-      backupPath: null,
-      error: 'Migration already completed',
-      durationMs: Math.round(performance.now() - start),
-    }
-  }
-
   try {
-    backupPath = createBackup(status.path)
-  } catch (err) {
-    return {
-      success: false,
-      tablesProcessed: [],
-      tablesSkipped: [],
-      totalRows: 0,
-      backupPath: null,
-      error: `Backup failed: ${err instanceof Error ? err.message : String(err)}`,
-      durationMs: Math.round(performance.now() - start),
-    }
-  }
+    const dialect = getDialect()
 
-  const dialect = getDialect()
-
-  let oldDb: Database | null = null
-  try {
-    oldDb = new Database(status.path, { readonly: true })
-  } catch (err) {
-    return {
-      success: false,
-      tablesProcessed: [],
-      tablesSkipped: [],
-      totalRows: 0,
-      backupPath,
-      error: `Failed to open legacy DB: ${err instanceof Error ? err.message : String(err)}`,
-      durationMs: Math.round(performance.now() - start),
-    }
-  }
-
-  try {
-    for (const tableMapping of migratedTables) {
-      const oldRows = readOldTable(oldDb, tableMapping.oldTable)
-
-      if (oldRows.length === 0) {
-        tablesSkipped.push(tableMapping.oldTable)
-        onProgress?.(tableMapping.oldTable, 0, 0)
-        continue
+    // Check if already migrated
+    const alreadyMigrated = await checkAlreadyMigrated(dialect)
+    if (alreadyMigrated) {
+      return {
+        success: true,
+        columnsAdded: [],
+        tablesCleared: [],
+        transformsApplied: [],
+        backupPath: null,
+        error: 'Migration already completed',
+        durationMs: Math.round(performance.now() - start),
       }
-
-      const mappedRows = oldRows.map((row) => mapRow(row, tableMapping))
-
-      for (let i = 0; i < mappedRows.length; i++) {
-        await insertRows(dialect, tableMapping.newTable, [mappedRows[i]])
-        totalRows++
-        onProgress?.(tableMapping.oldTable, i + 1, mappedRows.length)
-      }
-
-      tablesProcessed.push(tableMapping.oldTable)
     }
 
+    // Calculate total steps for progress reporting
+    const totalSteps =
+      schemaMigrations.reduce((sum, m) => sum + m.addColumns.length, 0) +
+      DATA_TRANSFORMS.length +
+      TABLES_TO_CLEAR.length +
+      1 // final marker
+    let currentStep = 0
+
+    // Step 1: Backup (SQLite only)
+    if (dialect === 'sqlite' && dbFilePath && existsSync(dbFilePath)) {
+      try {
+        backupPath = createBackup(dbFilePath)
+      } catch (err) {
+        return {
+          success: false,
+          columnsAdded: [],
+          tablesCleared: [],
+          transformsApplied: [],
+          backupPath: null,
+          error: `Backup failed: ${err instanceof Error ? err.message : String(err)}`,
+          durationMs: Math.round(performance.now() - start),
+        }
+      }
+    }
+
+    // Step 2: ALTER TABLE ADD COLUMN for missing columns
+    for (const migration of schemaMigrations) {
+      for (const col of migration.addColumns) {
+        const exists = await columnExists(dialect, migration.table, col.name)
+        if (!exists) {
+          let ddl = `ALTER TABLE "${migration.table}" ADD COLUMN "${col.name}" ${col.type}`
+          if (col.defaultValue !== undefined) {
+            ddl += ` DEFAULT ${col.defaultValue}`
+          } else if (col.nullable) {
+            ddl += ' DEFAULT NULL'
+          }
+          await execRawSql(dialect, ddl)
+          columnsAdded.push(`${migration.table}.${col.name}`)
+        }
+        currentStep++
+        onProgress?.('Adding columns', currentStep, totalSteps)
+      }
+    }
+
+    // Step 3: Data transforms
+    for (const transform of DATA_TRANSFORMS) {
+      await execRawSql(dialect, transform.sql)
+      transformsApplied.push(transform.description)
+      currentStep++
+      onProgress?.('Applying transforms', currentStep, totalSteps)
+    }
+
+    // Step 4: Clear invalidated tables
+    for (const table of TABLES_TO_CLEAR) {
+      await execRawSql(dialect, `DELETE FROM "${table}"`)
+      tablesCleared.push(table)
+      currentStep++
+      onProgress?.('Clearing old data', currentStep, totalSteps)
+    }
+
+    // Step 5: Mark migration as completed
     const timestamp = new Date().toISOString()
-    await insertRows(dialect, 'options', [{ name: MIGRATION_COMPLETED_KEY, value: timestamp }])
-
-    oldDb.close()
+    await execRawSql(
+      dialect,
+      `INSERT INTO options (name, value) VALUES ('${MIGRATION_COMPLETED_KEY}', '${timestamp}')`
+    )
+    currentStep++
+    onProgress?.('Finalizing', currentStep, totalSteps)
 
     return {
       success: true,
-      tablesProcessed,
-      tablesSkipped,
-      totalRows,
+      columnsAdded,
+      tablesCleared,
+      transformsApplied,
       backupPath,
       durationMs: Math.round(performance.now() - start),
     }
   } catch (err) {
-    if (oldDb) {
+    // On SQLite failure, attempt to restore from backup
+    if (backupPath && dbFilePath && existsSync(backupPath)) {
       try {
-        oldDb.close()
+        copyFileSync(backupPath, dbFilePath)
       } catch {
-        /* noop */
-      }
-    }
-
-    if (backupPath && existsSync(backupPath)) {
-      try {
-        copyFileSync(backupPath, status.path)
-      } catch {
+        /* best-effort restore */
       }
     }
 
     return {
       success: false,
-      tablesProcessed,
-      tablesSkipped,
-      totalRows,
+      columnsAdded,
+      tablesCleared,
+      transformsApplied,
       backupPath,
       error: `Migration failed: ${err instanceof Error ? err.message : String(err)}`,
       durationMs: Math.round(performance.now() - start),

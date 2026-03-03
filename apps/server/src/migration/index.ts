@@ -8,9 +8,17 @@ export {
   type ProgressCallback,
 } from './migrator'
 export {
-  tableMappings,
-  migratedTables,
-  skippedTables,
-  type TableMapping,
-  type ColumnMapping,
+  schemaMigrations,
+  DATA_TRANSFORMS,
+  TABLES_TO_CLEAR,
+  MIGRATION_COMPLETED_KEY,
+  swapBcryptPrefix,
+  type SchemaMigration,
+  type ColumnAddition,
 } from './column-map'
+export {
+  execRawSql,
+  queryRawSql,
+  getExistingColumns,
+  columnExists,
+} from './sql-helpers'

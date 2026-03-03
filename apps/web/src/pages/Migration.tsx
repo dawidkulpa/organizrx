@@ -16,16 +16,16 @@ import {
 const STEPS = [
   { label: 'Detection', icon: Database },
   { label: 'Backup', icon: Server },
-  { label: 'Migration', icon: Play },
-  { label: 'Plugins', icon: Loader2 },
+  { label: 'Update', icon: Play },
+  { label: 'Verify', icon: Loader2 },
   { label: 'Complete', icon: CheckCircle2 },
 ] as const
 
 interface MigrationStatus {
-  detected: boolean
-  path: string | null
-  configVersion: string | null
+  needsMigration: boolean
   alreadyMigrated: boolean
+  configVersion: string | null
+  missingColumns: string[]
 }
 
 export default function Migration() {
@@ -34,22 +34,22 @@ export default function Migration() {
   const [status, setStatus] = useState<MigrationStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [progress, setProgress] = useState<{
-    table: string
+    step: string
     current: number
     total: number
   } | null>(null)
   const [stats, setStats] = useState<{
-    processed: number
-    rows: number
+    columns: number
+    transforms: number
     time: number
-    backup: string
+    backup: string | null
   } | null>(null)
 
   useEffect(() => {
     fetch('/api/migration/status')
       .then((r) => r.json())
       .then((d) => setStatus(d.data))
-      .catch(() => toast.error('Check failed'))
+      .catch(() => toast.error('Status check failed'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -59,7 +59,7 @@ export default function Migration() {
       const res = await fetch('/api/migration/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ legacyDbPath: status?.path }),
+        body: '{}',
       })
       if (!res.ok || !res.body) throw new Error('Start failed')
       const reader = res.body.getReader()
@@ -79,8 +79,8 @@ export default function Migration() {
             setProgress(data)
           } else if (data.type === 'complete') {
             setStats({
-              processed: data.tablesProcessed.length,
-              rows: data.totalRows,
+              columns: data.columnsAdded?.length ?? 0,
+              transforms: data.transformsApplied?.length ?? 0,
               time: data.durationMs,
               backup: data.backupPath,
             })
@@ -92,8 +92,8 @@ export default function Migration() {
           }
         }
       }
-    } catch (e) {
-      toast.error('Migration failed')
+    } catch {
+      toast.error('Schema update failed')
       setStep(1)
     }
   }
@@ -111,41 +111,44 @@ export default function Migration() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Database className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold">Legacy Database Detection</h3>
-          {status?.detected ? (
+          <h3 className="text-xl font-semibold">Schema Update Check</h3>
+          {status?.needsMigration ? (
             <div className="bg-muted/30 p-4 rounded-md text-left text-sm space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status</span>
-                <span className="text-green-500 font-medium flex items-center gap-1">
-                  <Check size={14} /> Detected
+                <span className="text-amber-500 font-medium flex items-center gap-1">
+                  <AlertTriangle size={14} /> Update Needed
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Path</span>
-                <span className="font-mono text-xs">{status.path}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Version</span>
-                <span>{status.configVersion || 'Unknown'}</span>
-              </div>
-              {status.alreadyMigrated && (
-                <div className="text-yellow-500 flex items-center gap-2 mt-2">
-                  <AlertTriangle size={14} /> Already Migrated
+              {status.configVersion && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Legacy Version</span>
+                  <span>{status.configVersion}</span>
+                </div>
+              )}
+              {status.missingColumns.length > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Missing Columns</span>
+                  <span className="font-mono text-xs">{status.missingColumns.length}</span>
                 </div>
               )}
             </div>
+          ) : status?.alreadyMigrated ? (
+            <div className="text-green-500 bg-green-500/10 p-4 rounded-md flex items-center gap-2 justify-center">
+              <CheckCircle2 size={16} /> Schema is up to date
+            </div>
           ) : (
-            <div className="text-destructive bg-destructive/10 p-4 rounded-md">
-              No legacy database found.
+            <div className="text-green-500 bg-green-500/10 p-4 rounded-md flex items-center gap-2 justify-center">
+              <CheckCircle2 size={16} /> No update needed
             </div>
           )}
           <div className="flex justify-end pt-4">
             <button
               onClick={startMigration}
-              disabled={!status?.detected}
+              disabled={!status?.needsMigration}
               className="px-6 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              Start Migration
+              Start Update
             </button>
           </div>
         </div>
@@ -156,7 +159,7 @@ export default function Migration() {
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
           <h3 className="text-xl font-semibold">Creating Backup...</h3>
           <p className="text-muted-foreground text-sm">
-            Please wait while we back up your legacy database.
+            Please wait while we back up your database.
           </p>
         </div>
       )
@@ -164,12 +167,12 @@ export default function Migration() {
       return (
         <div className="space-y-6">
           <h3 className="text-xl font-semibold flex items-center gap-2">
-            <Loader2 className="animate-spin" /> Migrating Data...
+            <Loader2 className="animate-spin" /> Updating Schema...
           </h3>
           {progress && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="font-medium">{progress.table}</span>
+                <span className="font-medium">{progress.step}</span>
                 <span className="text-muted-foreground">
                   {progress.current} / {progress.total}
                 </span>
@@ -188,8 +191,8 @@ export default function Migration() {
       return (
         <div className="space-y-6 text-center py-8">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <h3 className="text-xl font-semibold">Scanning Plugins...</h3>
-          <p className="text-muted-foreground text-sm">Checking for compatible integrations...</p>
+          <h3 className="text-xl font-semibold">Verifying...</h3>
+          <p className="text-muted-foreground text-sm">Confirming schema changes...</p>
         </div>
       )
     return (
@@ -197,26 +200,28 @@ export default function Migration() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
           <CheckCircle2 className="h-8 w-8 text-green-500" />
         </div>
-        <h3 className="text-xl font-semibold">Migration Complete!</h3>
+        <h3 className="text-xl font-semibold">Schema Update Complete!</h3>
         <div className="bg-muted/30 p-4 rounded-md text-left text-sm space-y-2">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Tables</span>
-            <span className="font-medium">{stats?.processed}</span>
+            <span className="text-muted-foreground">Columns Added</span>
+            <span className="font-medium">{stats?.columns}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Rows</span>
-            <span className="font-medium">{stats?.rows}</span>
+            <span className="text-muted-foreground">Transforms</span>
+            <span className="font-medium">{stats?.transforms}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Time</span>
             <span className="font-medium">{stats?.time}ms</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Backup</span>
-            <span className="font-mono text-xs max-w-[200px] truncate" title={stats?.backup}>
-              {stats?.backup}
-            </span>
-          </div>
+          {stats?.backup && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Backup</span>
+              <span className="font-mono text-xs max-w-[200px] truncate" title={stats.backup}>
+                {stats.backup}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex justify-end pt-4">
           <button
@@ -234,7 +239,7 @@ export default function Migration() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-2xl space-y-8">
         <h2 className="text-2xl font-bold tracking-tight text-center bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-          Organizr Migration
+          OrganizrX Schema Update
         </h2>
         <div className="relative flex items-center justify-between w-full px-4">
           <div className="absolute top-1/2 left-4 right-4 h-1 bg-muted -z-10 rounded-full" />

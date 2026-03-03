@@ -13,6 +13,7 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().min(32).optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   LEGACY_DB_PATH: z.string().optional(),
+  LEGACY_DB_URL: z.string().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>
