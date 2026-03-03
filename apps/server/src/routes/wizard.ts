@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { listUsers, createUser } from '../services/users'
 import { hashPassword } from '../services/auth'
-import { setSetting, setSettings } from '../services/settings'
+import { setSettings } from '../services/settings'
 
 const wizard = new Hono()
 

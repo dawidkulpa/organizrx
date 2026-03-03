@@ -19,6 +19,7 @@ import { loadAllPlugins, mountPluginRoutes, unloadAllPlugins } from './plugins'
 import pluginManagementRoutes from './routes/plugins'
 import wizardRoutes from './routes/wizard'
 import { getSetting } from './services/settings'
+import migrationRoutes from './routes/migration'
 
 const { env } = await initConfig()
 
@@ -70,6 +71,7 @@ app.route('/api/tabs', tabRoutes)
 app.route('/api/invites', inviteRoutes)
 app.route('/api/sso', ssoRoutes)
 app.route('/api/wizard', wizardRoutes)
+app.route('/api/migration', migrationRoutes)
 
 // Plugin management routes (BEFORE individual plugin routes)
 app.route('/api/plugins', pluginManagementRoutes)
