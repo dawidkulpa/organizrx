@@ -57,10 +57,13 @@ export default function TabsSettings() {
         api.categories.getAll(),
         api.groups.getAll(),
       ])
-      // Handle potential data envelope variations
-      setTabs(tabsRes.data.data || tabsRes.data)
-      setCategories(catsRes.data.data || catsRes.data)
-      setGroups(groupsRes.data.data || groupsRes.data)
+      // Handle API response envelope: tabs & categories are flat arrays, groups are nested
+      const tabsData = tabsRes.data.data
+      setTabs(Array.isArray(tabsData) ? tabsData : [])
+      const catsData = catsRes.data.data
+      setCategories(Array.isArray(catsData) ? catsData : [])
+      const groupData = groupsRes.data.data
+      setGroups(Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || [])
     } catch {
       toast.error('Failed to load tabs configuration')
     } finally {
