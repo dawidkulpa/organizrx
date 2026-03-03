@@ -1,17 +1,22 @@
 {
   "name": "@organizrx/plugin-jellyfin",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Jellyfin integration for OrganizrX",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
-    "@organizrx/plugin-sdk": "workspace:*"
+    "@organizrx/plugin-sdk": "workspace:*",
+    "hono": "^4.0.0",
+    "react": "^18.2.0"
   },
   "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^18.2.0",
     "typescript": "^5.3.3"
   }
 }
