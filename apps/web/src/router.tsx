@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Tabs from './pages/Tabs'
 import Users from './pages/Users'
 import Wizard from './pages/Wizard'
+import Migration from './pages/Migration'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import { useAuthStore } from './store'
@@ -51,6 +52,10 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
   {
     path: '/wizard',
     element: <Wizard />,
+  },
+  {
+    path: '/migration',
+    element: <Migration />,
   },
 
   // ── Protected routes (inside Layout) ──────────────────────────
