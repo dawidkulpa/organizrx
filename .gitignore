@@ -49,3 +49,10 @@ data/
 *.db
 *.db-wal
 *.db-shm
+
+# TypeScript build artifacts in source dirs
+*.d.ts.map
+packages/plugin-sdk/src/*.js
+packages/plugin-sdk/src/*.js.map
+packages/plugin-sdk/src/*.d.ts
+packages/plugin-sdk/src/*.d.ts.map
