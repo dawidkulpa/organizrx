@@ -13,7 +13,7 @@ export interface User {
   id: number
   username: string
   email: string | null
-  group: string | null
+  groupName: string | null
   group_id: number | null
   locked: number | null
   image: string | null
@@ -25,7 +25,7 @@ export interface CreateUserData {
   username: string
   password: string
   email?: string | null
-  group?: string | null
+  groupName?: string | null
   group_id?: number | null
   image?: string | null
 }
@@ -34,7 +34,7 @@ export interface UpdateUserData {
   username?: string
   password?: string
   email?: string | null
-  group?: string | null
+  groupName?: string | null
   group_id?: number | null
   image?: string | null
   locked?: number | null
@@ -85,7 +85,7 @@ export async function listUsers(page = 1, limit = 20): Promise<ListUsersResult> 
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       locked: ctx.users.locked,
       image: ctx.users.image,
@@ -99,7 +99,7 @@ export async function listUsers(page = 1, limit = 20): Promise<ListUsersResult> 
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       locked: ctx.users.locked,
       image: ctx.users.image,
@@ -113,7 +113,7 @@ export async function listUsers(page = 1, limit = 20): Promise<ListUsersResult> 
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       locked: ctx.users.locked,
       image: ctx.users.image,
@@ -129,7 +129,7 @@ export async function listUsers(page = 1, limit = 20): Promise<ListUsersResult> 
       id: number
       username: string | null
       email: string | null
-      group: string | null
+      groupName: string | null
       group_id: number | null
       locked: number | null
       image: string | null
@@ -140,7 +140,7 @@ export async function listUsers(page = 1, limit = 20): Promise<ListUsersResult> 
       id: r.id,
       username: r.username ?? '',
       email: r.email,
-      group: r.group,
+      groupName: r.groupName,
       group_id: r.group_id,
       locked: r.locked,
       image: r.image,
@@ -164,7 +164,7 @@ export async function getUserById(id: number): Promise<User | null> {
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       locked: ctx.users.locked,
       image: ctx.users.image,
@@ -176,7 +176,7 @@ export async function getUserById(id: number): Promise<User | null> {
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       locked: ctx.users.locked,
       image: ctx.users.image,
@@ -188,7 +188,7 @@ export async function getUserById(id: number): Promise<User | null> {
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       locked: ctx.users.locked,
       image: ctx.users.image,
@@ -203,7 +203,7 @@ export async function getUserById(id: number): Promise<User | null> {
     id: number
     username: string | null
     email: string | null
-    group: string | null
+    groupName: string | null
     group_id: number | null
     locked: number | null
     image: string | null
@@ -215,7 +215,7 @@ export async function getUserById(id: number): Promise<User | null> {
     id: row.id,
     username: row.username ?? '',
     email: row.email,
-    group: row.group,
+    groupName: row.groupName,
     group_id: row.group_id,
     locked: row.locked,
     image: row.image,
@@ -231,7 +231,7 @@ export async function createUser(data: CreateUserData): Promise<User> {
       username: data.username,
       password: data.password,
       email: data.email ?? null,
-      group: data.group ?? null,
+      groupName: data.groupName ?? null,
       group_id: data.group_id ?? null,
       image: data.image ?? null,
       register_date: new Date().toISOString(),
@@ -248,7 +248,7 @@ export async function createUser(data: CreateUserData): Promise<User> {
       username: data.username,
       password: data.password,
       email: data.email ?? null,
-      group: data.group ?? null,
+      groupName: data.groupName ?? null,
       group_id: data.group_id ?? null,
       image: data.image ?? null,
       register_date: new Date(),
@@ -265,7 +265,7 @@ export async function createUser(data: CreateUserData): Promise<User> {
       username: data.username,
       password: data.password,
       email: data.email ?? null,
-      group: data.group ?? null,
+      groupName: data.groupName ?? null,
       group_id: data.group_id ?? null,
       image: data.image ?? null,
       register_date: new Date(),
@@ -287,7 +287,7 @@ export async function updateUser(id: number, data: UpdateUserData): Promise<User
   if (data.username !== undefined) updateData.username = data.username
   if (data.password !== undefined) updateData.password = data.password
   if (data.email !== undefined) updateData.email = data.email
-  if (data.group !== undefined) updateData.group = data.group
+  if (data.groupName !== undefined) updateData.groupName = data.groupName
   if (data.group_id !== undefined) updateData.group_id = data.group_id
   if (data.image !== undefined) updateData.image = data.image
   if (data.locked !== undefined) updateData.locked = data.locked

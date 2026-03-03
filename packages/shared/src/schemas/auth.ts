@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 export const jwtPayloadSchema = z.object({
   name: z.string().min(1),
-  group: z.string().nullable(),
+  groupName: z.string().nullable(),
   groupID: z.number().int().nullable(),
   userID: z.number().int(),
   email: z.string().email().nullable(),
@@ -19,7 +19,7 @@ export const authUserSchema = z.object({
   id: z.number().int(),
   username: z.string(),
   email: z.string().nullable(),
-  group: z.string().nullable(),
+  groupName: z.string().nullable(),
   group_id: z.number().int().nullable(),
   image: z.string().nullable(),
 })

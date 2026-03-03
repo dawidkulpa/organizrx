@@ -112,11 +112,11 @@ describe('categories service', () => {
       const result = await listCategories()
 
       expect(result).toHaveLength(3)
-      expect(result[0].category).toBe('TV Shows')
+      expect(result[0].name).toBe('TV Shows')
       expect(result[0].order).toBe(1)
-      expect(result[1].category).toBe('Movies')
+      expect(result[1].name).toBe('Movies')
       expect(result[1].order).toBe(2)
-      expect(result[2].category).toBe('Music')
+      expect(result[2].name).toBe('Music')
       expect(result[2].order).toBe(3)
     })
   })
@@ -145,11 +145,11 @@ describe('categories service', () => {
       const result = await getCategoryById(1)
 
       expect(result).toBeDefined()
-      expect(result?.category).toBe('Movies')
+      expect(result?.name).toBe('Movies')
       expect(result?.category_id).toBe(1)
       expect(result?.order).toBe(1)
       expect(result?.image).toBe('movies.png')
-      expect(result?.default).toBe(1)
+      expect(result?.isDefault).toBe(1)
     })
   })
 
@@ -162,19 +162,19 @@ describe('categories service', () => {
       await setupDb()
 
       const result = await createCategory({
-        category: 'Movies',
+        name: 'Movies',
         category_id: 1,
         order: 1,
         image: 'movies.png',
-        default: 1,
+        isDefault: 1,
       })
 
       expect(result.id).toBeDefined()
-      expect(result.category).toBe('Movies')
+      expect(result.name).toBe('Movies')
       expect(result.category_id).toBe(1)
       expect(result.order).toBe(1)
       expect(result.image).toBe('movies.png')
-      expect(result.default).toBe(1)
+      expect(result.isDefault).toBe(1)
     })
 
     it('should auto-assign next order if not provided', async () => {
@@ -188,7 +188,7 @@ describe('categories service', () => {
 
       // Create second without specifying order
       const result = await createCategory({
-        category: 'Second',
+        name: 'Second',
         category_id: 2,
       })
 
@@ -199,14 +199,14 @@ describe('categories service', () => {
       await setupDb()
 
       const result = await createCategory({
-        category: 'Movies',
+        name: 'Movies',
         category_id: 1,
       })
 
-      expect(result.category).toBe('Movies')
+      expect(result.name).toBe('Movies')
       expect(result.category_id).toBe(1)
       expect(result.image).toBeNull()
-      expect(result.default).toBeNull()
+      expect(result.isDefault).toBeNull()
     })
   })
 
@@ -224,12 +224,12 @@ describe('categories service', () => {
       `)
 
       const updated = await updateCategory(1, {
-        category: 'Films',
+        name: 'Films',
         order: 2,
         image: 'films.png',
       })
 
-      expect(updated?.category).toBe('Films')
+      expect(updated?.name).toBe('Films')
       expect(updated?.order).toBe(2)
       expect(updated?.image).toBe('films.png')
       expect(updated?.category_id).toBe(1) // unchanged
@@ -238,7 +238,7 @@ describe('categories service', () => {
     it('should return undefined for non-existent category', async () => {
       await setupDb()
 
-      const result = await updateCategory(999, { category: 'Updated' })
+      const result = await updateCategory(999, { name: 'Updated' })
 
       expect(result).toBeNull()
     })
@@ -378,9 +378,9 @@ describe('categories service', () => {
 
       const all = await listCategories()
 
-      expect(all[0].category).toBe('TV')
-      expect(all[1].category).toBe('Music')
-      expect(all[2].category).toBe('Movies')
+      expect(all[0].name).toBe('TV')
+      expect(all[1].name).toBe('Music')
+      expect(all[2].name).toBe('Movies')
     })
   })
 })

@@ -34,7 +34,7 @@ interface Group {
   name: string
   group_id: number
   image: string | null
-  default_group: number | null
+  isDefault: number | null
 }
 export default function SettingsUsers() {
   const [users, setUsers] = useState<User[]>([])
@@ -60,8 +60,10 @@ export default function SettingsUsers() {
         api.users.getAll(),
         api.groups.getAll()
       ])
-      setUsers(usersRes.data.data || [])
-      setGroups(groupsRes.data.data || [])
+      const userData = usersRes.data.data
+      setUsers(Array.isArray(userData) ? userData : (userData as { users: User[] }).users || [])
+      const groupData = groupsRes.data.data
+      setGroups(Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || [])
     } catch (error) {
       toast.error('Failed to load data')
     } finally {

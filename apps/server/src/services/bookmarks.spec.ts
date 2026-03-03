@@ -83,26 +83,26 @@ describe('bookmarks service', () => {
     it('should list all bookmark categories ordered by order', async () => {
       await setupDb()
 
-      await createBookmarkCategory({ category: 'Work', category_id: 1, order: 2 })
-      await createBookmarkCategory({ category: 'Personal', category_id: 2, order: 1 })
-      await createBookmarkCategory({ category: 'Dev', category_id: 3, order: 3 })
+      await createBookmarkCategory({ name: 'Work', category_id: 1, order: 2 })
+      await createBookmarkCategory({ name: 'Personal', category_id: 2, order: 1 })
+      await createBookmarkCategory({ name: 'Dev', category_id: 3, order: 3 })
 
       const categories = await listBookmarkCategories()
 
       expect(categories).toHaveLength(3)
-      expect(categories[0].category).toBe('Personal')
-      expect(categories[1].category).toBe('Work')
-      expect(categories[2].category).toBe('Dev')
+      expect(categories[0].name).toBe('Personal')
+      expect(categories[1].name).toBe('Work')
+      expect(categories[2].name).toBe('Dev')
     })
 
     it('should get bookmark category by id', async () => {
       await setupDb()
 
-      const created = await createBookmarkCategory({ category: 'Tech', category_id: 10, order: 1 })
+      const created = await createBookmarkCategory({ name: 'Tech', category_id: 10, order: 1 })
       const fetched = await getBookmarkCategoryById(created.id)
 
       expect(fetched).not.toBeNull()
-      expect(fetched?.category).toBe('Tech')
+      expect(fetched?.name).toBe('Tech')
       expect(fetched?.category_id).toBe(10)
     })
 
@@ -117,34 +117,34 @@ describe('bookmarks service', () => {
       await setupDb()
 
       const created = await createBookmarkCategory({
-        category: 'News',
+        name: 'News',
         category_id: 5,
         order: 10,
-        default: 1,
+        isDefault: 1,
       })
 
       expect(created.id).toBeGreaterThan(0)
-      expect(created.category).toBe('News')
+      expect(created.name).toBe('News')
       expect(created.category_id).toBe(5)
       expect(created.order).toBe(10)
-      expect(created.default).toBe(1)
+      expect(created.isDefault).toBe(1)
     })
 
     it('should update bookmark category', async () => {
       await setupDb()
 
-      const created = await createBookmarkCategory({ category: 'Old', category_id: 1 })
-      const updated = await updateBookmarkCategory(created.id, { category: 'New', order: 99 })
+      const created = await createBookmarkCategory({ name: 'Old', category_id: 1 })
+      const updated = await updateBookmarkCategory(created.id, { name: 'New', order: 99 })
 
       expect(updated).not.toBeNull()
-      expect(updated?.category).toBe('New')
+      expect(updated?.name).toBe('New')
       expect(updated?.order).toBe(99)
     })
 
     it('should delete bookmark category without tabs', async () => {
       await setupDb()
 
-      const created = await createBookmarkCategory({ category: 'ToDelete', category_id: 99 })
+      const created = await createBookmarkCategory({ name: 'ToDelete', category_id: 99 })
       await deleteBookmarkCategory(created.id)
 
       const fetched = await getBookmarkCategoryById(created.id)
@@ -154,7 +154,7 @@ describe('bookmarks service', () => {
     it('should detect if category has tabs', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'WithTabs', category_id: 20 })
+      const category = await createBookmarkCategory({ name: 'WithTabs', category_id: 20 })
       expect(await bookmarkCategoryHasTabs(category.id)).toBe(false)
 
       await createBookmarkTab({
@@ -170,9 +170,9 @@ describe('bookmarks service', () => {
     it('should reorder bookmark categories', async () => {
       await setupDb()
 
-      const cat1 = await createBookmarkCategory({ category: 'A', category_id: 1, order: 1 })
-      const cat2 = await createBookmarkCategory({ category: 'B', category_id: 2, order: 2 })
-      const cat3 = await createBookmarkCategory({ category: 'C', category_id: 3, order: 3 })
+      const cat1 = await createBookmarkCategory({ name: 'A', category_id: 1, order: 1 })
+      const cat2 = await createBookmarkCategory({ name: 'B', category_id: 2, order: 2 })
+      const cat3 = await createBookmarkCategory({ name: 'C', category_id: 3, order: 3 })
 
       await reorderBookmarkCategories([
         { id: cat1.id, order: 3 },
@@ -181,9 +181,9 @@ describe('bookmarks service', () => {
       ])
 
       const categories = await listBookmarkCategories()
-      expect(categories[0].category).toBe('B')
-      expect(categories[1].category).toBe('C')
-      expect(categories[2].category).toBe('A')
+      expect(categories[0].name).toBe('B')
+      expect(categories[1].name).toBe('C')
+      expect(categories[2].name).toBe('A')
     })
   })
 
@@ -195,7 +195,7 @@ describe('bookmarks service', () => {
     it('should list all bookmark tabs for admin', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
 
       await createBookmarkTab({
         name: 'Tab1',
@@ -217,7 +217,7 @@ describe('bookmarks service', () => {
     it('should filter tabs by user group', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
 
       await createBookmarkTab({
         name: 'AdminTab',
@@ -250,7 +250,7 @@ describe('bookmarks service', () => {
     it('should get bookmark tab by id', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
       const created = await createBookmarkTab({
         name: 'MyTab',
         url: 'https://test.com',
@@ -266,7 +266,7 @@ describe('bookmarks service', () => {
     it('should create bookmark tab with all fields', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
       const created = await createBookmarkTab({
         name: 'FullTab',
         url: 'https://full.com',
@@ -293,7 +293,7 @@ describe('bookmarks service', () => {
     it('should update bookmark tab', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
       const created = await createBookmarkTab({
         name: 'OldName',
         url: 'https://old.com',
@@ -314,7 +314,7 @@ describe('bookmarks service', () => {
     it('should delete bookmark tab', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
       const created = await createBookmarkTab({
         name: 'ToDelete',
         url: 'https://delete.com',
@@ -331,7 +331,7 @@ describe('bookmarks service', () => {
     it('should reorder bookmark tabs', async () => {
       await setupDb()
 
-      const category = await createBookmarkCategory({ category: 'Cat1', category_id: 1 })
+      const category = await createBookmarkCategory({ name: 'Cat1', category_id: 1 })
 
       const tab1 = await createBookmarkTab({
         name: 'Tab1',

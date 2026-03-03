@@ -192,7 +192,7 @@ export async function findOrCreateProxyUser(opts: {
   username: string
   email: string | null
   groupId: number
-}): Promise<{ id: number; username: string; email: string | null; group: string | null; group_id: number | null; image: string | null }> {
+}): Promise<{ id: number; username: string; email: string | null; groupName: string | null; group_id: number | null; image: string | null }> {
   const ctx = dialectCtx()
 
   let rows: unknown[]
@@ -205,7 +205,7 @@ export async function findOrCreateProxyUser(opts: {
   }
 
   if (rows.length > 0) {
-    const row = rows[0] as { id: number; username: string; email: string | null; group: string | null; group_id: number | null; image: string | null }
+    const row = rows[0] as { id: number; username: string; email: string | null; groupName: string | null; group_id: number | null; image: string | null }
     return row
   }
 
@@ -220,9 +220,9 @@ export async function findOrCreateProxyUser(opts: {
       auth_service: 'proxy',
       register_date: now.toISOString(),
       locked: 0,
-    }).returning({ id: ctx.users.id, username: ctx.users.username, email: ctx.users.email, group: ctx.users.group, group_id: ctx.users.group_id, image: ctx.users.image }).get()
+    }).returning({ id: ctx.users.id, username: ctx.users.username, email: ctx.users.email, groupName: ctx.users.groupName, group_id: ctx.users.group_id, image: ctx.users.image }).get()
 
-    return result as { id: number; username: string; email: string | null; group: string | null; group_id: number | null; image: string | null }
+    return result as { id: number; username: string; email: string | null; groupName: string | null; group_id: number | null; image: string | null }
   } else if (ctx.dialect === 'mysql') {
     await ctx.db.insert(ctx.users).values({
       username: opts.username,
@@ -239,7 +239,7 @@ export async function findOrCreateProxyUser(opts: {
       throw new Error('Failed to create proxy user')
     }
 
-    return fetchRows[0] as { id: number; username: string; email: string | null; group: string | null; group_id: number | null; image: string | null }
+    return fetchRows[0] as { id: number; username: string; email: string | null; groupName: string | null; group_id: number | null; image: string | null }
   } else {
     await ctx.db.insert(ctx.users).values({
       username: opts.username,
@@ -256,7 +256,7 @@ export async function findOrCreateProxyUser(opts: {
       throw new Error('Failed to create proxy user')
     }
 
-    return fetchRows[0] as { id: number; username: string; email: string | null; group: string | null; group_id: number | null; image: string | null }
+    return fetchRows[0] as { id: number; username: string; email: string | null; groupName: string | null; group_id: number | null; image: string | null }
   }
 }
 

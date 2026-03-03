@@ -11,7 +11,7 @@ interface Group {
   name: string
   group_id: number
   image: string | null
-  default_group: number | null
+  isDefault: number | null
 }
 
 interface User {
@@ -49,8 +49,10 @@ export default function SettingsGroups() {
         api.groups.getAll(),
         api.users.getAll()
       ])
-      setGroups(groupsRes.data.data || [])
-      setUsers(usersRes.data.data || [])
+      const groupData = groupsRes.data.data
+      setGroups(Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || [])
+      const userData = usersRes.data.data
+      setUsers(Array.isArray(userData) ? userData : (userData as { users: User[] }).users || [])
     } catch (error) {
       toast.error('Failed to load groups')
     } finally {
@@ -102,7 +104,7 @@ export default function SettingsGroups() {
   }
 
   const handleDelete = async (group: Group) => {
-    if (group.default_group === 1) {
+    if (group.isDefault === 1) {
       toast.error('Cannot delete the default group')
       return
     }
@@ -175,7 +177,7 @@ export default function SettingsGroups() {
                       </p>
                     </div>
                   </div>
-                  {group.default_group === 1 && (
+                  {group.isDefault === 1 && (
                     <span className="inline-flex items-center rounded-full border border-transparent bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                       Default
                     </span>
@@ -193,12 +195,12 @@ export default function SettingsGroups() {
                 <div className="mx-1 h-4 w-[1px] bg-border" />
                 <button
                   onClick={() => handleDelete(group)}
-                  disabled={group.default_group === 1}
+                  disabled={group.isDefault === 1}
                   className={cn(
                     "flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-destructive/10 hover:text-destructive h-9 px-3",
-                    group.default_group === 1 && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground"
+                    group.isDefault === 1 && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground"
                   )}
-                  title={group.default_group === 1 ? "Cannot delete default group" : "Delete group"}
+                  title={group.isDefault === 1 ? "Cannot delete default group" : "Delete group"}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete

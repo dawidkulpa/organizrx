@@ -10,7 +10,7 @@ export const users = sqliteTable('users', {
   password: text('password'),
   email: text('email'),
   plex_token: text('plex_token'),
-  group: text('group'),
+  groupName: text('group'),
   group_id: integer('group_id'),
   locked: integer('locked'),
   image: text('image'),
@@ -43,19 +43,19 @@ export const tokens = sqliteTable('tokens', {
 
 export const groups = sqliteTable('groups', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  group: text('group').unique(),
+  name: text('group').unique(),
   group_id: integer('group_id'),
   image: text('image'),
-  default: integer('default'),
+  isDefault: integer('default'),
 });
 
 export const categories = sqliteTable('categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order: integer('order'),
-  category: text('category').unique(),
+  name: text('category').unique(),
   category_id: integer('category_id'),
   image: text('image'),
-  default: integer('default'),
+  isDefault: integer('default'),
 });
 
 export const tabs = sqliteTable('tabs', {
@@ -65,7 +65,7 @@ export const tabs = sqliteTable('tabs', {
   name: text('name'),
   url: text('url'),
   url_local: text('url_local'),
-  default: integer('default'),
+  isDefault: integer('default'),
   enabled: integer('enabled'),
   group_id: integer('group_id'),
   group_id_max: integer('group_id_max').default(0),
@@ -103,9 +103,9 @@ export const invites = sqliteTable('invites', {
 export const bookmarkCategories = sqliteTable('BOOKMARK-categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order: integer('order'),
-  category: text('category').unique(),
+  name: text('category').unique(),
   category_id: integer('category_id'),
-  default: integer('default'),
+  isDefault: integer('default'),
 });
 
 export const bookmarkTabs = sqliteTable('BOOKMARK-tabs', {

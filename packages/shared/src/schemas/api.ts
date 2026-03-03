@@ -30,7 +30,7 @@ export const createUserRequestSchema = z.object({
   username: z.string().min(1).max(255),
   password: z.string().min(1).max(255),
   email: z.string().email().optional(),
-  group: z.string().optional(),
+  groupName: z.string().optional(),
   group_id: z.number().int().optional(),
 });
 
@@ -38,7 +38,7 @@ export const updateUserRequestSchema = z.object({
   username: z.string().min(1).max(255).optional(),
   password: z.string().min(1).max(255).optional(),
   email: z.string().email().optional(),
-  group: z.string().optional(),
+  groupName: z.string().optional(),
   group_id: z.number().int().optional(),
   image: z.string().optional(),
 });
@@ -48,17 +48,17 @@ export const updateUserRequestSchema = z.object({
 // ============================================
 
 export const createGroupRequestSchema = z.object({
-  group: z.string().min(1).max(255),
+  name: z.string().min(1).max(255),
   group_id: z.number().int(),
   image: z.string().optional(),
-  default: z.number().int().optional(),
+  isDefault: z.number().int().optional(),
 });
 
 export const updateGroupRequestSchema = z.object({
-  group: z.string().min(1).max(255).optional(),
+  name: z.string().min(1).max(255).optional(),
   group_id: z.number().int().optional(),
   image: z.string().optional(),
-  default: z.number().int().optional(),
+  isDefault: z.number().int().optional(),
 });
 
 // ============================================
@@ -66,19 +66,19 @@ export const updateGroupRequestSchema = z.object({
 // ============================================
 
 export const createCategoryRequestSchema = z.object({
-  category: z.string().min(1).max(255),
+  name: z.string().min(1).max(255),
   category_id: z.number().int(),
   order: z.number().int().optional(),
   image: z.string().optional(),
-  default: z.number().int().optional(),
+  isDefault: z.number().int().optional(),
 });
 
 export const updateCategoryRequestSchema = z.object({
-  category: z.string().min(1).max(255).optional(),
+  name: z.string().min(1).max(255).optional(),
   category_id: z.number().int().optional(),
   order: z.number().int().optional(),
   image: z.string().optional(),
-  default: z.number().int().optional(),
+  isDefault: z.number().int().optional(),
 });
 
 // ============================================
@@ -154,10 +154,10 @@ export const useInviteRequestSchema = z.object({
 // ============================================
 
 export const createBookmarkCategoryRequestSchema = z.object({
-  category: z.string().min(1).max(255),
+  name: z.string().min(1).max(255),
   category_id: z.number().int(),
   order: z.number().int().optional(),
-  default: z.number().int().optional(),
+  isDefault: z.number().int().optional(),
 });
 
 export const createBookmarkTabRequestSchema = z.object({

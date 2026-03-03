@@ -22,7 +22,7 @@ interface Group {
   name: string
   group_id: number
   image: string | null
-  default_group: number | null
+  isDefault: number | null
 }
 
 interface UserFormProps {

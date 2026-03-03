@@ -12,9 +12,9 @@ import * as pgSchema from '../db/schema/pg'
 type BookmarkCategory = {
   id: number
   order: number | null
-  category: string | null
+  name: string | null
   category_id: number | null
-  default: number | null
+  isDefault: number | null
 }
 
 type BookmarkTab = {
@@ -142,28 +142,28 @@ export async function getBookmarkCategoryById(id: number): Promise<BookmarkCateg
 }
 
 export async function createBookmarkCategory(data: {
-  category: string
+  name: string
   category_id: number
   order?: number
-  default?: number
+  isDefault?: number
 }): Promise<BookmarkCategory> {
   const ctx = dialectCtx()
 
   if (ctx.dialect === 'sqlite') {
     const rows = ctx.db.insert(ctx.bookmarkCategories).values({
-      category: data.category,
+      name: data.name,
       category_id: data.category_id,
       order: data.order ?? null,
-      default: data.default ?? null,
+      isDefault: data.isDefault ?? null,
     }).returning().all()
     if (!rows[0]) throw new Error('Failed to retrieve created bookmark category')
     return rows[0] as BookmarkCategory
   } else if (ctx.dialect === 'mysql') {
     const result = await ctx.db.insert(ctx.bookmarkCategories).values({
-      category: data.category,
+      name: data.name,
       category_id: data.category_id,
       order: data.order ?? null,
-      default: data.default ?? null,
+      isDefault: data.isDefault ?? null,
     })
 
     const id = Number(result[0].insertId)
@@ -172,10 +172,10 @@ export async function createBookmarkCategory(data: {
     return created
   } else {
     const result = await ctx.db.insert(ctx.bookmarkCategories).values({
-      category: data.category,
+      name: data.name,
       category_id: data.category_id,
       order: data.order ?? null,
-      default: data.default ?? null,
+      isDefault: data.isDefault ?? null,
     }).returning()
 
     return result[0] as BookmarkCategory
@@ -185,10 +185,10 @@ export async function createBookmarkCategory(data: {
 export async function updateBookmarkCategory(
   id: number,
   data: Partial<{
-    category: string
+    name: string
     category_id: number
     order: number
-    default: number
+    isDefault: number
   }>
 ): Promise<BookmarkCategory | null> {
   const ctx = dialectCtx()

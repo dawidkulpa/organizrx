@@ -10,47 +10,47 @@ import * as mysqlSchema from './schema/mysql'
 import * as pgSchema from './schema/pg'
 
 export interface GroupSeed {
-  group: string
+  name: string
   group_id: number
-  default: number
+  isDefault: number
   image: string
 }
 
 export const defaultGroups: GroupSeed[] = [
   {
-    group: 'Admin',
+    name: 'Admin',
     group_id: 0,
-    default: 0,
+    isDefault: 0,
     image: 'plugins/images/groups/admin.png',
   },
   {
-    group: 'Co-Admin',
+    name: 'Co-Admin',
     group_id: 1,
-    default: 0,
+    isDefault: 0,
     image: 'plugins/images/groups/coadmin.png',
   },
   {
-    group: 'Super User',
+    name: 'Super User',
     group_id: 2,
-    default: 0,
+    isDefault: 0,
     image: 'plugins/images/groups/superuser.png',
   },
   {
-    group: 'Power User',
+    name: 'Power User',
     group_id: 3,
-    default: 0,
+    isDefault: 0,
     image: 'plugins/images/groups/poweruser.png',
   },
   {
-    group: 'User',
+    name: 'User',
     group_id: 4,
-    default: 1,
+    isDefault: 1,
     image: 'plugins/images/groups/user.png',
   },
   {
-    group: 'Guest',
+    name: 'Guest',
     group_id: 999,
-    default: 0,
+    isDefault: 0,
     image: 'plugins/images/groups/guest.png',
   },
 ]
@@ -73,7 +73,7 @@ export async function seedDefaultGroups(): Promise<void> {
         }
         case 'mysql': {
           const mysqlDb = db as MysqlDb
-          await mysqlDb.insert(mysqlSchema.groups).values(group).onDuplicateKeyUpdate({ set: { group: group.group } })
+          await mysqlDb.insert(mysqlSchema.groups).values(group).onDuplicateKeyUpdate({ set: { name: group.name } })
           break
         }
         case 'postgresql': {

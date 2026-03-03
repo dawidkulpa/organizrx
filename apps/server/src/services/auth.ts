@@ -15,7 +15,7 @@ import type { AuthUser } from '@organizrx/shared'
 
 export interface AccessTokenPayload extends JoseJWTPayload {
   name: string
-  group: string | null
+  groupName: string | null
   groupID: number | null
   userID: number
   email: string | null
@@ -87,7 +87,7 @@ export async function createAccessToken(user: AuthUser): Promise<string> {
 
   return new SignJWT({
     name: user.username,
-    group: user.group,
+    groupName: user.groupName,
     groupID: user.group_id,
     userID: user.id,
     email: user.email,
@@ -244,7 +244,7 @@ export async function findUserByUsername(username: string): Promise<{
   username: string
   password: string
   email: string | null
-  group: string | null
+    groupName: string | null
   group_id: number | null
   image: string | null
   locked: number | null
@@ -267,7 +267,7 @@ export async function findUserByUsername(username: string): Promise<{
     username: string
     password: string
     email: string | null
-    group: string | null
+    groupName: string | null
     group_id: number | null
     image: string | null
     locked: number | null
@@ -284,7 +284,7 @@ export async function findUserById(userId: number): Promise<AuthUser | null> {
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       image: ctx.users.image,
     }).from(ctx.users).where(eq(ctx.users.id, userId)).all()
@@ -293,7 +293,7 @@ export async function findUserById(userId: number): Promise<AuthUser | null> {
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       image: ctx.users.image,
     }).from(ctx.users).where(eq(ctx.users.id, userId))
@@ -302,7 +302,7 @@ export async function findUserById(userId: number): Promise<AuthUser | null> {
       id: ctx.users.id,
       username: ctx.users.username,
       email: ctx.users.email,
-      group: ctx.users.group,
+      groupName: ctx.users.groupName,
       group_id: ctx.users.group_id,
       image: ctx.users.image,
     }).from(ctx.users).where(eq(ctx.users.id, userId))
@@ -314,7 +314,7 @@ export async function findUserById(userId: number): Promise<AuthUser | null> {
     id: number
     username: string | null
     email: string | null
-    group: string | null
+    groupName: string | null
     group_id: number | null
     image: string | null
   }
@@ -365,7 +365,7 @@ export function toAuthUser(row: {
   id: number
   username: string | null
   email: string | null
-  group: string | null
+  groupName: string | null
   group_id: number | null
   image: string | null
 }): AuthUser {
@@ -373,7 +373,7 @@ export function toAuthUser(row: {
     id: row.id,
     username: row.username ?? '',
     email: row.email,
-    group: row.group,
+    groupName: row.groupName,
     group_id: row.group_id,
     image: row.image,
   }

@@ -98,17 +98,17 @@ describe('Seed Data', () => {
   });
 
   it('should have correct group names', () => {
-    const groupNames = defaultGroups.map((g) => g.group);
+    const groupNames = defaultGroups.map((g) => g.name);
     expect(groupNames).toEqual(['Admin', 'Co-Admin', 'Super User', 'Power User', 'User', 'Guest']);
   });
 
   it('User group should be marked as default', () => {
-    const userGroup = defaultGroups.find((g) => g.group === 'User');
-    expect(userGroup?.default).toBe(1);
+    const userGroup = defaultGroups.find((g) => g.name === 'User');
+    expect(userGroup?.isDefault).toBe(1);
   });
 
   it('non-User groups should not be default', () => {
-    const nonUserGroups = defaultGroups.filter((g) => g.group !== 'User');
-    expect(nonUserGroups.every((g) => g.default === 0)).toBe(true);
+    const nonUserGroups = defaultGroups.filter((g) => g.name !== 'User');
+    expect(nonUserGroups.every((g) => g.isDefault === 0)).toBe(true);
   });
 });

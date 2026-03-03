@@ -196,7 +196,7 @@ describe('tabs service', () => {
       expect(result?.url_local).toBe('http://localhost:32400')
       expect(result?.order).toBe(1)
       expect(result?.enabled).toBe(1)
-      expect(result?.default).toBe(0)
+      expect(result?.isDefault).toBe(0)
       expect(result?.image).toBe('plex.png')
       expect(result?.type).toBe(1)
       expect(result?.splash).toBe(0)
@@ -226,7 +226,7 @@ describe('tabs service', () => {
         url_local: 'http://localhost:32400',
         order: 1,
         enabled: 1,
-        default: 0,
+        isDefault: 0,
         image: 'plex.png',
         type: 1,
         splash: 0,

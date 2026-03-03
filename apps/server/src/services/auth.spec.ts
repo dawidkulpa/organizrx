@@ -36,7 +36,7 @@ const testUser: AuthUser = {
   id: 1,
   username: 'admin',
   email: 'admin@test.com',
-  group: 'Admin',
+  groupName: 'Admin',
   group_id: 0,
   image: null,
 }
@@ -330,7 +330,7 @@ describe('auth service', () => {
         id: 1,
         username: 'admin',
         email: 'a@b.com',
-        group: 'Admin',
+        groupName: 'Admin',
         group_id: 0,
         image: null,
       })
@@ -339,7 +339,7 @@ describe('auth service', () => {
         id: 1,
         username: 'admin',
         email: 'a@b.com',
-        group: 'Admin',
+        groupName: 'Admin',
         group_id: 0,
         image: null,
       })
@@ -350,7 +350,7 @@ describe('auth service', () => {
         id: 2,
         username: null,
         email: null,
-        group: null,
+        groupName: null,
         group_id: null,
         image: null,
       })

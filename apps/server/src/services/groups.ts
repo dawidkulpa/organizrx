@@ -11,24 +11,24 @@ import * as pgSchema from '../db/schema/pg'
 
 export interface Group {
   id: number
-  group: string
+  name: string
   group_id: number
   image: string | null
-  default: number
+  isDefault: number
 }
 
 export interface CreateGroupData {
-  group: string
+  name: string
   group_id: number
   image?: string
-  default?: number
+  isDefault?: number
 }
 
 export interface UpdateGroupData {
-  group?: string
+  name?: string
   group_id?: number
   image?: string
-  default?: number
+  isDefault?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -112,10 +112,10 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
   }
 
   const values = {
-    group: data.group,
+    name: data.name,
     group_id: data.group_id,
     image: data.image ?? null,
-    default: data.default ?? 0,
+    isDefault: data.isDefault ?? 0,
   }
 
   let insertedId: number
@@ -144,7 +144,7 @@ export async function updateGroup(id: number, data: UpdateGroupData): Promise<Gr
   if (!existing) return null
 
   // Cannot change group_id of default groups
-  if (data.group_id !== undefined && existing.default === 1) {
+  if (data.group_id !== undefined && existing.isDefault === 1) {
     throw new Error('Cannot change group_id of default groups')
   }
 
@@ -166,7 +166,7 @@ export async function deleteGroup(id: number): Promise<boolean> {
   if (!group) return false
 
   // Cannot delete default groups
-  if (group.default === 1 || isDefaultGroup(group.group_id)) {
+  if (group.isDefault === 1 || isDefaultGroup(group.group_id)) {
     throw new Error('Cannot delete default groups')
   }
 

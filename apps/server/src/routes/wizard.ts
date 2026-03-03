@@ -60,7 +60,7 @@ wizard.post('/complete', async (c) => {
     username,
     password: hashedPassword,
     email: email ?? null,
-    group: 'Admin',
+    groupName: 'Admin',
     group_id: 0,
   })
 

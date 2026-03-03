@@ -12,26 +12,26 @@ import * as pgSchema from '../db/schema/pg'
 export interface Category {
   id: number
   order: number | null
-  category: string
+  name: string
   category_id: number | null
   image: string | null
-  default: number | null
+  isDefault: number | null
 }
 
 export interface CreateCategoryData {
-  category: string
+  name: string
   category_id: number
   order?: number
   image?: string
-  default?: number
+  isDefault?: number
 }
 
 export interface UpdateCategoryData {
-  category?: string
+  name?: string
   category_id?: number
   order?: number
   image?: string
-  default?: number
+  isDefault?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -105,11 +105,11 @@ export async function createCategory(data: CreateCategoryData): Promise<Category
   }
 
   const insertData = {
-    category: data.category,
+    name: data.name,
     category_id: data.category_id,
     order,
     image: data.image ?? null,
-    default: data.default ?? null,
+    isDefault: data.isDefault ?? null,
   }
 
   if (ctx.dialect === 'sqlite') {
@@ -124,7 +124,7 @@ export async function createCategory(data: CreateCategoryData): Promise<Category
     const rows = await ctx.db
       .select()
       .from(ctx.categories)
-      .where(eq(ctx.categories.category, data.category))
+      .where(eq(ctx.categories.name, data.name))
       .limit(1)
     if (!rows[0]) throw new Error('Failed to retrieve created category')
     return rows[0] as Category
@@ -143,11 +143,11 @@ export async function updateCategory(id: number, data: UpdateCategoryData): Prom
   if (!existing) return null
 
   const updates = {
-    ...(data.category !== undefined && { category: data.category }),
+    ...(data.name !== undefined && { name: data.name }),
     ...(data.category_id !== undefined && { category_id: data.category_id }),
     ...(data.order !== undefined && { order: data.order }),
     ...(data.image !== undefined && { image: data.image }),
-    ...(data.default !== undefined && { default: data.default }),
+    ...(data.isDefault !== undefined && { isDefault: data.isDefault }),
   }
 
   if (ctx.dialect === 'sqlite') {

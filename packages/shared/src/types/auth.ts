@@ -7,7 +7,7 @@
  */
 export interface JWTPayload {
   name: string // username
-  group: string | null
+  groupName: string | null
   groupID: number | null // numeric group id
   userID: number // numeric user id
   email: string | null
@@ -23,7 +23,7 @@ export interface AuthUser {
   id: number
   username: string
   email: string | null
-  group: string | null
+  groupName: string | null
   group_id: number | null
   image: string | null
 }

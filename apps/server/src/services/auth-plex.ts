@@ -243,7 +243,7 @@ export async function findOrCreatePlexUser(
 
   if (rows.length > 0) {
     // Update existing user with Plex token
-    const existingUser = rows[0] as { id: number; username: string | null; email: string | null; group: string | null; group_id: number | null; image: string | null }
+    const existingUser = rows[0] as { id: number; username: string | null; email: string | null; groupName: string | null; group_id: number | null; image: string | null }
 
     if (ctx.dialect === 'sqlite') {
       ctx.db.update(ctx.users)
@@ -264,7 +264,7 @@ export async function findOrCreatePlexUser(
       id: existingUser.id,
       username: existingUser.username,
       email: existingUser.email,
-      group: existingUser.group,
+      groupName: existingUser.groupName,
       group_id: existingUser.group_id,
       image: plexUser.thumb,
     })
@@ -278,7 +278,7 @@ export async function findOrCreatePlexUser(
     email: plexUser.email,
     plex_token: plexToken,
     group_id: groupId,
-    group: null, // Will be set by a trigger or post-processing
+    groupName: null, // Will be set by a trigger or post-processing
     locked: 0,
     image: plexUser.thumb,
     auth_service: 'plex',
@@ -303,17 +303,17 @@ export async function findOrCreatePlexUser(
   if (ctx.dialect === 'sqlite') {
     const groupRows = ctx.db.select().from(sqliteSchema.groups).where(eq(sqliteSchema.groups.group_id, groupId)).all()
     if (groupRows.length > 0) {
-      groupName = (groupRows[0] as { group: string | null }).group
+      groupName = (groupRows[0] as { name: string | null }).name
     }
   } else if (ctx.dialect === 'mysql') {
     const groupRows = await ctx.db.select().from(mysqlSchema.groups).where(eq(mysqlSchema.groups.group_id, groupId))
     if (groupRows.length > 0) {
-      groupName = (groupRows[0] as { group: string | null }).group
+      groupName = (groupRows[0] as { name: string | null }).name
     }
   } else {
     const groupRows = await ctx.db.select().from(pgSchema.groups).where(eq(pgSchema.groups.group_id, groupId))
     if (groupRows.length > 0) {
-      groupName = (groupRows[0] as { group: string | null }).group
+      groupName = (groupRows[0] as { name: string | null }).name
     }
   }
 
@@ -321,7 +321,7 @@ export async function findOrCreatePlexUser(
     id: insertedId,
     username: plexUser.username,
     email: plexUser.email,
-    group: groupName,
+    groupName: groupName,
     group_id: groupId,
     image: plexUser.thumb,
   })

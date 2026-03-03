@@ -10,7 +10,7 @@ export const users = mysqlTable('users', {
   password: text('password'),
   email: text('email'),
   plex_token: text('plex_token'),
-  group: text('group'),
+  groupName: text('group'),
   group_id: int('group_id'),
   locked: int('locked'),
   image: text('image'),
@@ -43,19 +43,19 @@ export const tokens = mysqlTable('tokens', {
 
 export const groups = mysqlTable('groups', {
   id: int('id').autoincrement().primaryKey(),
-  group: text('group').unique(),
+  name: text('group').unique(),
   group_id: int('group_id'),
   image: text('image'),
-  default: int('default'),
+  isDefault: int('default'),
 });
 
 export const categories = mysqlTable('categories', {
   id: int('id').autoincrement().primaryKey(),
   order: int('order'),
-  category: text('category').unique(),
+  name: text('category').unique(),
   category_id: int('category_id'),
   image: text('image'),
-  default: int('default'),
+  isDefault: int('default'),
 });
 
 export const tabs = mysqlTable('tabs', {
@@ -65,7 +65,7 @@ export const tabs = mysqlTable('tabs', {
   name: text('name'),
   url: text('url'),
   url_local: text('url_local'),
-  default: int('default'),
+  isDefault: int('default'),
   enabled: int('enabled'),
   group_id: int('group_id'),
   group_id_max: int('group_id_max').default(0),
@@ -103,9 +103,9 @@ export const invites = mysqlTable('invites', {
 export const bookmarkCategories = mysqlTable('BOOKMARK-categories', {
   id: int('id').autoincrement().primaryKey(),
   order: int('order'),
-  category: text('category').unique(),
+  name: text('category').unique(),
   category_id: int('category_id'),
-  default: int('default'),
+  isDefault: int('default'),
 });
 
 export const bookmarkTabs = mysqlTable('BOOKMARK-tabs', {

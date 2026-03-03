@@ -13,7 +13,7 @@ export const userSchema = z.object({
   password: z.string(),
   email: z.string().nullable(),
   plex_token: z.string().nullable(),
-  group: z.string().nullable(),
+  groupName: z.string().nullable(),
   group_id: z.number().int().nullable(),
   locked: z.number().int().nullable(),
   image: z.string().nullable(),
@@ -23,19 +23,19 @@ export const userSchema = z.object({
 
 export const groupSchema = z.object({
   id: z.number().int(),
-  group: z.string(),
+  name: z.string(),
   group_id: z.number().int(),
   image: z.string().nullable(),
-  default: nullableBooleanAsInt,
+  isDefault: nullableBooleanAsInt,
 });
 
 export const categorySchema = z.object({
   id: z.number().int(),
   order: z.number().int().nullable(),
-  category: z.string(),
+  name: z.string(),
   category_id: z.number().int(),
   image: z.string().nullable(),
-  default: nullableBooleanAsInt,
+  isDefault: nullableBooleanAsInt,
 });
 
 export const tabSchema = z.object({
@@ -45,7 +45,7 @@ export const tabSchema = z.object({
   name: z.string(),
   url: z.string().nullable(),
   url_local: z.string().nullable(),
-  default: nullableBooleanAsInt,
+  isDefault: nullableBooleanAsInt,
   enabled: nullableBooleanAsInt,
   group_id: z.number().int(),
   group_id_max: z.number().int().default(0),
@@ -87,9 +87,9 @@ export const inviteSchema = z.object({
 export const bookmarkCategorySchema = z.object({
   id: z.number().int(),
   order: z.number().int().nullable(),
-  category: z.string(),
+  name: z.string(),
   category_id: z.number().int(),
-  default: nullableBooleanAsInt,
+  isDefault: nullableBooleanAsInt,
 });
 
 export const bookmarkTabSchema = z.object({

@@ -383,7 +383,7 @@ export async function findOrCreateLdapUser(
       id: number
       username: string | null
       email: string | null
-      group: string | null
+      groupName: string | null
       group_id: number | null
       image: string | null
     }
@@ -401,7 +401,7 @@ export async function findOrCreateLdapUser(
       username: ldapUser.username,
       password: passwordHash,
       email: ldapUser.email,
-      group: groupName,
+      groupName: groupName,
       group_id: groupId,
       locked: 0,
       image: null,
@@ -424,7 +424,7 @@ export async function findOrCreateLdapUser(
       id: number
       username: string | null
       email: string | null
-      group: string | null
+      groupName: string | null
       group_id: number | null
       image: string | null
     }
@@ -437,7 +437,7 @@ export async function findOrCreateLdapUser(
       username: ldapUser.username,
       password: passwordHash,
       email: ldapUser.email,
-      group: groupName,
+      groupName: groupName,
       group_id: groupId,
       locked: 0,
       image: null,
@@ -458,7 +458,7 @@ export async function findOrCreateLdapUser(
       id: number
       username: string | null
       email: string | null
-      group: string | null
+      groupName: string | null
       group_id: number | null
       image: string | null
     }
@@ -470,7 +470,7 @@ export async function findOrCreateLdapUser(
     username: ldapUser.username,
     password: passwordHash,
     email: ldapUser.email,
-    group: groupName,
+    groupName: groupName,
     group_id: groupId,
     locked: 0,
     image: null,
@@ -491,7 +491,7 @@ export async function findOrCreateLdapUser(
     id: number
     username: string | null
     email: string | null
-    group: string | null
+    groupName: string | null
     group_id: number | null
     image: string | null
   }

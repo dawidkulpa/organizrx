@@ -10,7 +10,7 @@ export const users = pgTable('users', {
   password: text('password'),
   email: text('email'),
   plex_token: text('plex_token'),
-  group: text('group'),
+  groupName: text('group'),
   group_id: integer('group_id'),
   locked: integer('locked'),
   image: text('image'),
@@ -43,19 +43,19 @@ export const tokens = pgTable('tokens', {
 
 export const groups = pgTable('groups', {
   id: serial('id').primaryKey(),
-  group: text('group').unique(),
+  name: text('group').unique(),
   group_id: integer('group_id'),
   image: text('image'),
-  default: integer('default'),
+  isDefault: integer('default'),
 });
 
 export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
   order: integer('order'),
-  category: text('category').unique(),
+  name: text('category').unique(),
   category_id: integer('category_id'),
   image: text('image'),
-  default: integer('default'),
+  isDefault: integer('default'),
 });
 
 export const tabs = pgTable('tabs', {
@@ -65,7 +65,7 @@ export const tabs = pgTable('tabs', {
   name: text('name'),
   url: text('url'),
   url_local: text('url_local'),
-  default: integer('default'),
+  isDefault: integer('default'),
   enabled: integer('enabled'),
   group_id: integer('group_id'),
   group_id_max: integer('group_id_max').default(0),
@@ -103,9 +103,9 @@ export const invites = pgTable('invites', {
 export const bookmarkCategories = pgTable('BOOKMARK-categories', {
   id: serial('id').primaryKey(),
   order: integer('order'),
-  category: text('category').unique(),
+  name: text('category').unique(),
   category_id: integer('category_id'),
-  default: integer('default'),
+  isDefault: integer('default'),
 });
 
 export const bookmarkTabs = pgTable('BOOKMARK-tabs', {

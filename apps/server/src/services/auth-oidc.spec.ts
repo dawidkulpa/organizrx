@@ -350,7 +350,7 @@ describe('auth-oidc service', () => {
       expect(user?.username).toBe('newuser')
       expect(user?.email).toBe('newuser@example.com')
       expect(user?.group_id).toBe(4)
-      expect(user?.group).toBe('User')
+      expect(user?.groupName).toBe('User')
       expect(user?.image).toBe('https://example.com/avatar.jpg')
     })
 
@@ -377,7 +377,7 @@ describe('auth-oidc service', () => {
       expect(user).not.toBeNull()
       expect(user?.id).toBe(1) // Same user, not a new one
       expect(user?.group_id).toBe(0)
-      expect(user?.group).toBe('Admin')
+      expect(user?.groupName).toBe('Admin')
     })
 
     it('should find existing user by email', async () => {

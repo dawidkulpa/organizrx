@@ -62,7 +62,7 @@ export interface CreateUserRequest {
   username: string;
   password: string;
   email?: string;
-  group?: string;
+  groupName?: string;
   group_id?: number;
 }
 
@@ -74,7 +74,7 @@ export interface UpdateUserRequest {
   username?: string;
   password?: string;
   email?: string;
-  group?: string;
+  groupName?: string;
   group_id?: number;
   image?: string;
 }
@@ -98,10 +98,10 @@ export interface GetGroupByIdResponse {
 }
 
 export interface CreateGroupRequest {
-  group: string;
+  name: string;
   group_id: number;
   image?: string;
-  default?: number;
+  isDefault?: number;
 }
 
 export interface CreateGroupResponse {
@@ -109,10 +109,10 @@ export interface CreateGroupResponse {
 }
 
 export interface UpdateGroupRequest {
-  group?: string;
+  name?: string;
   group_id?: number;
   image?: string;
-  default?: number;
+  isDefault?: number;
 }
 
 export interface UpdateGroupResponse {
@@ -134,11 +134,11 @@ export interface GetCategoryByIdResponse {
 }
 
 export interface CreateCategoryRequest {
-  category: string;
+  name: string;
   category_id: number;
   order?: number;
   image?: string;
-  default?: number;
+  isDefault?: number;
 }
 
 export interface CreateCategoryResponse {
@@ -146,11 +146,11 @@ export interface CreateCategoryResponse {
 }
 
 export interface UpdateCategoryRequest {
-  category?: string;
+  name?: string;
   category_id?: number;
   order?: number;
   image?: string;
-  default?: number;
+  isDefault?: number;
 }
 
 export interface UpdateCategoryResponse {
@@ -289,10 +289,10 @@ export interface DeleteInviteResponse {
 export interface GetBookmarkCategoriesResponse extends PaginatedResponse<BookmarkCategory> {}
 
 export interface CreateBookmarkCategoryRequest {
-  category: string;
+  name: string;
   category_id: number;
   order?: number;
-  default?: number;
+  isDefault?: number;
 }
 
 export interface CreateBookmarkCategoryResponse {

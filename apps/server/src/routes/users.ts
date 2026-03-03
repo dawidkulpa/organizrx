@@ -83,7 +83,7 @@ users.post('/', authMiddleware(), requireGroup(0), async (c) => {
     }, 400)
   }
 
-  const { username, password, email, group, group_id } = parsed.data
+  const { username, password, email, groupName, group_id } = parsed.data
 
   // Check username uniqueness
   if (await isUsernameTaken(username)) {
@@ -99,7 +99,7 @@ users.post('/', authMiddleware(), requireGroup(0), async (c) => {
     username,
     password: passwordHash,
     email: email ?? null,
-    group: group ?? null,
+    groupName: groupName ?? null,
     group_id: group_id ?? null,
   })
 
@@ -137,7 +137,7 @@ users.put('/:id', authMiddleware(), async (c) => {
 
   // Regular users cannot change username, group, group_id
   if (!isAdmin) {
-    if (parsed.data.username !== undefined || parsed.data.group !== undefined || parsed.data.group_id !== undefined) {
+    if (parsed.data.username !== undefined || parsed.data.groupName !== undefined || parsed.data.group_id !== undefined) {
       return c.json({
         error: { code: 'FORBIDDEN', message: 'Only admins can change username or group settings' },
       }, 403)

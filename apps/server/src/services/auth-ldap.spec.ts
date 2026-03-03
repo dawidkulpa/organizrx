@@ -529,7 +529,7 @@ describe('auth-ldap service', () => {
       expect(result.username).toBe('ldapuser')
       expect(result.email).toBe('ldap@example.com')
       expect(result.group_id).toBe(4)
-      expect(result.group).toBe('User')
+      expect(result.groupName).toBe('User')
     })
 
     it('should return existing user when already created', async () => {
@@ -582,7 +582,7 @@ describe('auth-ldap service', () => {
       }
 
       const result = await findOrCreateLdapUser(ldapUser, 0)
-      expect(result.group).toBe('Admin')
+      expect(result.groupName).toBe('Admin')
       expect(result.group_id).toBe(0)
     })
 

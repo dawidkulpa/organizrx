@@ -280,7 +280,7 @@ describe('auth-2fa service', () => {
         id: 1,
         username: 'testuser',
         email: 'test@example.com',
-        group: 'User',
+        groupName: 'User',
         group_id: 999,
         image: null,
       }

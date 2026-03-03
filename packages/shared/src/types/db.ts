@@ -12,7 +12,7 @@ export interface User {
   password: string;
   email: string | null;
   plex_token: string | null;
-  group: string | null;
+  groupName: string | null;
   group_id: number | null;
   locked: number | null; // boolean as integer (0/1)
   image: string | null;
@@ -25,10 +25,10 @@ export interface User {
  */
 export interface Group {
   id: number;
-  group: string; // unique group name
+  name: string; // unique group name
   group_id: number; // numeric group identifier
   image: string | null;
-  default: number | null; // boolean as integer (0/1)
+  isDefault: number | null; // boolean as integer (0/1)
 }
 
 /**
@@ -37,10 +37,10 @@ export interface Group {
 export interface Category {
   id: number;
   order: number | null;
-  category: string; // unique category name
+  name: string; // unique category name
   category_id: number;
   image: string | null;
-  default: number | null; // boolean as integer (0/1)
+  isDefault: number | null; // boolean as integer (0/1)
 }
 
 /**
@@ -53,7 +53,7 @@ export interface Tab {
   name: string;
   url: string | null;
   url_local: string | null;
-  default: number | null; // boolean as integer (0/1)
+  isDefault: number | null; // boolean as integer (0/1)
   enabled: number | null; // boolean as integer (0/1)
   group_id: number;
   group_id_max: number; // defaults to 0
@@ -104,9 +104,9 @@ export interface Invite {
 export interface BookmarkCategory {
   id: number;
   order: number | null;
-  category: string; // unique
+  name: string; // unique
   category_id: number;
-  default: number | null; // boolean as integer (0/1)
+  isDefault: number | null; // boolean as integer (0/1)
 }
 
 /**

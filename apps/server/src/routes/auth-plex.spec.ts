@@ -404,7 +404,7 @@ describe('auth-plex routes', () => {
         id: 1,
         username: 'testuser',
         email: 'test@example.com',
-        group: 'User',
+        groupName: 'User',
         group_id: 4,
         image: null,
       })
@@ -434,7 +434,7 @@ describe('auth-plex routes', () => {
         id: 1,
         username: 'testuser',
         email: 'test@example.com',
-        group: 'User',
+        groupName: 'User',
         group_id: 4,
         image: null,
       })
@@ -470,7 +470,7 @@ describe('auth-plex routes', () => {
         id: 1,
         username: 'testuser',
         email: 'test@example.com',
-        group: 'User',
+        groupName: 'User',
         group_id: 4,
         image: null,
       })
@@ -522,7 +522,7 @@ describe('auth-plex routes', () => {
         id: 1,
         username: 'testuser',
         email: 'test@example.com',
-        group: 'User',
+        groupName: 'User',
         group_id: 4,
         image: null,
       })

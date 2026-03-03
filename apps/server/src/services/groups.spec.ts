@@ -91,9 +91,9 @@ describe('groups service', () => {
       const groups = await listGroups()
 
       expect(groups.length).toBe(6)
-      expect(groups[0].group).toBe('Admin')
+      expect(groups[0].name).toBe('Admin')
       expect(groups[0].group_id).toBe(0)
-      expect(groups[5].group).toBe('Guest')
+      expect(groups[5].name).toBe('Guest')
       expect(groups[5].group_id).toBe(999)
     })
 
@@ -120,7 +120,7 @@ describe('groups service', () => {
       const group = await getGroupById(adminGroup.id)
 
       expect(group).not.toBeNull()
-      expect(group?.group).toBe('Admin')
+      expect(group?.name).toBe('Admin')
       expect(group?.group_id).toBe(0)
     })
 
@@ -140,16 +140,16 @@ describe('groups service', () => {
     it('should create a custom group with negative group_id', async () => {
       await setupDb()
       const created = await createGroup({
-        group: 'Custom Admin',
+        name: 'Custom Admin',
         group_id: -1,
         image: 'custom.png',
-        default: 0,
+        isDefault: 0,
       })
 
-      expect(created.group).toBe('Custom Admin')
+      expect(created.name).toBe('Custom Admin')
       expect(created.group_id).toBe(-1)
       expect(created.image).toBe('custom.png')
-      expect(created.default).toBe(0)
+      expect(created.isDefault).toBe(0)
     })
 
     it('should throw error for invalid group_id range', async () => {
@@ -157,10 +157,10 @@ describe('groups service', () => {
 
       expect(
         createGroup({
-          group: 'Invalid',
+          name: 'Invalid',
           group_id: 5,
           image: undefined,
-          default: 0,
+          isDefault: 0,
         })
       ).rejects.toThrow('Custom groups must have group_id <= 0 or >= 999')
     })
@@ -168,13 +168,13 @@ describe('groups service', () => {
     it('should create group with default values', async () => {
       await setupDb()
       const created = await createGroup({
-        group: 'Simple Group',
+        name: 'Simple Group',
         group_id: -5,
       })
 
-      expect(created.group).toBe('Simple Group')
+      expect(created.name).toBe('Simple Group')
       expect(created.image).toBeNull()
-      expect(created.default).toBe(0)
+      expect(created.isDefault).toBe(0)
     })
   })
 
@@ -186,23 +186,23 @@ describe('groups service', () => {
     it('should update group name and image', async () => {
       await setupDb()
       const customGroup = await createGroup({
-        group: 'Original',
+        name: 'Original',
         group_id: -2,
       })
 
       const updated = await updateGroup(customGroup.id, {
-        group: 'Updated',
+        name: 'Updated',
         image: 'new-image.png',
       })
 
-      expect(updated?.group).toBe('Updated')
+      expect(updated?.name).toBe('Updated')
       expect(updated?.image).toBe('new-image.png')
       expect(updated?.group_id).toBe(-2)
     })
 
     it('should return null for non-existent group', async () => {
       await setupDb()
-      const updated = await updateGroup(9999, { group: 'Test' })
+      const updated = await updateGroup(9999, { name: 'Test' })
 
       expect(updated).toBeNull()
     })
@@ -210,7 +210,7 @@ describe('groups service', () => {
     it('should throw error when changing group_id of default group', async () => {
       await setupDb()
       const groups = await listGroups()
-      const userGroup = groups.find((g) => g.group === 'User')
+      const userGroup = groups.find((g) => g.name === 'User')
 
       expect(
         updateGroup(userGroup!.id, { group_id: 10 })
@@ -226,7 +226,7 @@ describe('groups service', () => {
     it('should delete a custom group', async () => {
       await setupDb()
       const created = await createGroup({
-        group: 'To Delete',
+        name: 'To Delete',
         group_id: -10,
       })
 
@@ -247,7 +247,7 @@ describe('groups service', () => {
     it('should throw error when deleting default group by default flag', async () => {
       await setupDb()
       const groups = await listGroups()
-      const userGroup = groups.find((g) => g.default === 1)
+      const userGroup = groups.find((g) => g.isDefault === 1)
 
       expect(
         deleteGroup(userGroup!.id)
@@ -269,7 +269,7 @@ describe('groups service', () => {
       const db = getRawDb() as SqliteDb
 
       const created = await createGroup({
-        group: 'Has Users',
+        name: 'Has Users',
         group_id: -20,
       })
 

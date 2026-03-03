@@ -16,7 +16,7 @@ export interface Tab {
   name: string | null
   url: string | null
   url_local: string | null
-  default: number | null
+  isDefault: number | null
   enabled: number | null
   group_id: number | null
   group_id_max: number
@@ -39,7 +39,7 @@ export interface CreateTabData {
   url_local?: string
   order?: number
   enabled?: number
-  default?: number
+  isDefault?: number
   add_to_admin?: number
   image?: string
   type?: number
@@ -60,7 +60,7 @@ export interface UpdateTabData {
   url_local?: string
   order?: number
   enabled?: number
-  default?: number
+  isDefault?: number
   add_to_admin?: number
   image?: string
   type?: number
@@ -178,7 +178,7 @@ export async function createTab(data: CreateTabData): Promise<Tab> {
     url: data.url ?? null,
     url_local: data.url_local ?? null,
     enabled: data.enabled ?? null,
-    default: data.default ?? null,
+    isDefault: data.isDefault ?? null,
     add_to_admin: data.add_to_admin ?? 0,
     image: data.image ?? null,
     type: data.type ?? null,
@@ -225,7 +225,7 @@ export async function updateTab(id: number, data: UpdateTabData): Promise<Tab | 
     ...(data.url_local !== undefined && { url_local: data.url_local }),
     ...(data.order !== undefined && { order: data.order }),
     ...(data.enabled !== undefined && { enabled: data.enabled }),
-    ...(data.default !== undefined && { default: data.default }),
+    ...(data.isDefault !== undefined && { isDefault: data.isDefault }),
     ...(data.add_to_admin !== undefined && { add_to_admin: data.add_to_admin }),
     ...(data.image !== undefined && { image: data.image }),
     ...(data.type !== undefined && { type: data.type }),

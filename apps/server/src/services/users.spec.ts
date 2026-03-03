@@ -88,7 +88,7 @@ describe('users service', () => {
         username: 'testuser',
         password: passwordHash,
         email: 'test@example.com',
-        group: 'User',
+        groupName: 'User',
         group_id: 4,
       })
 
@@ -96,7 +96,7 @@ describe('users service', () => {
       expect(user.id).toBeGreaterThan(0)
       expect(user.username).toBe('testuser')
       expect(user.email).toBe('test@example.com')
-      expect(user.group).toBe('User')
+      expect(user.groupName).toBe('User')
       expect(user.group_id).toBe(4)
       expect(user.locked).toBe(0)
     })
@@ -113,7 +113,7 @@ describe('users service', () => {
       expect(user).toBeDefined()
       expect(user.username).toBe('minimaluser')
       expect(user.email).toBeNull()
-      expect(user.group).toBeNull()
+      expect(user.groupName).toBeNull()
       expect(user.group_id).toBeNull()
     })
   })
@@ -243,14 +243,14 @@ describe('users service', () => {
 
       const updated = await updateUser(created.id, {
         email: 'multi@example.com',
-        group: 'Admin',
+        groupName: 'Admin',
         group_id: 0,
         image: 'avatar.png',
       })
 
       expect(updated).toBeDefined()
       expect(updated?.email).toBe('multi@example.com')
-      expect(updated?.group).toBe('Admin')
+      expect(updated?.groupName).toBe('Admin')
       expect(updated?.group_id).toBe(0)
       expect(updated?.image).toBe('avatar.png')
     })

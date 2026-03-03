@@ -355,7 +355,7 @@ interface UserRow {
   username: string | null
   password: string | null
   email: string | null
-  group: string | null
+  groupName: string | null
   group_id: number | null
   locked: number | null
   image: string | null
@@ -427,7 +427,7 @@ export async function findOrCreateOidcUser(
       id: existing.id,
       username: existing.username,
       email: oidcUser.email ?? existing.email,
-      group: groupName,
+      groupName: groupName,
       group_id: groupId,
       image: oidcUser.picture ?? existing.image,
     })
@@ -453,7 +453,7 @@ export async function findOrCreateOidcUser(
       username,
       password: hashedPassword,
       email: oidcUser.email,
-      group: groupName,
+      groupName: groupName,
       group_id: groupId,
       image: oidcUser.picture ?? null,
       register_date: now.toISOString(),
@@ -467,7 +467,7 @@ export async function findOrCreateOidcUser(
       username,
       password: hashedPassword,
       email: oidcUser.email,
-      group: groupName,
+      groupName: groupName,
       group_id: groupId,
       image: oidcUser.picture ?? null,
       register_date: now,
@@ -481,7 +481,7 @@ export async function findOrCreateOidcUser(
       username,
       password: hashedPassword,
       email: oidcUser.email,
-      group: groupName,
+      groupName: groupName,
       group_id: groupId,
       image: oidcUser.picture ?? null,
       register_date: now,
@@ -496,7 +496,7 @@ export async function findOrCreateOidcUser(
     id: userId,
     username,
     email: oidcUser.email,
-    group: groupName,
+    groupName: groupName,
     group_id: groupId,
     image: oidcUser.picture ?? null,
   })
@@ -541,7 +541,7 @@ async function updateUserOidc(
 
   const updates = {
     auth_service: authServiceValue,
-    group: groupName,
+    groupName: groupName,
     group_id: groupId,
   }
 

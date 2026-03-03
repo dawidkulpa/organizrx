@@ -30,8 +30,8 @@ interface Tab {
   preload: number | null; timeout: number | null; timeout_ms: number | null;
 }
 
-interface Category { id: number; name: string; order: number; default_cat: number | null; image: string | null; }
-interface Group { id: number; name: string; group_id: number; image: string | null; default_group: number | null; }
+interface Category { id: number; name: string; order: number; isDefault: number | null; image: string | null; }
+interface Group { id: number; name: string; group_id: number; image: string | null; isDefault: number | null; }
 
 // ── Component ────────────────────────────────────────────────────────────────
 export default function TabsSettings() {

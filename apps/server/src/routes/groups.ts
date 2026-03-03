@@ -54,7 +54,7 @@ groups.post('/', authMiddleware(), requireGroup(0), async (c) => {
     }, 400)
   }
 
-  const { group, group_id, image, default: isDefault } = parsed.data
+  const { name, group_id, image, isDefault } = parsed.data
 
   // Validate: custom groups must have group_id <= 0 or special IDs
   if (group_id > 0 && group_id < 999) {
@@ -65,10 +65,10 @@ groups.post('/', authMiddleware(), requireGroup(0), async (c) => {
 
   try {
     const created = await createGroup({
-      group,
+      name,
       group_id,
       image,
-      default: isDefault,
+      isDefault,
     })
 
     return c.json({

@@ -205,16 +205,16 @@ describe('connection manager', () => {
 
       // Insert a row via drizzle
       await db.insert(sqliteSchema.groups).values({
-        group: 'TestGroup',
+        name: 'TestGroup',
         group_id: 99,
         image: 'test.png',
-        default: 0,
+        isDefault: 0,
       })
 
       // Read it back
       const rows = await db.select().from(sqliteSchema.groups)
       expect(rows).toHaveLength(1)
-      expect(rows[0].group).toBe('TestGroup')
+      expect(rows[0].name).toBe('TestGroup')
       expect(rows[0].group_id).toBe(99)
     })
 
