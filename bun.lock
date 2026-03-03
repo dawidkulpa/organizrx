@@ -87,6 +87,106 @@
         "typescript": "^5.3.3",
       },
     },
+    "plugins/packages/plugin-emby": {
+      "name": "@organizrx/plugin-emby",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-jellyfin": {
+      "name": "@organizrx/plugin-jellyfin",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-nzbget": {
+      "name": "@organizrx/plugin-nzbget",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-overseerr": {
+      "name": "@organizrx/plugin-overseerr",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-plex": {
+      "name": "@organizrx/plugin-plex",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-qbittorrent": {
+      "name": "@organizrx/plugin-qbittorrent",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-radarr": {
+      "name": "@organizrx/plugin-radarr",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-sabnzbd": {
+      "name": "@organizrx/plugin-sabnzbd",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-sonarr": {
+      "name": "@organizrx/plugin-sonarr",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-tautulli": {
+      "name": "@organizrx/plugin-tautulli",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.3.3",
+      },
+    },
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
@@ -223,7 +323,27 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
+    "@organizrx/plugin-emby": ["@organizrx/plugin-emby@workspace:plugins/packages/plugin-emby"],
+
+    "@organizrx/plugin-jellyfin": ["@organizrx/plugin-jellyfin@workspace:plugins/packages/plugin-jellyfin"],
+
+    "@organizrx/plugin-nzbget": ["@organizrx/plugin-nzbget@workspace:plugins/packages/plugin-nzbget"],
+
+    "@organizrx/plugin-overseerr": ["@organizrx/plugin-overseerr@workspace:plugins/packages/plugin-overseerr"],
+
+    "@organizrx/plugin-plex": ["@organizrx/plugin-plex@workspace:plugins/packages/plugin-plex"],
+
+    "@organizrx/plugin-qbittorrent": ["@organizrx/plugin-qbittorrent@workspace:plugins/packages/plugin-qbittorrent"],
+
+    "@organizrx/plugin-radarr": ["@organizrx/plugin-radarr@workspace:plugins/packages/plugin-radarr"],
+
+    "@organizrx/plugin-sabnzbd": ["@organizrx/plugin-sabnzbd@workspace:plugins/packages/plugin-sabnzbd"],
+
     "@organizrx/plugin-sdk": ["@organizrx/plugin-sdk@workspace:packages/plugin-sdk"],
+
+    "@organizrx/plugin-sonarr": ["@organizrx/plugin-sonarr@workspace:plugins/packages/plugin-sonarr"],
+
+    "@organizrx/plugin-tautulli": ["@organizrx/plugin-tautulli@workspace:plugins/packages/plugin-tautulli"],
 
     "@organizrx/server": ["@organizrx/server@workspace:apps/server"],
 

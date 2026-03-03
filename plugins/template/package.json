@@ -1,0 +1,17 @@
+{
+  "name": "@organizrx/plugin-__PLUGIN_ID__",
+  "version": "0.0.1",
+  "description": "__PLUGIN_NAME__ integration for OrganizrX",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@organizrx/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

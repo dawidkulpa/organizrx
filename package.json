@@ -6,7 +6,8 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "plugins/packages/*"
   ],
   "scripts": {
     "dev": "bun run --parallel dev:server dev:web",
@@ -22,7 +23,8 @@
     "lint": "bun run lint:root && bun run lint:server && bun run lint:web",
     "lint:root": "eslint . --ext .ts,.tsx",
     "lint:server": "cd apps/server && bun run lint",
-    "lint:web": "cd apps/web && bun run lint"
+    "lint:web": "cd apps/web && bun run lint",
+    "create-plugin": "bun run scripts/create-plugin.ts"
   },
   "dependencies": {},
   "devDependencies": {
