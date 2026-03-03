@@ -11,8 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 import type { Resolver, FieldValues } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-export function typedZodResolver<T extends FieldValues>(
-  schema: Parameters<typeof zodResolver>[0],
-): Resolver<T> {
-  return zodResolver(schema) as unknown as Resolver<T>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge Zod v4 ↔ @hookform/resolvers type gap
+export function typedZodResolver<T extends FieldValues>(schema: unknown): Resolver<T> {
+  return zodResolver(schema as Parameters<typeof zodResolver>[0]) as unknown as Resolver<T>
 }

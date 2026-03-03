@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { FieldValues, Resolver, SubmitHandler, useForm, UseFormReturn } from 'react-hook-form'
+import { FieldValues, SubmitHandler, useForm, UseFormReturn } from 'react-hook-form'
 import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { Loader2, Save, AlertCircle } from 'lucide-react'
 import { api } from '../api/client'
-import { cn } from '../utils'
+import { cn, typedZodResolver } from '../utils'
 
 interface SettingsFormProps<T extends FieldValues> {
   schema: z.ZodType<T>
@@ -26,7 +25,7 @@ export function SettingsForm<T extends FieldValues>({
   const [isSaving, setIsSaving] = useState(false)
 
   const form = useForm<T>({
-    resolver: zodResolver(schema as Parameters<typeof zodResolver>[0]) as unknown as Resolver<T>,
+    resolver: typedZodResolver<T>(schema),
     mode: 'onChange',
   })
 

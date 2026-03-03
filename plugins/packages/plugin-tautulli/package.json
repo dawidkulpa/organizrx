@@ -9,9 +9,13 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@organizrx/plugin-sdk": "workspace:*"
+    "@organizrx/plugin-sdk": "workspace:*",
+    "hono": "^4.0.0"
   },
   "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^18.2.0",
+    "react": "^18.2.0",
     "typescript": "^5.3.3"
   }
 }

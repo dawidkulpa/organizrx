@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api/client'
-import { cn } from '../../utils'
+import { cn, typedZodResolver } from '../../utils'
 import { toast } from 'sonner'
 import { Users, Plus, Pencil, Trash2, Shield, X, Save, Image as ImageIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
 interface Group {
@@ -40,7 +39,7 @@ export default function SettingsGroups() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<GroupFormData>({
-    resolver: zodResolver(groupSchema),
+    resolver: typedZodResolver(groupSchema),
   })
 
   const fetchData = async () => {
