@@ -10,7 +10,8 @@ import {
   Server,
   Puzzle,
   Key,
-} from 'lucide-react'
+  FileText,
+}  from 'lucide-react'
 import { cn } from '../utils'
 
 export default function SettingsLayout() {
@@ -25,6 +26,7 @@ export default function SettingsLayout() {
     { icon: Server, label: 'System', to: '/settings/system' },
     { icon: Puzzle, label: 'Plugins', to: '/settings/plugins' },
     { icon: Key, label: 'SSO', to: '/settings/sso' },
+    { icon: FileText, label: 'Logs', to: '/settings/logs' },
   ]
 
   return (

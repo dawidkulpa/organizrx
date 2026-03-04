@@ -25,6 +25,7 @@
         "mysql2": "^3.18.2",
         "openid-client": "^6.8.2",
         "otpauth": "^9.5.0",
+        "pino": "^10.3.1",
         "postgres": "^3.4.8",
         "sharp": "^0.34.5",
         "zod": "^4.3.6",
@@ -32,6 +33,7 @@
       "devDependencies": {
         "@types/adm-zip": "^0.5.7",
         "@types/bun": "latest",
+        "@types/pino": "^7.0.5",
         "drizzle-kit": "^0.31.9",
         "typescript": "^5.3.3",
       },
@@ -91,6 +93,141 @@
         "typescript": "^5.3.3",
       },
     },
+    "plugins/packages/plugin-adguard": {
+      "name": "@organizrx/plugin-adguard",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-calendar": {
+      "name": "@organizrx/plugin-calendar",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-couchpotato": {
+      "name": "@organizrx/plugin-couchpotato",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-customhtml-1": {
+      "name": "@organizrx/plugin-customhtml-1",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-customhtml-2": {
+      "name": "@organizrx/plugin-customhtml-2",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-customhtml-3": {
+      "name": "@organizrx/plugin-customhtml-3",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-customhtml-4": {
+      "name": "@organizrx/plugin-customhtml-4",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-deluge": {
+      "name": "@organizrx/plugin-deluge",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-donate": {
+      "name": "@organizrx/plugin-donate",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
     "plugins/packages/plugin-emby": {
       "name": "@organizrx/plugin-emby",
       "version": "0.0.1",
@@ -98,6 +235,66 @@
         "@organizrx/plugin-sdk": "workspace:*",
         "hono": "^4.0.0",
         "react": "^18.2.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-embylivetv": {
+      "name": "@organizrx/plugin-embylivetv",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-healthchecks": {
+      "name": "@organizrx/plugin-healthchecks",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-jackett": {
+      "name": "@organizrx/plugin-jackett",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-jdownloader": {
+      "name": "@organizrx/plugin-jdownloader",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -119,6 +316,66 @@
         "typescript": "^5.3.3",
       },
     },
+    "plugins/packages/plugin-jellystat": {
+      "name": "@organizrx/plugin-jellystat",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-lidarr": {
+      "name": "@organizrx/plugin-lidarr",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-monitorr": {
+      "name": "@organizrx/plugin-monitorr",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-netdata": {
+      "name": "@organizrx/plugin-netdata",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
     "plugins/packages/plugin-nzbget": {
       "name": "@organizrx/plugin-nzbget",
       "version": "0.0.1",
@@ -130,6 +387,36 @@
         "@types/bun": "latest",
         "@types/react": "^18.2.0",
         "react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-octoprint": {
+      "name": "@organizrx/plugin-octoprint",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-ombi": {
+      "name": "@organizrx/plugin-ombi",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
         "typescript": "^5.3.3",
       },
     },
@@ -147,6 +434,21 @@
         "typescript": "^5.3.3",
       },
     },
+    "plugins/packages/plugin-pihole": {
+      "name": "@organizrx/plugin-pihole",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
     "plugins/packages/plugin-plex": {
       "name": "@organizrx/plugin-plex",
       "version": "0.0.1",
@@ -159,6 +461,21 @@
         "@types/bun": "latest",
         "@types/react": "^18.2.0",
         "react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-prowlarr": {
+      "name": "@organizrx/plugin-prowlarr",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
         "typescript": "^5.3.3",
       },
     },
@@ -191,6 +508,21 @@
         "typescript": "^5.3.3",
       },
     },
+    "plugins/packages/plugin-rtorrent": {
+      "name": "@organizrx/plugin-rtorrent",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
     "plugins/packages/plugin-sabnzbd": {
       "name": "@organizrx/plugin-sabnzbd",
       "version": "0.0.1",
@@ -205,11 +537,41 @@
         "typescript": "^5.3.3",
       },
     },
+    "plugins/packages/plugin-sickrage": {
+      "name": "@organizrx/plugin-sickrage",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
     "plugins/packages/plugin-sonarr": {
       "name": "@organizrx/plugin-sonarr",
       "version": "0.0.1",
       "dependencies": {
         "@hono/zod-validator": "^0.2.0",
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-speedtest": {
+      "name": "@organizrx/plugin-speedtest",
+      "version": "0.0.1",
+      "dependencies": {
         "@organizrx/plugin-sdk": "workspace:*",
         "hono": "^4.0.0",
         "react": "^18.2.0",
@@ -232,6 +594,111 @@
         "@types/bun": "latest",
         "@types/react": "^18.2.0",
         "react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-trakt": {
+      "name": "@organizrx/plugin-trakt",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-transmission": {
+      "name": "@organizrx/plugin-transmission",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-unifi": {
+      "name": "@organizrx/plugin-unifi",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-uptimekuma": {
+      "name": "@organizrx/plugin-uptimekuma",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-utorrent": {
+      "name": "@organizrx/plugin-utorrent",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-weather": {
+      "name": "@organizrx/plugin-weather",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
+        "typescript": "^5.3.3",
+      },
+    },
+    "plugins/packages/plugin-youtubesearch": {
+      "name": "@organizrx/plugin-youtubesearch",
+      "version": "0.0.1",
+      "dependencies": {
+        "@organizrx/plugin-sdk": "workspace:*",
+        "hono": "^4.0.0",
+        "react": "^18.2.0",
+        "zod": "^3.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/react": "^18.2.0",
         "typescript": "^5.3.3",
       },
     },
@@ -427,33 +894,97 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
+    "@organizrx/plugin-adguard": ["@organizrx/plugin-adguard@workspace:plugins/packages/plugin-adguard"],
+
+    "@organizrx/plugin-calendar": ["@organizrx/plugin-calendar@workspace:plugins/packages/plugin-calendar"],
+
+    "@organizrx/plugin-couchpotato": ["@organizrx/plugin-couchpotato@workspace:plugins/packages/plugin-couchpotato"],
+
+    "@organizrx/plugin-customhtml-1": ["@organizrx/plugin-customhtml-1@workspace:plugins/packages/plugin-customhtml-1"],
+
+    "@organizrx/plugin-customhtml-2": ["@organizrx/plugin-customhtml-2@workspace:plugins/packages/plugin-customhtml-2"],
+
+    "@organizrx/plugin-customhtml-3": ["@organizrx/plugin-customhtml-3@workspace:plugins/packages/plugin-customhtml-3"],
+
+    "@organizrx/plugin-customhtml-4": ["@organizrx/plugin-customhtml-4@workspace:plugins/packages/plugin-customhtml-4"],
+
+    "@organizrx/plugin-deluge": ["@organizrx/plugin-deluge@workspace:plugins/packages/plugin-deluge"],
+
+    "@organizrx/plugin-donate": ["@organizrx/plugin-donate@workspace:plugins/packages/plugin-donate"],
+
     "@organizrx/plugin-emby": ["@organizrx/plugin-emby@workspace:plugins/packages/plugin-emby"],
+
+    "@organizrx/plugin-embylivetv": ["@organizrx/plugin-embylivetv@workspace:plugins/packages/plugin-embylivetv"],
+
+    "@organizrx/plugin-healthchecks": ["@organizrx/plugin-healthchecks@workspace:plugins/packages/plugin-healthchecks"],
+
+    "@organizrx/plugin-jackett": ["@organizrx/plugin-jackett@workspace:plugins/packages/plugin-jackett"],
+
+    "@organizrx/plugin-jdownloader": ["@organizrx/plugin-jdownloader@workspace:plugins/packages/plugin-jdownloader"],
 
     "@organizrx/plugin-jellyfin": ["@organizrx/plugin-jellyfin@workspace:plugins/packages/plugin-jellyfin"],
 
+    "@organizrx/plugin-jellystat": ["@organizrx/plugin-jellystat@workspace:plugins/packages/plugin-jellystat"],
+
+    "@organizrx/plugin-lidarr": ["@organizrx/plugin-lidarr@workspace:plugins/packages/plugin-lidarr"],
+
+    "@organizrx/plugin-monitorr": ["@organizrx/plugin-monitorr@workspace:plugins/packages/plugin-monitorr"],
+
+    "@organizrx/plugin-netdata": ["@organizrx/plugin-netdata@workspace:plugins/packages/plugin-netdata"],
+
     "@organizrx/plugin-nzbget": ["@organizrx/plugin-nzbget@workspace:plugins/packages/plugin-nzbget"],
+
+    "@organizrx/plugin-octoprint": ["@organizrx/plugin-octoprint@workspace:plugins/packages/plugin-octoprint"],
+
+    "@organizrx/plugin-ombi": ["@organizrx/plugin-ombi@workspace:plugins/packages/plugin-ombi"],
 
     "@organizrx/plugin-overseerr": ["@organizrx/plugin-overseerr@workspace:plugins/packages/plugin-overseerr"],
 
+    "@organizrx/plugin-pihole": ["@organizrx/plugin-pihole@workspace:plugins/packages/plugin-pihole"],
+
     "@organizrx/plugin-plex": ["@organizrx/plugin-plex@workspace:plugins/packages/plugin-plex"],
+
+    "@organizrx/plugin-prowlarr": ["@organizrx/plugin-prowlarr@workspace:plugins/packages/plugin-prowlarr"],
 
     "@organizrx/plugin-qbittorrent": ["@organizrx/plugin-qbittorrent@workspace:plugins/packages/plugin-qbittorrent"],
 
     "@organizrx/plugin-radarr": ["@organizrx/plugin-radarr@workspace:plugins/packages/plugin-radarr"],
 
+    "@organizrx/plugin-rtorrent": ["@organizrx/plugin-rtorrent@workspace:plugins/packages/plugin-rtorrent"],
+
     "@organizrx/plugin-sabnzbd": ["@organizrx/plugin-sabnzbd@workspace:plugins/packages/plugin-sabnzbd"],
 
     "@organizrx/plugin-sdk": ["@organizrx/plugin-sdk@workspace:packages/plugin-sdk"],
 
+    "@organizrx/plugin-sickrage": ["@organizrx/plugin-sickrage@workspace:plugins/packages/plugin-sickrage"],
+
     "@organizrx/plugin-sonarr": ["@organizrx/plugin-sonarr@workspace:plugins/packages/plugin-sonarr"],
 
+    "@organizrx/plugin-speedtest": ["@organizrx/plugin-speedtest@workspace:plugins/packages/plugin-speedtest"],
+
     "@organizrx/plugin-tautulli": ["@organizrx/plugin-tautulli@workspace:plugins/packages/plugin-tautulli"],
+
+    "@organizrx/plugin-trakt": ["@organizrx/plugin-trakt@workspace:plugins/packages/plugin-trakt"],
+
+    "@organizrx/plugin-transmission": ["@organizrx/plugin-transmission@workspace:plugins/packages/plugin-transmission"],
+
+    "@organizrx/plugin-unifi": ["@organizrx/plugin-unifi@workspace:plugins/packages/plugin-unifi"],
+
+    "@organizrx/plugin-uptimekuma": ["@organizrx/plugin-uptimekuma@workspace:plugins/packages/plugin-uptimekuma"],
+
+    "@organizrx/plugin-utorrent": ["@organizrx/plugin-utorrent@workspace:plugins/packages/plugin-utorrent"],
+
+    "@organizrx/plugin-weather": ["@organizrx/plugin-weather@workspace:plugins/packages/plugin-weather"],
+
+    "@organizrx/plugin-youtubesearch": ["@organizrx/plugin-youtubesearch@workspace:plugins/packages/plugin-youtubesearch"],
 
     "@organizrx/server": ["@organizrx/server@workspace:apps/server"],
 
     "@organizrx/shared": ["@organizrx/shared@workspace:packages/shared"],
 
     "@organizrx/web": ["@organizrx/web@workspace:apps/web"],
+
+    "@pinojs/redact": ["@pinojs/redact@0.4.0", "", {}, "sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg=="],
 
     "@remix-run/router": ["@remix-run/router@1.23.2", "", {}, "sha512-Ic6m2U/rMjTkhERIa/0ZtXJP17QUi2CbWE7cqx4J58M8aA3QTfW+2UlQ4psvTX9IO1RfNVhK3pcpdjej7L+t2w=="],
 
@@ -567,6 +1098,8 @@
 
     "@types/node": ["@types/node@25.3.3", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-DpzbrH7wIcBaJibpKo9nnSQL0MTRdnWttGyE5haGwK86xgMOkFLp7vEyfQPGLOJh5wNYiJ3V9PmUMDhV9u8kkQ=="],
 
+    "@types/pino": ["@types/pino@7.0.5", "", { "dependencies": { "pino": "*" } }, "sha512-wKoab31pknvILkxAF8ss+v9iNyhw5Iu/0jLtRkUD74cNfOOLJNnqfFKAv0r7wVaTQxRZtWrMpGfShwwBjOcgcg=="],
+
     "@types/prop-types": ["@types/prop-types@15.7.15", "", {}, "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw=="],
 
     "@types/react": ["@types/react@18.3.28", "", { "dependencies": { "@types/prop-types": "*", "csstype": "^3.2.2" } }, "sha512-z9VXpC7MWrhfWipitjNdgCauoMLRdIILQsAEV+ZesIzBq/oUlxk0m3ApZuMFCXdnS4U7KrI+l3WRUEGQ8K1QKw=="],
@@ -618,6 +1151,8 @@
     "array-union": ["array-union@2.1.0", "", {}, "sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw=="],
 
     "asynckit": ["asynckit@0.4.0", "", {}, "sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q=="],
+
+    "atomic-sleep": ["atomic-sleep@1.0.0", "", {}, "sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ=="],
 
     "aws-ssl-profiles": ["aws-ssl-profiles@1.1.2", "", {}, "sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g=="],
 
@@ -915,6 +1450,8 @@
 
     "object-assign": ["object-assign@4.1.1", "", {}, "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg=="],
 
+    "on-exit-leak-free": ["on-exit-leak-free@2.1.2", "", {}, "sha512-0eJJY6hXLGf1udHwfNftBqH+g73EU4B504nZeKpz1sYRKafAghwxEJunB2O7rDZkL4PGfsMVnTXZ2EjibbqcsA=="],
+
     "once": ["once@1.4.0", "", { "dependencies": { "wrappy": "1" } }, "sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w=="],
 
     "openid-client": ["openid-client@6.8.2", "", { "dependencies": { "jose": "^6.1.3", "oauth4webapi": "^3.8.4" } }, "sha512-uOvTCndr4udZsKihJ68H9bUICrriHdUVJ6Az+4Ns6cW55rwM5h0bjVIzDz2SxgOI84LKjFyjOFvERLzdTUROGA=="],
@@ -941,6 +1478,12 @@
 
     "picomatch": ["picomatch@2.3.1", "", {}, "sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA=="],
 
+    "pino": ["pino@10.3.1", "", { "dependencies": { "@pinojs/redact": "^0.4.0", "atomic-sleep": "^1.0.0", "on-exit-leak-free": "^2.1.0", "pino-abstract-transport": "^3.0.0", "pino-std-serializers": "^7.0.0", "process-warning": "^5.0.0", "quick-format-unescaped": "^4.0.3", "real-require": "^0.2.0", "safe-stable-stringify": "^2.3.1", "sonic-boom": "^4.0.1", "thread-stream": "^4.0.0" }, "bin": { "pino": "bin.js" } }, "sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg=="],
+
+    "pino-abstract-transport": ["pino-abstract-transport@3.0.0", "", { "dependencies": { "split2": "^4.0.0" } }, "sha512-wlfUczU+n7Hy/Ha5j9a/gZNy7We5+cXp8YL+X+PG8S0KXxw7n/JXA3c46Y0zQznIJ83URJiwy7Lh56WLokNuxg=="],
+
+    "pino-std-serializers": ["pino-std-serializers@7.1.0", "", {}, "sha512-BndPH67/JxGExRgiX1dX0w1FvZck5Wa4aal9198SrRhZjH3GxKQUKIBnYJTdj2HDN3UQAS06HlfcSbQj2OHmaw=="],
+
     "postcss": ["postcss@8.5.6", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg=="],
 
     "postgres": ["postgres@3.4.8", "", {}, "sha512-d+JFcLM17njZaOLkv6SCev7uoLaBtfK86vMUXhW1Z4glPWh4jozno9APvW/XKFJ3CCxVoC7OL38BqRydtu5nGg=="],
@@ -951,6 +1494,8 @@
 
     "pretty-format": ["pretty-format@27.5.1", "", { "dependencies": { "ansi-regex": "^5.0.1", "ansi-styles": "^5.0.0", "react-is": "^17.0.1" } }, "sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ=="],
 
+    "process-warning": ["process-warning@5.0.0", "", {}, "sha512-a39t9ApHNx2L4+HBnQKqxxHNs1r7KF+Intd8Q/g1bUh6q0WIp9voPXJ/x0j+ZL45KF1pJd9+q2jLIRMfvEshkA=="],
+
     "prop-types": ["prop-types@15.8.1", "", { "dependencies": { "loose-envify": "^1.4.0", "object-assign": "^4.1.1", "react-is": "^16.13.1" } }, "sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg=="],
 
     "proxy-from-env": ["proxy-from-env@1.1.0", "", {}, "sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg=="],
@@ -958,6 +1503,8 @@
     "punycode": ["punycode@2.3.1", "", {}, "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="],
 
     "queue-microtask": ["queue-microtask@1.2.3", "", {}, "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A=="],
+
+    "quick-format-unescaped": ["quick-format-unescaped@4.0.4", "", {}, "sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg=="],
 
     "raf-schd": ["raf-schd@4.0.3", "", {}, "sha512-tQkJl2GRWh83ui2DiPTJz9wEiMN20syf+5oKfB03yYP7ioZcJwsIK8FjrtLwH1m7C7e+Tt2yYBlrOpdT+dyeIQ=="],
 
@@ -983,6 +1530,8 @@
 
     "react-router-dom": ["react-router-dom@6.30.3", "", { "dependencies": { "@remix-run/router": "1.23.2", "react-router": "6.30.3" }, "peerDependencies": { "react": ">=16.8", "react-dom": ">=16.8" } }, "sha512-pxPcv1AczD4vso7G4Z3TKcvlxK7g7TNt3/FNGMhfqyntocvYKj+GCatfigGDjbLozC4baguJ0ReCigoDJXb0ag=="],
 
+    "real-require": ["real-require@0.2.0", "", {}, "sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg=="],
+
     "redux": ["redux@5.0.1", "", {}, "sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w=="],
 
     "resize-observer-polyfill": ["resize-observer-polyfill@1.5.1", "", {}, "sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg=="],
@@ -999,6 +1548,8 @@
 
     "run-parallel": ["run-parallel@1.2.0", "", { "dependencies": { "queue-microtask": "^1.2.2" } }, "sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA=="],
 
+    "safe-stable-stringify": ["safe-stable-stringify@2.5.0", "", {}, "sha512-b3rppTKm9T+PsVCBEOUR46GWI7fdOs00VKZ1+9c1EWDaDMvjQc6tUwuFyIprgGgTcWoVHSKrU8H31ZHA2e0RHA=="],
+
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
 
     "scheduler": ["scheduler@0.23.2", "", { "dependencies": { "loose-envify": "^1.1.0" } }, "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ=="],
@@ -1013,6 +1564,8 @@
 
     "slash": ["slash@3.0.0", "", {}, "sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q=="],
 
+    "sonic-boom": ["sonic-boom@4.2.1", "", { "dependencies": { "atomic-sleep": "^1.0.0" } }, "sha512-w6AxtubXa2wTXAUsZMMWERrsIRAdrK0Sc+FUytWvYAhBJLyuI4llrMIC1DtlNSdI99EI86KZum2MMq3EAZlF9Q=="],
+
     "sonner": ["sonner@2.0.7", "", { "peerDependencies": { "react": "^18.0.0 || ^19.0.0 || ^19.0.0-rc", "react-dom": "^18.0.0 || ^19.0.0 || ^19.0.0-rc" } }, "sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w=="],
 
     "source-map": ["source-map@0.6.1", "", {}, "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="],
@@ -1020,6 +1573,8 @@
     "source-map-js": ["source-map-js@1.2.1", "", {}, "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA=="],
 
     "source-map-support": ["source-map-support@0.5.21", "", { "dependencies": { "buffer-from": "^1.0.0", "source-map": "^0.6.0" } }, "sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w=="],
+
+    "split2": ["split2@4.2.0", "", {}, "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="],
 
     "sql-escaper": ["sql-escaper@1.3.3", "", {}, "sha512-BsTCV265VpTp8tm1wyIm1xqQCS+Q9NHx2Sr+WcnUrgLrQ6yiDIvHYJV5gHxsj1lMBy2zm5twLaZao8Jd+S8JJw=="],
 
@@ -1040,6 +1595,8 @@
     "tapable": ["tapable@2.3.0", "", {}, "sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg=="],
 
     "text-table": ["text-table@0.2.0", "", {}, "sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw=="],
+
+    "thread-stream": ["thread-stream@4.0.0", "", { "dependencies": { "real-require": "^0.2.0" } }, "sha512-4iMVL6HAINXWf1ZKZjIPcz5wYaOdPhtO8ATvZ+Xqp3BTdaqtAwQkNmKORqcIo5YkQqGXq5cwfswDwMqqQNrpJA=="],
 
     "tiny-invariant": ["tiny-invariant@1.3.3", "", {}, "sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg=="],
 

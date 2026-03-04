@@ -166,4 +166,16 @@ export const api = {
     complete: (data: { username: string; password: string; email?: string; siteTitle?: string }) =>
       client.post('/wizard/complete', data),
   },
+  update: {
+    check: () => client.get('/update'),
+    changelog: () => client.get('/update/changelog'),
+  },
+  logs: {
+    getEntries: (params?: { page?: number; limit?: number; level?: string; search?: string }) =>
+      client.get('/logs', { params }),
+    getFiles: () => client.get('/logs/files'),
+    download: (filename: string) =>
+      client.get(`/logs/download/${filename}`, { responseType: 'blob' }),
+    clear: () => client.delete('/logs'),
+  },
 }

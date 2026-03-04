@@ -26,6 +26,8 @@ import backupRoutes from './routes/backup'
 import connectionTesterRoutes from './routes/connection-tester'
 import { getMigrationStatus, runMigration } from './migration'
 import imageRoutes from './routes/images'
+import updateRoutes from './routes/update'
+import logRoutes from './routes/logs'
 
 const { env } = await initConfig()
 
@@ -106,6 +108,8 @@ app.route('/api/migration', migrationRoutes)
 app.route('/api/backup', backupRoutes)
 app.route('/api/test-connection', connectionTesterRoutes)
 app.route('/api/images', imageRoutes)
+app.route('/api/update', updateRoutes)
+app.route('/api/logs', logRoutes)
 
 // Plugin management routes (BEFORE individual plugin routes)
 app.route('/api/plugins', pluginManagementRoutes)
