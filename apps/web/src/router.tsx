@@ -33,6 +33,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   useSessionInit()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const isInitializing = useAuthStore((s) => s.isInitializing)
+  const needsSetup = useAuthStore((s) => s.needsSetup)
 
   if (isInitializing) {
     return (
@@ -42,6 +43,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     )
   }
 
+  if (needsSetup) return <Navigate to="/wizard" replace />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return children
 }

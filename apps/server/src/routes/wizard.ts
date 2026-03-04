@@ -3,16 +3,24 @@ import { z } from 'zod'
 import { listUsers, createUser } from '../services/users'
 import { hashPassword } from '../services/auth'
 import { setSettings } from '../services/settings'
+import { resetSetupCache } from '../services/setup'
 
 const wizard = new Hono()
 
 // ── GET /api/wizard/status ─────────────────────────────────────
 // Returns whether the application needs initial setup (no users exist).
 wizard.get('/status', async (c) => {
-  const { total } = await listUsers(1, 1)
-  return c.json({
-    data: { needsSetup: total === 0 },
-  })
+  try {
+    const { total } = await listUsers(1, 1)
+    return c.json({
+      data: { needsSetup: total === 0 },
+    })
+  } catch {
+    // DB not ready (table missing, first-run) — treat as needs setup
+    return c.json({
+      data: { needsSetup: true },
+    })
+  }
 })
 
 // ── Wizard completion schema ───────────────────────────────────
@@ -73,6 +81,9 @@ wizard.post('/complete', async (c) => {
   }
   await setSettings(initialSettings)
 
+  // Reset the cached setup status so the redirect middleware
+  // knows setup is complete and stops redirecting to /wizard.
+  resetSetupCache()
   return c.json({
     data: {
       success: true,

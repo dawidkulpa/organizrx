@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { serveStatic } from 'hono/bun'
+import { checkSetupComplete } from './services/setup'
 import { initConfig } from './config'
 import { getConfig } from './config'
 import { initDb, healthCheck, closeDb, runMigrations, seedDefaultGroups } from './db'
@@ -80,14 +82,19 @@ app.use('/api/*', authProxyMiddleware())
 // Exposes only allowlisted settings needed by the Login page.
 const PUBLIC_SETTINGS_KEYS = ['LDAP_ENABLED', 'PLEX_ENABLED', 'OIDC_ENABLED', 'SITE_TITLE']
 app.get('/api/settings/public', async (c) => {
-  const results: Record<string, string> = {}
-  for (const key of PUBLIC_SETTINGS_KEYS) {
-    const value = await getSetting(key)
-    if (value !== null) {
-      results[key] = value
+  try {
+    const results: Record<string, string> = {}
+    for (const key of PUBLIC_SETTINGS_KEYS) {
+      const value = await getSetting(key)
+      if (value !== null) {
+        results[key] = value
+      }
     }
+    return c.json({ data: results })
+  } catch {
+    // DB not ready (table missing, first-run before wizard) — return empty
+    return c.json({ data: {} })
   }
-  return c.json({ data: results })
 })
 
 app.route('/api/auth', authRoutes)
@@ -117,11 +124,11 @@ app.route('/api/plugins', pluginManagementRoutes)
 // Mount plugin routes at /api/plugins/{pluginId}/
 mountPluginRoutes(app)
 
-
 // Top-level favicon redirect
 app.get('/favicon.ico', async (c) => {
   return c.redirect('/api/images/favicon.ico', 301)
 })
+
 // Health check endpoint — includes DB status
 app.get('/api/health', async (c) => {
   const dbHealth = await healthCheck()
@@ -132,7 +139,34 @@ app.get('/api/health', async (c) => {
   })
 })
 
-// 404 handler
+// ── Static file serving (built SPA) ────────────────────────────
+// Serve static assets from the Vite build output.
+// In dev mode the dist folder doesn't exist, so serveStatic simply
+// falls through and the SPA is served by Vite on port 5173.
+app.use('/*', serveStatic({ root: './apps/web/dist' }))
+
+// ── Wizard redirect for non-API page requests ─────────────────
+// If no users exist (first-run), redirect to /wizard so the SPA
+// can show the setup page.  API routes are unaffected.
+app.get('*', async (c, next) => {
+  const path = c.req.path
+  // Skip API routes and the wizard page itself
+  if (path.startsWith('/api/') || path === '/wizard') {
+    return next()
+  }
+  const setupDone = await checkSetupComplete()
+  if (!setupDone) {
+    return c.redirect('/wizard', 302)
+  }
+  return next()
+})
+
+// ── SPA catch-all ─────────────────────────────────────────────
+// Any non-API route that didn't match a static file → serve index.html
+// so client-side routing works (React Router).
+app.get('*', serveStatic({ path: './apps/web/dist/index.html' }))
+
+// 404 handler (for API routes that didn't match)
 app.notFound((c) => {
   return c.json({ error: 'Not found' }, 404)
 })

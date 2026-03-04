@@ -15,6 +15,7 @@ interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   isInitializing: boolean
+  needsSetup: boolean
   login: (username: string, password: string, rememberMe?: boolean) => Promise<LoginResult>
   logout: () => Promise<void>
   refresh: () => Promise<boolean>
@@ -30,6 +31,7 @@ const initialAuthState = {
   isAuthenticated: false,
   isLoading: false,
   isInitializing: true,
+  needsSetup: false,
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -92,6 +94,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initSession: async () => {
     try {
+      // Check wizard status first — if setup is needed, skip auth entirely
+      const wizardRes = await client.get('/wizard/status')
+      const { needsSetup } = wizardRes.data.data
+      if (needsSetup) {
+        set({ ...initialAuthState, isInitializing: false, needsSetup: true })
+        return
+      }
+
       const res = await client.post('/auth/refresh')
       const { data } = res.data
       // Fetch the full user profile after restoring session
@@ -103,6 +113,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: meRes.data.data.user,
         isAuthenticated: true,
         isInitializing: false,
+        needsSetup: false,
       })
     } catch {
       set({ ...initialAuthState, isInitializing: false })

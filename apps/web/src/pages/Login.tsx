@@ -43,6 +43,20 @@ export default function Login() {
     };
     fetchSettings();
   }, []);
+  useEffect(() => {
+    const checkWizard = async () => {
+      try {
+        const res = await client.get('/wizard/status');
+        if (res.data.data.needsSetup) {
+          navigate('/wizard', { replace: true });
+        }
+      } catch {
+        // If wizard status fails, stay on login page
+      }
+    };
+    checkWizard();
+  }, [navigate]);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
