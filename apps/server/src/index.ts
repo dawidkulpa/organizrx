@@ -22,7 +22,10 @@ import pluginManagementRoutes from './routes/plugins'
 import wizardRoutes from './routes/wizard'
 import { getSetting } from './services/settings'
 import migrationRoutes from './routes/migration'
+import backupRoutes from './routes/backup'
+import connectionTesterRoutes from './routes/connection-tester'
 import { getMigrationStatus, runMigration } from './migration'
+import imageRoutes from './routes/images'
 
 const { env } = await initConfig()
 
@@ -100,6 +103,9 @@ app.route('/api/invites', inviteRoutes)
 app.route('/api/sso', ssoRoutes)
 app.route('/api/wizard', wizardRoutes)
 app.route('/api/migration', migrationRoutes)
+app.route('/api/backup', backupRoutes)
+app.route('/api/test-connection', connectionTesterRoutes)
+app.route('/api/images', imageRoutes)
 
 // Plugin management routes (BEFORE individual plugin routes)
 app.route('/api/plugins', pluginManagementRoutes)
@@ -107,6 +113,11 @@ app.route('/api/plugins', pluginManagementRoutes)
 // Mount plugin routes at /api/plugins/{pluginId}/
 mountPluginRoutes(app)
 
+
+// Top-level favicon redirect
+app.get('/favicon.ico', async (c) => {
+  return c.redirect('/api/images/favicon.ico', 301)
+})
 // Health check endpoint — includes DB status
 app.get('/api/health', async (c) => {
   const dbHealth = await healthCheck()

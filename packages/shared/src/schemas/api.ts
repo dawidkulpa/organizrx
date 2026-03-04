@@ -179,3 +179,35 @@ export const createBookmarkTabRequestSchema = z.object({
 export const updateSettingRequestSchema = z.object({
   value: z.string().nullable(),
 });
+
+// ============================================
+// CONNECTION TESTER REQUESTS
+// ============================================
+
+export const testConnectionRequestSchema = z.object({
+  url: z.string().url(),
+  apiKey: z.string().optional(),
+  username: z.string().optional(),
+  password: z.string().optional(),
+  timeout: z.number().int().min(1000).max(30000).default(10000).optional(),
+})
+
+// ============================================
+// IMAGE REQUESTS
+// ============================================
+
+export const imageProxyQuerySchema = z.object({
+  url: z.string().url(),
+})
+
+// ============================================
+// BACKUP REQUESTS
+// ============================================
+
+export const createBackupRequestSchema = z.object({
+  description: z.string().max(500).optional(),
+})
+
+export const restoreBackupRequestSchema = z.object({
+  confirmRestore: z.boolean().refine(v => v === true, { message: 'Must confirm restore' }),
+})

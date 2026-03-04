@@ -157,6 +157,10 @@ export {
   createBookmarkCategoryRequestSchema,
   createBookmarkTabRequestSchema,
   updateSettingRequestSchema,
+  createBackupRequestSchema,
+  restoreBackupRequestSchema,
+  testConnectionRequestSchema,
+  imageProxyQuerySchema,
 } from './schemas/api';
 
 // Plugin schemas

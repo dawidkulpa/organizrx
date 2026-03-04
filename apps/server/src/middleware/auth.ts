@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono'
 import { verifyAccessToken, type AccessTokenPayload } from '../services/auth'
 
-type AuthVariables = {
+export type AuthVariables = {
   user: AccessTokenPayload
 }
 
@@ -11,7 +11,10 @@ export function authMiddleware() {
     const header = c.req.header('Authorization')
 
     if (!header || !header.startsWith('Bearer ')) {
-      return c.json({ error: { code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' } }, 401)
+      return c.json(
+        { error: { code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' } },
+        401
+      )
     }
 
     const token = header.slice(7)
@@ -21,7 +24,10 @@ export function authMiddleware() {
       c.set('user', payload)
       return next()
     } catch {
-      return c.json({ error: { code: 'TOKEN_EXPIRED', message: 'Access token is invalid or expired' } }, 401)
+      return c.json(
+        { error: { code: 'TOKEN_EXPIRED', message: 'Access token is invalid or expired' } },
+        401
+      )
     }
   }
 }
@@ -40,6 +46,6 @@ export function requireGroup(maxGroupId: number) {
       return c.json({ error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } }, 403)
     }
 
-      return next()
+    return next()
   }
 }
