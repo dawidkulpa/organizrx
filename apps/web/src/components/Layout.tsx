@@ -1,11 +1,12 @@
 import { Outlet, useLocation } from 'react-router-dom'
-import { useUIStore } from '../store'
-import { Menu } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useAuthStore, useUIStore } from '../store'
+import { Bell, Menu } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Toaster } from 'sonner'
 import { useAutoRefresh } from '../hooks/useAuth'
 import { useTheme } from '../hooks/useTheme'
 import { useIdleTimeout } from '../hooks/useIdleTimeout'
+import { api } from '../api/client'
 import LockScreen from './LockScreen'
 import Sidebar from './Sidebar'
 
@@ -18,6 +19,46 @@ export default function Layout() {
   const { resolvedTheme } = useTheme()
   useIdleTimeout()
 
+  // ── Update checker (admin only) ─────────────────────────────────
+  const user = useAuthStore((s) => s.user)
+  const isAdmin = user?.group_id === 0
+  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const [latestVersion, setLatestVersion] = useState('')
+  const [releaseUrl, setReleaseUrl] = useState('')
+  const [bellOpen, setBellOpen] = useState(false)
+  const bellRef = useRef<HTMLDivElement>(null)
+
+  const checkUpdate = useCallback(async () => {
+    if (!isAdmin) return
+    try {
+      const res = await api.update.check()
+      const data = res.data?.data
+      if (data) {
+        setUpdateAvailable(data.updateAvailable)
+        setLatestVersion(data.latestVersion)
+        setReleaseUrl(data.releaseUrl)
+      }
+    } catch {
+      // Silently ignore update check errors
+    }
+  }, [isAdmin])
+
+  useEffect(() => {
+    checkUpdate()
+    const interval = setInterval(checkUpdate, 60 * 60 * 1000) // 1 hour
+    return () => clearInterval(interval)
+  }, [checkUpdate])
+
+  // Close bell dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
   // Mobile check
   const [isMobile, setIsMobile] = useState(false)
 
@@ -69,6 +110,33 @@ export default function Layout() {
                 />
               </div>
             </div>
+            {isAdmin && (
+              <div className="relative" ref={bellRef}>
+                <button
+                  onClick={() => setBellOpen(!bellOpen)}
+                  className="relative p-2 rounded-md hover:bg-muted transition-colors"
+                  aria-label="Update notifications"
+                >
+                  <Bell size={20} />
+                  {updateAvailable && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                  )}
+                </button>
+                {bellOpen && updateAvailable && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg p-4 z-50">
+                    <p className="text-sm font-medium">Update available: v{latestVersion}</p>
+                    <a
+                      href={releaseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block text-sm text-primary hover:underline"
+                    >
+                      View release &rarr;
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </header>
 
