@@ -418,6 +418,32 @@ describe('update routes', () => {
       expect(json.error.code).toBe('UPDATE_CHECK_FAILED')
       expect(json.error.message).toContain('rate limit')
     })
+
+    it('should return no update when GitHub returns 404 (no releases)', async () => {
+      const db = await setupDb()
+      db.$client.exec(`
+        INSERT INTO users (id, username, email, "group", group_id, auth_service, locked)
+        VALUES (1, 'admin', 'admin@test.com', 'Admin', 0, 'internal', 0)
+      `)
+
+      const fetchMock = mock(() =>
+        Promise.resolve(new Response('Not Found', { status: 404 }))
+      )
+      globalThis.fetch = fetchMock as unknown as typeof fetch
+
+      const jwt = await createAdminJwt()
+      const app = createApp()
+
+      const res = await app.request('/api/update', {
+        headers: { Authorization: `Bearer ${jwt}` },
+      })
+      const json = await res.json()
+
+      expect(res.status).toBe(200)
+      expect(json.data.updateAvailable).toBe(false)
+      expect(json.data.currentVersion).toBe('0.0.1')
+      expect(json.data.latestVersion).toBe('0.0.1')
+    })
   })
 
   // -------------------------------------------------------------------------
@@ -479,6 +505,31 @@ describe('update routes', () => {
 
       expect(res.status).toBe(500)
       expect(json.error.code).toBe('CHANGELOG_FETCH_FAILED')
+    })
+
+    it('should return empty changelog when GitHub returns 404 (no releases)', async () => {
+      const db = await setupDb()
+      db.$client.exec(`
+        INSERT INTO users (id, username, email, "group", group_id, auth_service, locked)
+        VALUES (1, 'admin', 'admin@test.com', 'Admin', 0, 'internal', 0)
+      `)
+
+      const fetchMock = mock(() =>
+        Promise.resolve(new Response('Not Found', { status: 404 }))
+      )
+      globalThis.fetch = fetchMock as unknown as typeof fetch
+
+      const jwt = await createAdminJwt()
+      const app = createApp()
+
+      const res = await app.request('/api/update/changelog', {
+        headers: { Authorization: `Bearer ${jwt}` },
+      })
+      const json = await res.json()
+
+      expect(res.status).toBe(200)
+      expect(json.data.releaseNotes).toBe('')
+      expect(json.data.version).toBe('0.0.1')
     })
   })
 })

@@ -51,7 +51,10 @@ interface DiscoveredPlugin {
 }
 
 interface PluginsApiResponse {
-  data: DiscoveredPlugin[]
+  data: {
+    plugins: DiscoveredPlugin[]
+    needsRestart: boolean
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -104,10 +107,11 @@ export function getWidgetsByPlugin(pluginId: string): PluginWidgetRegistration[]
  */
 export async function discoverWidgets(): Promise<PluginWidgetRegistration[]> {
   const response = await client.get<PluginsApiResponse>('/plugins')
+  const plugins = response.data.data.plugins ?? []
 
   const discovered: PluginWidgetRegistration[] = []
 
-  for (const plugin of response.data.data) {
+  for (const plugin of plugins) {
     if (!plugin.widgets || plugin.widgets.length === 0) continue
 
     for (const widget of plugin.widgets) {

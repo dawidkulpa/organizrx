@@ -171,6 +171,13 @@ app.notFound((c) => {
   return c.json({ error: 'Not found' }, 404)
 })
 
+// Global error handler — return JSON instead of plain text for unhandled errors
+app.onError((err, c) => {
+  // Don't leak stack traces to clients
+  const message = err instanceof Error ? err.message : 'Internal server error'
+  return c.json({ error: { code: 'INTERNAL_ERROR', message } }, 500)
+})
+
 // Graceful shutdown
 const shutdown = async () => {
   await unloadAllPlugins()

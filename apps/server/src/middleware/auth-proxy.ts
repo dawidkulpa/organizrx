@@ -36,7 +36,13 @@ export function authProxyMiddleware() {
     })
 
     // Try proxy authentication
-    const result = await authenticateProxyUser(clientIp, headers)
+    let result: { token: string } | null = null
+    try {
+      result = await authenticateProxyUser(clientIp, headers)
+    } catch {
+      // DB not ready (first-run, tables missing) — skip proxy auth
+      return next()
+    }
 
     if (result) {
       // Proxy auth succeeded, verify token and set user on context

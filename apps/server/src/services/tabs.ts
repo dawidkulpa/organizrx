@@ -33,7 +33,7 @@ export interface Tab {
 
 export interface CreateTabData {
   name: string
-  category_id: number
+  category_id: number | null
   group_id: number
   url?: string
   url_local?: string
@@ -54,7 +54,7 @@ export interface CreateTabData {
 
 export interface UpdateTabData {
   name?: string
-  category_id?: number
+  category_id?: number | null
   group_id?: number
   url?: string
   url_local?: string
@@ -266,13 +266,13 @@ export async function deleteTab(id: number): Promise<boolean> {
   return true
 }
 
-export async function getNextTabOrder(categoryId?: number): Promise<number> {
+export async function getNextTabOrder(categoryId?: number | null): Promise<number> {
   const ctx = dialectCtx()
 
   let rows: unknown[]
 
   if (ctx.dialect === 'sqlite') {
-    if (categoryId !== undefined) {
+    if (categoryId !== undefined && categoryId !== null) {
       rows = ctx.db
         .select({ maxOrder: max(ctx.tabs.order) })
         .from(ctx.tabs)
@@ -285,7 +285,7 @@ export async function getNextTabOrder(categoryId?: number): Promise<number> {
         .all()
     }
   } else if (ctx.dialect === 'mysql') {
-    if (categoryId !== undefined) {
+    if (categoryId !== undefined && categoryId !== null) {
       rows = await ctx.db
         .select({ maxOrder: max(ctx.tabs.order) })
         .from(ctx.tabs)
@@ -294,7 +294,7 @@ export async function getNextTabOrder(categoryId?: number): Promise<number> {
       rows = await ctx.db.select({ maxOrder: max(ctx.tabs.order) }).from(ctx.tabs)
     }
   } else {
-    if (categoryId !== undefined) {
+    if (categoryId !== undefined && categoryId !== null) {
       rows = await ctx.db
         .select({ maxOrder: max(ctx.tabs.order) })
         .from(ctx.tabs)

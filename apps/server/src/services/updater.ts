@@ -65,7 +65,7 @@ export function isNewerVersion(current: string, latest: string): boolean {
 // GitHub API fetch
 // ---------------------------------------------------------------------------
 
-async function fetchLatestRelease(): Promise<GitHubRelease> {
+async function fetchLatestRelease(): Promise<GitHubRelease | null> {
   const res = await fetch(GITHUB_API_URL, {
     headers: {
       Accept: 'application/vnd.github.v3+json',
@@ -73,6 +73,11 @@ async function fetchLatestRelease(): Promise<GitHubRelease> {
     },
     signal: AbortSignal.timeout(10_000),
   })
+
+  if (res.status === 404) {
+    // No releases published yet — valid state
+    return null
+  }
 
   if (res.status === 403 || res.status === 429) {
     throw new Error('GitHub API rate limit exceeded. Try again later.')
@@ -150,6 +155,22 @@ export async function checkForUpdate(force = false): Promise<UpdateCheckResult> 
 
   try {
     const release = await fetchLatestRelease()
+
+    // No releases published yet — report as up-to-date
+    if (!release) {
+      const result: UpdateCheckResult = {
+        currentVersion: APP_VERSION,
+        latestVersion: APP_VERSION,
+        updateAvailable: false,
+        releaseUrl: '',
+        releaseNotes: '',
+        checkedAt: new Date().toISOString(),
+      }
+      cachedResult = result
+      cachedAt = Date.now()
+      return result
+    }
+
     const latestVersion = release.tag_name.startsWith('v')
       ? release.tag_name.slice(1)
       : release.tag_name
@@ -184,6 +205,9 @@ export async function checkForUpdate(force = false): Promise<UpdateCheckResult> 
 
 export async function getChangelog(): Promise<{ releaseNotes: string; version: string }> {
   const release = await fetchLatestRelease()
+  if (!release) {
+    return { releaseNotes: '', version: APP_VERSION }
+  }
   const version = release.tag_name.startsWith('v') ? release.tag_name.slice(1) : release.tag_name
   return {
     releaseNotes: release.body,

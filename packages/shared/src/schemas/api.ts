@@ -87,7 +87,7 @@ export const updateCategoryRequestSchema = z.object({
 
 export const createTabRequestSchema = z.object({
   name: z.string().min(1).max(255),
-  category_id: z.number().int(),
+  category_id: z.number().int().nullable(),
   url: z.string().url().optional(),
   url_local: z.string().optional(),
   group_id: z.number().int(),
@@ -105,7 +105,7 @@ export const createTabRequestSchema = z.object({
 
 export const updateTabRequestSchema = z.object({
   name: z.string().min(1).max(255).optional(),
-  category_id: z.number().int().optional(),
+  category_id: z.number().int().nullable().optional(),
   url: z.string().url().optional(),
   url_local: z.string().optional(),
   group_id: z.number().int().optional(),

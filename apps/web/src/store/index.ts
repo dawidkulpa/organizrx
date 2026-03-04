@@ -53,6 +53,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: data.user,
         isAuthenticated: true,
         isLoading: false,
+        needsSetup: false,
       })
       return { ok: true as const, user: data.user }
     } catch (err: unknown) {
