@@ -1,0 +1,22 @@
+{
+  "name": "@organizrx/plugin-customhtml-3",
+  "version": "0.0.1",
+  "description": "Custom HTML widget slot 3 for OrganizrX",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@organizrx/plugin-sdk": "workspace:*",
+    "hono": "^4.0.0",
+    "zod": "^3.22.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/bun": "latest",
+    "@types/react": "^18.2.0"
+  }
+}
