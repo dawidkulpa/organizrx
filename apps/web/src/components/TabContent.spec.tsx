@@ -1,5 +1,5 @@
 import { GlobalWindow } from 'happy-dom'
-import { describe, it, expect, afterEach } from 'bun:test'
+import { describe, it, expect, afterEach, mock } from 'bun:test'
 import { render, cleanup } from '@testing-library/react'
 
 // ---------------------------------------------------------------------------
@@ -52,7 +52,23 @@ Object.defineProperty(globalThis, 'window', {
   configurable: true,
 })
 
+// Mock API client so Dashboard/Settings/Users components can import without errors
+mock.module('../api/client', () => ({
+  default: { get: mock(() => Promise.resolve({ data: [] })) },
+  api: {
+    settings: { getAll: mock(() => Promise.resolve({ data: [] })) },
+    tabs: { sidebar: mock(() => Promise.resolve({ data: { data: { tabs: [], categories: [] } } })) },
+  },
+}))
+
+// Mock widget-registry so Dashboard doesn't attempt real plugin discovery
+mock.module('../plugins/widget-registry', () => ({
+  discoverWidgets: mock(() => Promise.resolve([])),
+  PluginWidgetRegistration: {},
+}))
+
 import TabContent, { type TabData } from './TabContent'
+import { MemoryRouter } from 'react-router-dom'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -169,26 +185,27 @@ describe('TabContent', () => {
     expect(loadingOverlay).toBeTruthy()
   })
 
-  it('should render internal page placeholder when tab type=0', () => {
-    const { getByText, container } = render(
-      <TabContent tab={createTab({ type: 0, name: 'Dashboard' })} isLoading={false} />
+  it('should render internal component when tab type=0 with mapped URL', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <TabContent tab={createTab({ type: 0, name: 'Dashboard', url: '/' })} isLoading={false} />
+      </MemoryRouter>
     )
 
-    expect(getByText('Dashboard')).toBeTruthy()
-    expect(
-      getByText('This is a built-in page. Native component rendering will be available soon.')
-    ).toBeTruthy()
-
+    // Should NOT render an iframe
     const iframe = container.querySelector('iframe')
     expect(iframe).toBeNull()
+    // Should NOT show the 'Unknown tab type' fallback
+    expect(container.textContent).not.toContain('Unknown tab type')
   })
 
-  it('should show "Internal Page" as default name when type=0 and name is null', () => {
+  it('should show unknown tab type fallback when type=0 and URL is not mapped', () => {
     const { getByText } = render(
-      <TabContent tab={createTab({ type: 0, name: null })} isLoading={false} />
+      <TabContent tab={createTab({ type: 0, name: null, url: '/nonexistent' })} isLoading={false} />
     )
 
-    expect(getByText('Internal Page')).toBeTruthy()
+    expect(getByText('Unknown tab type')).toBeTruthy()
+    expect(getByText('This tab cannot be rendered.')).toBeTruthy()
   })
 
   it('should use "Tab content" as default iframe title when name is null', () => {

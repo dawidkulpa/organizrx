@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { listUsers, createUser } from '../services/users'
 import { hashPassword } from '../services/auth'
 import { setSettings } from '../services/settings'
+import { createTab } from '../services/tabs'
 import { resetSetupCache } from '../services/setup'
 
 const wizard = new Hono()
@@ -80,6 +81,41 @@ wizard.post('/complete', async (c) => {
     initialSettings.SITE_TITLE = siteTitle
   }
   await setSettings(initialSettings)
+
+  // Seed internal tabs (Dashboard, Settings, Users)
+  await createTab({
+    name: 'Dashboard',
+    url: '/',
+    type: 0,
+    order: 0,
+    category_id: null,
+    group_id: 999,
+    enabled: 1,
+    isDefault: 1,
+    image: 'fa-home',
+  })
+  await createTab({
+    name: 'Settings',
+    url: '/settings',
+    type: 0,
+    order: 1,
+    category_id: null,
+    group_id: 0,
+    enabled: 1,
+    isDefault: 1,
+    image: 'fa-cog',
+  })
+  await createTab({
+    name: 'Users',
+    url: '/users',
+    type: 0,
+    order: 2,
+    category_id: null,
+    group_id: 0,
+    enabled: 1,
+    isDefault: 1,
+    image: 'fa-users',
+  })
 
   // Reset the cached setup status so the redirect middleware
   // knows setup is complete and stops redirecting to /wizard.

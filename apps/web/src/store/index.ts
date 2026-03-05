@@ -212,12 +212,16 @@ export const useLockscreenStore = create<LockscreenState>((set) => ({
 // ── UI Store ─────────────────────────────────────────────────────
 interface UIState {
   sidebarOpen: boolean
+  sidebarVersion: number
   toggleSidebar: () => void
   setSidebarOpen: (open: boolean) => void
+  bumpSidebar: () => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
   sidebarOpen: true,
+  sidebarVersion: 0,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  bumpSidebar: () => set((state) => ({ sidebarVersion: state.sidebarVersion + 1 })),
 }))

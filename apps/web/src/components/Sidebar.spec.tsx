@@ -112,6 +112,19 @@ describe('Sidebar', () => {
   })
 
   it('should show Dashboard nav link', async () => {
+    mockSidebar.mockImplementation(() =>
+      Promise.resolve({
+        data: {
+          data: {
+            tabs: [
+              { id: 1, order: 0, category_id: null, name: 'Dashboard', url: '/', url_local: null, enabled: 1, group_id: 999, image: 'fa-home', type: 0, isDefault: 1 },
+            ],
+            categories: [],
+          },
+        },
+      })
+    )
+
     const { getByText } = render(
       <MemoryRouter>
         <Sidebar />
@@ -124,6 +137,19 @@ describe('Sidebar', () => {
   })
 
   it('should show Settings nav link', async () => {
+    mockSidebar.mockImplementation(() =>
+      Promise.resolve({
+        data: {
+          data: {
+            tabs: [
+              { id: 2, order: 1, category_id: null, name: 'Settings', url: '/settings', url_local: null, enabled: 1, group_id: 0, image: 'fa-cog', type: 0, isDefault: 1 },
+            ],
+            categories: [],
+          },
+        },
+      })
+    )
+
     const { getByText } = render(
       <MemoryRouter>
         <Sidebar />
@@ -144,6 +170,19 @@ describe('Sidebar', () => {
       group_id: 0,
       image: null,
     })
+
+    mockSidebar.mockImplementation(() =>
+      Promise.resolve({
+        data: {
+          data: {
+            tabs: [
+              { id: 3, order: 2, category_id: null, name: 'Users', url: '/users', url_local: null, enabled: 1, group_id: 0, image: 'fa-users', type: 0, isDefault: 1 },
+            ],
+            categories: [],
+          },
+        },
+      })
+    )
 
     const { getByText } = render(
       <MemoryRouter>

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { X, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '../../api/client'
+import { useUIStore } from '../../store'
 import { typedZodResolver } from '../../utils'
 import { tabSchema, type TabFormData, type Tab, type Category, type Group } from './schema'
 import { TabFormFields } from './TabFormFields'
@@ -17,6 +18,7 @@ interface TabFormProps {
 }
 
 export default function TabForm({ tab, categories, groups, open, onClose, onSaved }: TabFormProps) {
+  const bumpSidebar = useUIStore((s) => s.bumpSidebar)
   const {
     register,
     handleSubmit,
@@ -101,6 +103,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
         toast.success('Tab created successfully')
       }
       onSaved()
+      bumpSidebar()
       onClose()
     } catch (error) {
       toast.error('Failed to save tab')

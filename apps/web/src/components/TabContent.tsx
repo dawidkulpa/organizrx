@@ -1,6 +1,16 @@
 import { useState, useCallback } from 'react'
 import { cn } from '../utils'
-import { Loader2, AppWindow, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
+import Dashboard from '../pages/Dashboard'
+import Users from '../pages/Users'
+import Settings from '../pages/Settings'
+
+const INTERNAL_COMPONENTS: Record<string, React.ComponentType> = {
+  '/': Dashboard,
+  '/dashboard': Dashboard,
+  '/users': Users,
+  '/settings': Settings,
+}
 
 export interface TabData {
   id: number
@@ -81,15 +91,19 @@ export default function TabContent({ tab, isLoading }: TabContentProps) {
   }
 
   // type === 0 or other: internal/native component
+  if (tab.type === 0 && tab.url) {
+    const InternalComponent = INTERNAL_COMPONENTS[tab.url]
+    if (InternalComponent) {
+      return <InternalComponent />
+    }
+  }
+
+  // Fallback for unknown type or missing URL
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <div className="p-6 rounded-xl border border-border bg-card shadow-sm max-w-md w-full text-center">
-        <AppWindow className="h-10 w-10 mx-auto mb-4 text-primary" />
-        <h2 className="text-xl font-semibold mb-2">{tab.name ?? 'Internal Page'}</h2>
-        <p className="text-sm text-muted-foreground">
-          This is a built-in page. Native component rendering will be available soon.
-        </p>
-      </div>
+    <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
+      <AlertCircle className="h-12 w-12" />
+      <h2 className="text-xl font-medium">Unknown tab type</h2>
+      <p className="text-sm">This tab cannot be rendered.</p>
     </div>
   )
 }

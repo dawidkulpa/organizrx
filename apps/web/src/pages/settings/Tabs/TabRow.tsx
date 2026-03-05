@@ -104,13 +104,15 @@ export function TabRow({
             >
               <Pencil className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => handleDelete(tab.id)}
-              className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {tab.isDefault !== 1 && (
+              <button
+                onClick={() => handleDelete(tab.id)}
+                className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                title="Delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       )}

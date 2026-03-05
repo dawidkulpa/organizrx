@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../utils'
 import { TabIcon } from './TabIcon'
-import { SidebarTab } from './use-sidebar'
+import { type SidebarTab, getTabRoute } from './use-sidebar'
 
 interface TabNavItemProps {
   tab: SidebarTab
@@ -9,9 +9,14 @@ interface TabNavItemProps {
 }
 
 export function TabNavItem({ tab, sidebarOpen }: TabNavItemProps) {
+  const to = getTabRoute(tab)
+  // For the dashboard route (/) we need 'end' to avoid matching all paths
+  const isRootRoute = to === '/'
+
   return (
     <NavLink
-      to={`/tab/${tab.id}`}
+      to={to}
+      end={isRootRoute}
       className={({ isActive }) =>
         cn(
           'flex items-center px-3 py-2 rounded-md transition-all duration-200 group relative',

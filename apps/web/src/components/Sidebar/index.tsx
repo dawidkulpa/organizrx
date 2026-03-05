@@ -1,4 +1,3 @@
-import { NavLink } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Loader2, Lock, LogOut } from 'lucide-react'
 import { cn } from '../../utils'
 import { useSidebar } from './use-sidebar'
@@ -17,8 +16,6 @@ export default function Sidebar() {
     uncategorizedTabs,
     sortedCategories,
     categorizedMap,
-    dashboardItem,
-    utilityItems,
   } = useSidebar()
 
   return (
@@ -50,34 +47,13 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 py-4 space-y-1 overflow-y-auto px-2">
-        <NavLink
-          to={dashboardItem.path}
-          end
-          className={({ isActive }) =>
-            cn(
-              'flex items-center px-3 py-2 rounded-md transition-all duration-200 group relative',
-              isActive
-                ? 'bg-primary/10 text-primary font-medium'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              !sidebarOpen && 'justify-center'
-            )
-          }
-        >
-          <dashboardItem.icon size={20} className={cn('shrink-0', sidebarOpen && 'mr-3')} />
-          {sidebarOpen && <span>{dashboardItem.name}</span>}
-          {!sidebarOpen && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
-              {dashboardItem.name}
-            </div>
-          )}
-        </NavLink>
-
         {isLoading && (
           <div className="flex items-center justify-center py-4">
             <Loader2 size={18} className="animate-spin text-muted-foreground" />
           </div>
         )}
 
+        {/* All tabs (including internal ones) rendered uniformly by order */}
         {uncategorizedTabs.map((tab) => (
           <TabNavItem key={tab.id} tab={tab} sidebarOpen={sidebarOpen} />
         ))}
@@ -94,35 +70,6 @@ export default function Sidebar() {
             sidebarOpen={sidebarOpen}
           />
         ))}
-
-        {utilityItems.length > 0 && (
-          <>
-            <div className="my-2 border-t border-border" />
-            {utilityItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center px-3 py-2 rounded-md transition-all duration-200 group relative',
-                    isActive
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                    !sidebarOpen && 'justify-center'
-                  )
-                }
-              >
-                <item.icon size={20} className={cn('shrink-0', sidebarOpen && 'mr-3')} />
-                {sidebarOpen && <span>{item.name}</span>}
-                {!sidebarOpen && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
-                    {item.name}
-                  </div>
-                )}
-              </NavLink>
-            ))}
-          </>
-        )}
       </nav>
 
       <div className="p-4 border-t border-border">

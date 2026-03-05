@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { DropResult } from '@hello-pangea/dnd'
 import { api } from '../../../api/client'
+import { useUIStore } from '../../../store'
 
 export interface Tab {
   id: number
@@ -14,6 +15,7 @@ export interface Tab {
   group_id: number
   type: number
   enabled: number
+  isDefault: number | null
   splash: number | null
   ping: number | null
   ping_url: string | null
@@ -38,6 +40,7 @@ export interface Group {
 }
 
 export function useTabs() {
+  const bumpSidebar = useUIStore((s) => s.bumpSidebar)
   const [tabs, setTabs] = useState<Tab[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [groups, setGroups] = useState<Group[]>([])
@@ -115,6 +118,7 @@ export function useTabs() {
         tabs: updatedTabs.map((t) => ({ id: t.id, order: t.order })),
       })
       toast.success('Order updated')
+      bumpSidebar()
     } catch (error) {
       toast.error('Failed to save order')
       fetchData() // Revert
@@ -127,11 +131,13 @@ export function useTabs() {
   }
 
   const handleDelete = async (id: number) => {
+    if (tabs.find(t => t.id === id)?.isDefault === 1) return
     if (!confirm('Are you sure you want to delete this tab?')) return
     try {
       await api.tabs.delete(id)
       setTabs((prev) => prev.filter((t) => t.id !== id))
       toast.success('Tab deleted')
+      bumpSidebar()
     } catch (error) {
       toast.error('Failed to delete tab')
     }
@@ -139,17 +145,21 @@ export function useTabs() {
 
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selectedTabs.length} tabs?`)) return
+    const deletableIds = selectedTabs.filter(id => !tabs.find(t => t.id === id && t.isDefault === 1))
+    if (deletableIds.length === 0) return
     try {
-      await Promise.all(selectedTabs.map((id) => api.tabs.delete(id)))
-      setTabs((prev) => prev.filter((t) => !selectedTabs.includes(t.id)))
+      await Promise.all(deletableIds.map((id) => api.tabs.delete(id)))
+      setTabs((prev) => prev.filter((t) => !deletableIds.includes(t.id)))
       setSelectedTabs([])
       toast.success('Selected tabs deleted')
+      bumpSidebar()
     } catch (error) {
       toast.error('Failed to delete some tabs')
     }
   }
 
   const toggleSelection = (id: number) => {
+    if (tabs.find(t => t.id === id)?.isDefault === 1) return
     setSelectedTabs((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
   }
 

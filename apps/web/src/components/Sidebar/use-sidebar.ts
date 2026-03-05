@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthStore, useUIStore, useLockscreenStore } from '../../store'
 import { api } from '../../api/client'
-import { LayoutDashboard, Settings, Users } from 'lucide-react'
 
 export interface SidebarTab {
   id: number
@@ -14,6 +13,7 @@ export interface SidebarTab {
   group_id: number | null
   image: string | null
   type: number | null
+  isDefault: number | null
 }
 
 export interface SidebarCategory {
@@ -23,15 +23,30 @@ export interface SidebarCategory {
   image: string | null
 }
 
+// Internal tab URL -> frontend route mapping
+const INTERNAL_ROUTES: Record<string, string> = {
+  '/': '/',
+  '/dashboard': '/',
+  '/users': '/users',
+  '/settings': '/settings',
+}
+
+export function getTabRoute(tab: SidebarTab): string {
+  // type=0 tabs are internal — route to their mapped path
+  if (tab.type === 0 && tab.url) {
+    return INTERNAL_ROUTES[tab.url] ?? tab.url
+  }
+  // type=1 tabs are iframes — route to /tab/:id
+  return `/tab/${tab.id}`
+}
+
 export function useSidebar() {
-  const { sidebarOpen, toggleSidebar } = useUIStore()
+  const { sidebarOpen, toggleSidebar, sidebarVersion } = useUIStore()
   const { user, logout } = useAuthStore()
   const lockScreen = useLockscreenStore((s) => s.lock)
   const [tabs, setTabs] = useState<SidebarTab[]>([])
   const [categories, setCategories] = useState<SidebarCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
-
-  const isAdmin = user?.group_id === 0
 
   const [isMobile, setIsMobile] = useState(false)
 
@@ -49,15 +64,16 @@ export function useSidebar() {
       setTabs(fetchedTabs)
       setCategories(fetchedCategories)
     } catch {
-      // Error handling is done in the component or silently failed
+      // Sidebar fetch failed silently — user will see empty sidebar
     } finally {
       setIsLoading(false)
     }
   }, [])
 
+  // Re-fetch when sidebarVersion changes (tab CRUD triggers bump)
   useEffect(() => {
     fetchSidebarData()
-  }, [fetchSidebarData])
+  }, [fetchSidebarData, sidebarVersion])
 
   const enabledTabs = tabs.filter((t) => t.enabled !== 0)
 
@@ -78,12 +94,6 @@ export function useSidebar() {
     .filter((c) => categorizedMap.has(c.id))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 
-  const dashboardItem = { name: 'Dashboard', path: '/', icon: LayoutDashboard }
-  const utilityItems = [
-    ...(isAdmin ? [{ name: 'Users', path: '/users', icon: Users }] : []),
-    { name: 'Settings', path: '/settings', icon: Settings },
-  ]
-
   return {
     sidebarOpen,
     toggleSidebar,
@@ -95,7 +105,5 @@ export function useSidebar() {
     uncategorizedTabs,
     sortedCategories,
     categorizedMap,
-    dashboardItem,
-    utilityItems,
   }
 }

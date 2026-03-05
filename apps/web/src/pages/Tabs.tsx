@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import TabContent, { type TabData } from '../components/TabContent'
 
 export default function Tabs() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<TabData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -29,6 +30,19 @@ export default function Tabs() {
     }
     fetchTab(tabId)
   }, [id, fetchTab])
+
+  useEffect(() => {
+    if (tab && tab.type === 0 && tab.url) {
+      const INTERNAL_ROUTES: Record<string, string> = {
+        '/': '/',
+        '/dashboard': '/',
+        '/users': '/users',
+        '/settings': '/settings',
+      }
+      const route = INTERNAL_ROUTES[tab.url] ?? tab.url
+      navigate(route, { replace: true })
+    }
+  }, [tab, navigate])
 
   return (
     <div className="h-full -m-6">

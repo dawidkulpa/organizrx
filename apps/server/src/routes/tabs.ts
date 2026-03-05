@@ -104,17 +104,18 @@ tabs.put('/reorder', authMiddleware(), requireGroup(0), async (c) => {
   try {
     const body = await c.req.json()
 
-    // Validate reorder body
-    if (!body.items || !Array.isArray(body.items)) {
+    // Validate reorder body — accept 'tabs' (frontend) or 'items' (legacy)
+    const items = body.tabs ?? body.items
+    if (!items || !Array.isArray(items)) {
       return c.json(
         {
-          error: { code: 'VALIDATION_ERROR', message: 'Expected items array in request body' },
+          error: { code: 'VALIDATION_ERROR', message: 'Expected tabs array in request body' },
         },
         400
       )
     }
 
-    for (const item of body.items) {
+    for (const item of items) {
       if (typeof item.id !== 'number' || typeof item.order !== 'number') {
         return c.json(
           {
@@ -125,7 +126,7 @@ tabs.put('/reorder', authMiddleware(), requireGroup(0), async (c) => {
       }
     }
 
-    await reorderTabs(body.items)
+    await reorderTabs(items)
     return c.json({ data: { reordered: true } })
   } catch (error) {
     return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to reorder tabs' } }, 500)
@@ -174,11 +175,17 @@ tabs.delete('/:id', authMiddleware(), requireGroup(0), async (c) => {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid tab ID' } }, 400)
     }
 
-    const deleted = await deleteTab(id)
+    const tab = await getTabById(id)
 
-    if (!deleted) {
+    if (!tab) {
       return c.json({ error: { code: 'NOT_FOUND', message: 'Tab not found' } }, 404)
     }
+
+    if (tab.isDefault === 1) {
+      return c.json({ error: { code: 'FORBIDDEN', message: 'Cannot delete a built-in system tab' } }, 403)
+    }
+
+    await deleteTab(id)
 
     return c.json({ data: { id, deleted: true } })
   } catch (error) {
