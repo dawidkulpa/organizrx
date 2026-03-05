@@ -19,7 +19,7 @@ services:
       DATABASE_URL: /app/data/organizr.db
 
       # Authentication & security
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-use-a-real-secret}
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
 
       # Logging
@@ -97,10 +97,3 @@ services:
 networks:
   organizrx-net:
     driver: bridge
-
-volumes:
-  # Uncomment if using MySQL
-  # mysql-data:
-
-  # Uncomment if using PostgreSQL
-  # postgres-data:

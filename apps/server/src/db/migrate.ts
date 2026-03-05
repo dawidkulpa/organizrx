@@ -14,6 +14,7 @@
  */
 
 import { migrate as migrateBunSqlite } from 'drizzle-orm/bun-sqlite/migrator'
+import { existsSync } from 'node:fs'
 
 import { getRawDb, getDialect } from './connection'
 import type { SqliteDb } from './connection'
@@ -35,11 +36,16 @@ export async function runMigrations(migrationsFolder = DEFAULT_MIGRATIONS_DIR): 
   const dialect = getDialect()
 
   switch (dialect) {
-    case 'sqlite':
+    case 'sqlite': {
+      if (!existsSync(migrationsFolder)) {
+        // No migration files generated yet — schema is created by Drizzle push or wizard.
+        break
+      }
       migrateBunSqlite(db as unknown as SqliteDb, {
         migrationsFolder,
       })
       break
+    }
 
     case 'mysql':
     case 'postgresql':

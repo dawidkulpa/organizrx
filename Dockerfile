@@ -13,22 +13,24 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/plugin-sdk/package.json ./packages/plugin-sdk/
 
-# Copy plugin package.json files for workspace resolution
-COPY plugins/packages/plugin-plex/package.json ./plugins/packages/plugin-plex/
-COPY plugins/packages/plugin-sonarr/package.json ./plugins/packages/plugin-sonarr/
-COPY plugins/packages/plugin-radarr/package.json ./plugins/packages/plugin-radarr/
-COPY plugins/packages/plugin-sabnzbd/package.json ./plugins/packages/plugin-sabnzbd/
-COPY plugins/packages/plugin-overseerr/package.json ./plugins/packages/plugin-overseerr/
-COPY plugins/packages/plugin-tautulli/package.json ./plugins/packages/plugin-tautulli/
-COPY plugins/packages/plugin-jellyfin/package.json ./plugins/packages/plugin-jellyfin/
-COPY plugins/packages/plugin-qbittorrent/package.json ./plugins/packages/plugin-qbittorrent/
-COPY plugins/packages/plugin-emby/package.json ./plugins/packages/plugin-emby/
-COPY plugins/packages/plugin-nzbget/package.json ./plugins/packages/plugin-nzbget/
+# Copy ALL plugin package.json files for workspace resolution
+# Uses a temporary full copy + find to extract only package.json files,
+# keeping the layer cache effective for dependency installs.
+COPY plugins/packages/ /tmp/plugins/
+RUN mkdir -p ./plugins/packages && \
+    cd /tmp/plugins && \
+    for dir in */; do \
+      if [ -f "${dir}package.json" ]; then \
+        mkdir -p /app/plugins/packages/${dir} && \
+        cp ${dir}package.json /app/plugins/packages/${dir}; \
+      fi; \
+    done && \
+    rm -rf /tmp/plugins
 
 # Install all dependencies (frozen lockfile if available)
 RUN bun install --frozen-lockfile || bun install
 
-# Stage 2: Build application
+# Stage 2: Build frontend SPA (Vite)
 FROM deps AS build
 
 WORKDIR /app
@@ -36,9 +38,8 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Build both server and web (server compiles to ESM, web uses Vite)
-RUN bun run build
-
+# Build the React SPA with Vite (server runs from TS source via Bun)
+RUN bun run build:web
 # Stage 3: Production runtime
 FROM oven/bun:1-slim AS production
 
@@ -51,19 +52,27 @@ WORKDIR /app
 # Copy production dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
+# Copy workspace-specific node_modules for Bun resolution
+# Bun resolves imports relative to the workspace package.json,
+# so apps/server/node_modules must exist with its symlinks.
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
+
 # Copy workspace packages needed at runtime
 COPY --from=build /app/packages ./packages
 
 # Copy plugin packages (discovered at runtime by plugin loader)
 COPY --from=build /app/plugins/packages ./plugins/packages
 
-# Copy built server artifacts
-COPY --from=build /app/apps/server/dist ./apps/server/dist
+# Copy server source (Bun runs TypeScript natively — no bundling needed)
+COPY --from=build /app/apps/server/src ./apps/server/src
 COPY --from=build /app/apps/server/package.json ./apps/server/
+COPY --from=build /app/apps/server/tsconfig.json ./apps/server/
 
-# Copy built web SPA (static files)
-# Note: The Hono server should serve these static files from /app/apps/web/dist
-# Configure static file serving middleware to serve the SPA at the root or via a dedicated route
+# Copy root package.json + tsconfig for workspace resolution
+COPY --from=build /app/package.json ./
+COPY --from=build /app/tsconfig.json ./
+
+# Copy built web SPA (static files served by Hono)
 COPY --from=build /app/apps/web/dist ./apps/web/dist
 
 # Create volumes for persistent data
@@ -85,4 +94,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 USER bun
 
 # Start the server
-CMD ["bun", "run", "apps/server/dist/index.js"]
+CMD ["bun", "run", "apps/server/src/index.ts"]

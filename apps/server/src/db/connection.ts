@@ -24,6 +24,7 @@ import type { DatabaseDialect } from '../config/env'
 import * as sqliteSchema from './schema/sqlite'
 import * as mysqlSchema from './schema/mysql'
 import * as pgSchema from './schema/pg'
+import { ensureSqliteSchema } from './sqlite-bootstrap'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -112,6 +113,9 @@ export async function initDb(opts: InitDbOptions): Promise<{ db: DrizzleDb; sche
       // Enable WAL mode for better concurrent read performance
       sqliteClient.exec('PRAGMA journal_mode = WAL')
       sqliteClient.exec('PRAGMA foreign_keys = ON')
+
+      // Ensure all tables exist (first-run schema bootstrap)
+      ensureSqliteSchema(sqliteClient)
 
       _schema = sqliteSchema
       _db = drizzleBunSqlite({ client: sqliteClient, schema: sqliteSchema })

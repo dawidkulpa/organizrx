@@ -12,7 +12,7 @@ import { existsSync, copyFileSync } from 'node:fs'
 import { getDialect } from '../db'
 import type { DatabaseDialect } from '../config/env'
 import { createBackup } from './backup'
-import { execRawSql, queryRawSql, columnExists } from './sql-helpers'
+import { execRawSql, queryRawSql, columnExists, getExistingColumns } from './sql-helpers'
 import {
   schemaMigrations,
   DATA_TRANSFORMS,
@@ -110,6 +110,18 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
         needsMigration: false,
         alreadyMigrated: true,
         configVersion: await getConfigVersion(dialect),
+        missingColumns: [],
+      }
+    }
+
+    // If the core tables don't exist this is a fresh/empty DB — not an old
+    // Organizr install.  Skip migration to avoid false positives.
+    const coreColumns = await getExistingColumns(dialect, 'users')
+    if (coreColumns.length === 0) {
+      return {
+        needsMigration: false,
+        alreadyMigrated: false,
+        configVersion: null,
         missingColumns: [],
       }
     }
