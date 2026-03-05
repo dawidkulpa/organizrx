@@ -15,7 +15,7 @@ import {
   linkPlexAccount,
   type PlexPinResponse,
   type PlexUserInfo,
-} from './auth-plex'
+} from './plex'
 import { _clearSettingsCache } from './settings'
 
 function uniqueDbPath(suffix = 'plex'): string {

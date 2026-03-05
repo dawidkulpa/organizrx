@@ -8,7 +8,7 @@ import { initDb, closeDb, getRawDb } from '../db'
 import type { SqliteDb } from '../db'
 import { initConfig, _resetConfig } from '../config'
 import { _clearSettingsCache, setSetting } from '../services/settings'
-import type { PlexPinResponse, PlexUserInfo } from '../services/auth-plex'
+import type { PlexPinResponse, PlexUserInfo } from '../services/plex'
 import plexAuthRoutes from './auth-plex'
 
 // ---------------------------------------------------------------------------

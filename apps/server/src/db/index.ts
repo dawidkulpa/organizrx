@@ -31,3 +31,5 @@ export {
 export { runMigrations } from './migrate'
 
 export { defaultGroups, seedDefaultGroups, type GroupSeed } from './seed'
+
+export { dialectCtx } from './dialect-ctx'

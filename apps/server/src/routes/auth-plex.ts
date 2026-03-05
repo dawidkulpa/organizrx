@@ -11,7 +11,7 @@ import {
   getPlexServerId,
   isPlexAdminOnly,
   getPlexDefaultGroupId,
-} from '../services/auth-plex'
+} from '../services/plex'
 import { createAccessToken, createRefreshToken, storeRefreshToken } from '../services/auth'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
