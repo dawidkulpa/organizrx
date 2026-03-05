@@ -1,0 +1,119 @@
+# Docker Compose for testing OrganizrX with MySQL and PostgreSQL
+# Usage:
+#   MySQL test:      docker compose -f docker-compose.test.yml --profile mysql up -d
+#   PostgreSQL test: docker compose -f docker-compose.test.yml --profile postgres up -d
+#   Cleanup:         docker compose -f docker-compose.test.yml down -v
+
+services:
+  # ---------- MySQL test ----------
+  mysql:
+    image: mysql:8
+    container_name: organizrx-test-mysql
+    profiles: ['mysql']
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: organizrx
+      MYSQL_USER: organizrx
+      MYSQL_PASSWORD: testpassword
+    networks:
+      - test-net
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-prootpassword']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  organizrx-mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: organizrx-test-app-mysql
+    profiles: ['mysql']
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      DATABASE_DIALECT: mysql
+      DATABASE_URL: mysql://organizrx:testpassword@mysql:3306/organizrx
+      JWT_SECRET: test-secret-for-mysql-testing-minimum-32-chars
+      BCRYPT_ROUNDS: 12
+      LOG_LEVEL: info
+    networks:
+      - test-net
+    restart: 'no'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'bun',
+          '--eval',
+          "fetch('http://localhost:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ---------- PostgreSQL test ----------
+  postgres:
+    image: postgres:16
+    container_name: organizrx-test-postgres
+    profiles: ['postgres']
+    environment:
+      POSTGRES_DB: organizrx
+      POSTGRES_USER: organizrx
+      POSTGRES_PASSWORD: testpassword
+    networks:
+      - test-net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U organizrx']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  organizrx-postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: organizrx-test-app-postgres
+    profiles: ['postgres']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      DATABASE_DIALECT: postgresql
+      DATABASE_URL: postgresql://organizrx:testpassword@postgres:5432/organizrx
+      JWT_SECRET: test-secret-for-postgres-testing-minimum-32-chars
+      BCRYPT_ROUNDS: 12
+      LOG_LEVEL: info
+    networks:
+      - test-net
+    restart: 'no'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'bun',
+          '--eval',
+          "fetch('http://localhost:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  test-net:
+    driver: bridge

@@ -25,6 +25,23 @@ import * as sqliteSchema from './schema/sqlite'
 import * as mysqlSchema from './schema/mysql'
 import * as pgSchema from './schema/pg'
 import { ensureSqliteSchema } from './sqlite-bootstrap'
+import { ensureMysqlSchema } from './mysql-bootstrap'
+import { ensurePgSchema } from './pg-bootstrap'
+
+/** Retry an async operation with exponential backoff (for container startup). */
+async function withRetry<T>(fn: () => Promise<T>, label: string, maxRetries = 10, baseDelayMs = 1000): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+      const delay = baseDelayMs * Math.min(attempt, 5)
+      console.warn(`[db] ${label} attempt ${attempt}/${maxRetries} failed, retrying in ${delay}ms...`)
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+  throw new Error('unreachable')
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -132,6 +149,9 @@ export async function initDb(opts: InitDbOptions): Promise<{ db: DrizzleDb; sche
         keepAliveInitialDelay: 10_000,
       })
 
+      // Ensure all tables exist (first-run schema bootstrap)
+      await withRetry(() => ensureMysqlSchema(mysqlPool!), 'mysql-bootstrap')
+
       _schema = mysqlSchema
       _db = drizzleMysql({ client: mysqlPool, schema: mysqlSchema, mode: 'default' })
       break
@@ -143,6 +163,9 @@ export async function initDb(opts: InitDbOptions): Promise<{ db: DrizzleDb; sche
         idle_timeout: 20,
         connect_timeout: 10,
       })
+
+      // Ensure all tables exist (first-run schema bootstrap)
+      await withRetry(() => ensurePgSchema(pgClient!), 'pg-bootstrap')
 
       _schema = pgSchema
       _db = drizzlePostgres({ client: pgClient, schema: pgSchema })
