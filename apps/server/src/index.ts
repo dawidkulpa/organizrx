@@ -19,6 +19,7 @@ import inviteRoutes from './routes/invites'
 import ssoRoutes from './routes/sso'
 import oidcAuthRoutes from './routes/auth-oidc'
 import { authProxyMiddleware } from './middleware/auth-proxy'
+import { authRateLimiter } from './middleware/rate-limit'
 import { loadAllPlugins, mountPluginRoutes, unloadAllPlugins } from './plugins'
 import pluginManagementRoutes from './routes/plugins'
 import wizardRoutes from './routes/wizard'
@@ -30,6 +31,7 @@ import { getMigrationStatus, runMigration } from './migration'
 import imageRoutes from './routes/images'
 import updateRoutes from './routes/update'
 import logRoutes from './routes/logs'
+import { createChildLogger } from './services/logger'
 
 const { env } = await initConfig()
 
@@ -45,16 +47,17 @@ await runMigrations()
 // Auto-run in-place schema migration for old Organizr databases.
 // Detects missing TOTP columns and ALTER TABLEs them in.
 {
+  const log = createChildLogger('migration')
   const status = await getMigrationStatus()
   if (status.needsMigration) {
-    console.log('[migration] Old Organizr schema detected — running in-place migration…')
+    log.info('Old Organizr schema detected — running in-place migration…')
     const result = await runMigration((step, current, total) => {
-      console.log(`[migration] ${step} (${current}/${total})`)
+      log.info({ step, current, total }, `${step} (${current}/${total})`)
     })
     if (result.success) {
-      console.log(`[migration] Done in ${result.durationMs}ms — columns added: ${result.columnsAdded.join(', ') || 'none'}`)
+      log.info({ durationMs: result.durationMs, columnsAdded: result.columnsAdded }, 'Migration complete')
     } else {
-      console.error(`[migration] FAILED: ${result.error}`)
+      log.fatal({ error: result.error }, 'Migration FAILED')
       process.exit(1)
     }
   }
@@ -76,6 +79,9 @@ app.use('/api/*', cors({
 }))
 
 app.use('/api/*', authProxyMiddleware())
+
+// ── Rate limiting on auth endpoints ──────────────────────────
+app.use('/api/auth/*', authRateLimiter())
 
 
 // ── Public settings endpoint (no auth) ─────────────────────────
