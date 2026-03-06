@@ -35,7 +35,7 @@ interface UserFormProps {
 
 const userSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
-  group_id: z.coerce.number().min(1, 'Group is required'),
+  group_id: z.coerce.number().min(0, 'Group is required'),
   locked: z.boolean(),
 })
 
@@ -107,14 +107,12 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
             <input
               {...register('email')}
               className={cn(
-                "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                errors.email && "border-destructive focus-visible:ring-destructive"
+                'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                errors.email && 'border-destructive focus-visible:ring-destructive'
               )}
               placeholder="user@example.com"
             />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -122,8 +120,8 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
             <select
               {...register('group_id')}
               className={cn(
-                "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                errors.group_id && "border-destructive focus-visible:ring-destructive"
+                'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                errors.group_id && 'border-destructive focus-visible:ring-destructive'
               )}
             >
               {groups.map((group) => (
@@ -140,25 +138,27 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
           <div className="pt-2 flex items-center justify-between">
             <label className="text-sm font-medium text-foreground flex items-center gap-2">
               Status
-              <span className={cn(
-                "text-xs px-2 py-0.5 rounded-full font-semibold",
-                isLocked ? "bg-destructive/10 text-destructive" : "bg-green-500/10 text-green-600"
-              )}>
-                {isLocked ? "Locked" : "Active"}
+              <span
+                className={cn(
+                  'text-xs px-2 py-0.5 rounded-full font-semibold',
+                  isLocked ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600'
+                )}
+              >
+                {isLocked ? 'Locked' : 'Active'}
               </span>
             </label>
             <button
               type="button"
               onClick={() => setValue('locked', !isLocked)}
               className={cn(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                isLocked ? "bg-destructive" : "bg-input"
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                isLocked ? 'bg-destructive' : 'bg-input'
               )}
             >
               <span
                 className={cn(
-                  "inline-block h-4 w-4 transform rounded-full bg-background transition-transform",
-                  isLocked ? "translate-x-6" : "translate-x-1"
+                  'inline-block h-4 w-4 transform rounded-full bg-background transition-transform',
+                  isLocked ? 'translate-x-6' : 'translate-x-1'
                 )}
               />
             </button>
@@ -176,8 +176,8 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
               type="submit"
               disabled={isSubmitting}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:brightness-110 transition-all",
-                isSubmitting && "opacity-70 cursor-wait"
+                'flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:brightness-110 transition-all',
+                isSubmitting && 'opacity-70 cursor-wait'
               )}
             >
               {isSubmitting ? (

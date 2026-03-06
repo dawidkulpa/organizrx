@@ -6,7 +6,7 @@ interface BulkGroupDialogProps {
   selectedCount: number
   groups: Group[]
   bulkGroupId: number | ''
-  setBulkGroupId: (id: number) => void
+  setBulkGroupId: (id: number | '') => void
   handleBulkGroupChange: () => void
 }
 
@@ -30,7 +30,7 @@ export function BulkGroupDialog({
           <select
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             value={bulkGroupId}
-            onChange={(e) => setBulkGroupId(Number(e.target.value))}
+            onChange={(e) => setBulkGroupId(e.target.value === '' ? '' : Number(e.target.value))}
           >
             <option value="">Select a group...</option>
             {groups.map((g) => (
@@ -49,7 +49,7 @@ export function BulkGroupDialog({
           </button>
           <button
             onClick={handleBulkGroupChange}
-            disabled={!bulkGroupId}
+            disabled={bulkGroupId === ''}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:brightness-110 disabled:opacity-50"
           >
             Move Users

@@ -112,7 +112,7 @@ export function useUsers() {
   }
 
   const handleBulkGroupChange = async () => {
-    if (!bulkGroupId) return
+    if (bulkGroupId === '') return
     try {
       await Promise.all(selectedUsers.map((id) => api.users.update(id, { group_id: bulkGroupId })))
       toast.success('Group updated for selected users')
