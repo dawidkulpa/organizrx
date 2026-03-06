@@ -2,7 +2,7 @@
  * Zod validation schemas for API request/response types
  */
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 // ============================================
 // PAGINATION
@@ -13,14 +13,14 @@ export const paginationQuerySchema = z.object({
   limit: z.number().int().min(1).max(100).default(20).optional(),
   sort: z.string().optional(),
   order: z.enum(['asc', 'desc']).default('asc').optional(),
-});
+})
 
 export const paginationMetaSchema = z.object({
   page: z.number().int(),
   limit: z.number().int(),
   total: z.number().int(),
   pages: z.number().int(),
-});
+})
 
 // ============================================
 // USER REQUESTS
@@ -32,7 +32,7 @@ export const createUserRequestSchema = z.object({
   email: z.string().email().optional(),
   groupName: z.string().optional(),
   group_id: z.number().int().optional(),
-});
+})
 
 export const updateUserRequestSchema = z.object({
   username: z.string().min(1).max(255).optional(),
@@ -41,7 +41,8 @@ export const updateUserRequestSchema = z.object({
   groupName: z.string().optional(),
   group_id: z.number().int().optional(),
   image: z.string().optional(),
-});
+  locked: z.number().int().optional(),
+})
 
 // ============================================
 // GROUP REQUESTS
@@ -52,14 +53,14 @@ export const createGroupRequestSchema = z.object({
   group_id: z.number().int(),
   image: z.string().optional(),
   isDefault: z.number().int().optional(),
-});
+})
 
 export const updateGroupRequestSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   group_id: z.number().int().optional(),
   image: z.string().optional(),
   isDefault: z.number().int().optional(),
-});
+})
 
 // ============================================
 // CATEGORY REQUESTS
@@ -71,7 +72,7 @@ export const createCategoryRequestSchema = z.object({
   order: z.number().int().optional(),
   image: z.string().optional(),
   isDefault: z.number().int().optional(),
-});
+})
 
 export const updateCategoryRequestSchema = z.object({
   name: z.string().min(1).max(255).optional(),
@@ -79,7 +80,7 @@ export const updateCategoryRequestSchema = z.object({
   order: z.number().int().optional(),
   image: z.string().optional(),
   isDefault: z.number().int().optional(),
-});
+})
 
 // ============================================
 // TAB REQUESTS
@@ -101,7 +102,7 @@ export const createTabRequestSchema = z.object({
   timeout: z.number().int().optional(),
   timeout_ms: z.number().int().optional(),
   preload: z.number().int().optional(),
-});
+})
 
 export const updateTabRequestSchema = z.object({
   name: z.string().min(1).max(255).optional(),
@@ -119,7 +120,7 @@ export const updateTabRequestSchema = z.object({
   timeout: z.number().int().optional(),
   timeout_ms: z.number().int().optional(),
   preload: z.number().int().optional(),
-});
+})
 
 // ============================================
 // TOKEN REQUESTS
@@ -130,7 +131,7 @@ export const createTokenRequestSchema = z.object({
   browser: z.string().optional(),
   ip: z.string().optional(),
   expires: z.string().datetime().optional(),
-});
+})
 
 // ============================================
 // INVITE REQUESTS
@@ -140,14 +141,14 @@ export const createInviteRequestSchema = z.object({
   email: z.string().email().optional(),
   username: z.string().optional(),
   type: z.string().optional(),
-});
+})
 
 export const useInviteRequestSchema = z.object({
   code: z.string().min(1),
   username: z.string().min(1).max(255),
   password: z.string().min(1).max(255),
   email: z.string().email().optional(),
-});
+})
 
 // ============================================
 // BOOKMARK REQUESTS
@@ -158,7 +159,7 @@ export const createBookmarkCategoryRequestSchema = z.object({
   category_id: z.number().int(),
   order: z.number().int().optional(),
   isDefault: z.number().int().optional(),
-});
+})
 
 export const createBookmarkTabRequestSchema = z.object({
   name: z.string().min(1).max(255),
@@ -170,7 +171,7 @@ export const createBookmarkTabRequestSchema = z.object({
   image: z.string().optional(),
   background_color: z.string().optional(),
   text_color: z.string().optional(),
-});
+})
 
 // ============================================
 // SETTINGS REQUESTS
@@ -178,7 +179,7 @@ export const createBookmarkTabRequestSchema = z.object({
 
 export const updateSettingRequestSchema = z.object({
   value: z.string().nullable(),
-});
+})
 
 // ============================================
 // CONNECTION TESTER REQUESTS
@@ -209,5 +210,5 @@ export const createBackupRequestSchema = z.object({
 })
 
 export const restoreBackupRequestSchema = z.object({
-  confirmRestore: z.boolean().refine(v => v === true, { message: 'Must confirm restore' }),
+  confirmRestore: z.boolean().refine((v) => v === true, { message: 'Must confirm restore' }),
 })
