@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/bun'
-import { checkSetupComplete } from './services/setup'
 import { initConfig } from './config'
 import { getConfig } from './config'
 import { initDb, healthCheck, closeDb, runMigrations, seedDefaultGroups } from './db'
@@ -32,6 +31,7 @@ import imageRoutes from './routes/images'
 import updateRoutes from './routes/update'
 import logRoutes from './routes/logs'
 import { createChildLogger } from './services/logger'
+import { createSetupRedirectMiddleware } from './middleware/setup-redirect'
 
 const { env } = await initConfig()
 
@@ -55,7 +55,10 @@ await runMigrations()
       log.info({ step, current, total }, `${step} (${current}/${total})`)
     })
     if (result.success) {
-      log.info({ durationMs: result.durationMs, columnsAdded: result.columnsAdded }, 'Migration complete')
+      log.info(
+        { durationMs: result.durationMs, columnsAdded: result.columnsAdded },
+        'Migration complete'
+      )
     } else {
       log.fatal({ error: result.error }, 'Migration FAILED')
       process.exit(1)
@@ -70,19 +73,20 @@ await loadAllPlugins()
 
 const app = new Hono()
 
-
 // ── CORS middleware (credentials: true for httpOnly refresh cookie) ──
 const { server: serverConfig } = getConfig()
-app.use('/api/*', cors({
-  origin: serverConfig.corsOrigins,
-  credentials: true,
-}))
+app.use(
+  '/api/*',
+  cors({
+    origin: serverConfig.corsOrigins,
+    credentials: true,
+  })
+)
 
 app.use('/api/*', authProxyMiddleware())
 
 // ── Rate limiting on auth endpoints ──────────────────────────
 app.use('/api/auth/*', authRateLimiter())
-
 
 // ── Public settings endpoint (no auth) ─────────────────────────
 // Exposes only allowlisted settings needed by the Login page.
@@ -145,27 +149,13 @@ app.get('/api/health', async (c) => {
   })
 })
 
+app.use('*', createSetupRedirectMiddleware())
+
 // ── Static file serving (built SPA) ────────────────────────────
 // Serve static assets from the Vite build output.
 // In dev mode the dist folder doesn't exist, so serveStatic simply
 // falls through and the SPA is served by Vite on port 5173.
 app.use('/*', serveStatic({ root: './apps/web/dist' }))
-
-// ── Wizard redirect for non-API page requests ─────────────────
-// If no users exist (first-run), redirect to /wizard so the SPA
-// can show the setup page.  API routes are unaffected.
-app.get('*', async (c, next) => {
-  const path = c.req.path
-  // Skip API routes and the wizard page itself
-  if (path.startsWith('/api/') || path === '/wizard') {
-    return next()
-  }
-  const setupDone = await checkSetupComplete()
-  if (!setupDone) {
-    return c.redirect('/wizard', 302)
-  }
-  return next()
-})
 
 // ── SPA catch-all ─────────────────────────────────────────────
 // Any non-API route that didn't match a static file → serve index.html
