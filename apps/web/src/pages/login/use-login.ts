@@ -40,20 +40,6 @@ export function useLogin() {
     fetchSettings()
   }, [])
 
-  useEffect(() => {
-    const checkWizard = async () => {
-      try {
-        const res = await client.get('/wizard/status')
-        if (res.data.data.needsSetup) {
-          navigate('/wizard', { replace: true })
-        }
-      } catch {
-        // Stay on login page
-      }
-    }
-    checkWizard()
-  }, [navigate])
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!username || !password) {

@@ -29,6 +29,12 @@ import SettingsAccount from './pages/settings/Account'
 import SettingsLogs from './pages/settings/Logs'
 
 // ── Route guards ────────────────────────────────────────────────
+const FullScreenLoader = () => (
+  <div className="flex h-screen items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+  </div>
+)
+
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   useSessionInit()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -36,11 +42,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const needsSetup = useAuthStore((s) => s.needsSetup)
 
   if (isInitializing) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    )
+    return <FullScreenLoader />
   }
 
   if (needsSetup) return <Navigate to="/wizard" replace />
@@ -49,8 +51,25 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 }
 
 const PublicRoute = ({ children }: { children: ReactNode }) => {
+  useSessionInit()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isInitializing = useAuthStore((s) => s.isInitializing)
+  const needsSetup = useAuthStore((s) => s.needsSetup)
+
+  if (isInitializing) return <FullScreenLoader />
+  if (needsSetup) return <Navigate to="/wizard" replace />
   if (isAuthenticated) return <Navigate to="/" replace />
+  return children
+}
+
+const WizardRoute = ({ children }: { children: ReactNode }) => {
+  useSessionInit()
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isInitializing = useAuthStore((s) => s.isInitializing)
+  const needsSetup = useAuthStore((s) => s.needsSetup)
+
+  if (isInitializing) return <FullScreenLoader />
+  if (!needsSetup) return <Navigate to={isAuthenticated ? '/' : '/login'} replace />
   return children
 }
 
@@ -66,7 +85,11 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
   },
   {
     path: '/wizard',
-    element: <Wizard />,
+    element: (
+      <WizardRoute>
+        <Wizard />
+      </WizardRoute>
+    ),
   },
   {
     path: '/migration',
