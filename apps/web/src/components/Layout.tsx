@@ -1,6 +1,6 @@
-import { Outlet, useLocation, useMatch } from 'react-router-dom'
+import { Outlet, useMatch } from 'react-router-dom'
 import { useAuthStore, useUIStore } from '../store'
-import { Bell, Menu } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Toaster } from 'sonner'
 import { useAutoRefresh } from '../hooks/useAuth'
@@ -13,7 +13,6 @@ import TabViewport from './TabViewport'
 
 export default function Layout() {
   const { sidebarOpen, toggleSidebar } = useUIStore()
-  const location = useLocation()
   const tabRouteMatch = useMatch('/tab/:id')
 
   // ── Hooks: auto-refresh, theme, idle timeout ──────────────────
@@ -90,28 +89,8 @@ export default function Layout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-10">
-          <div className="flex items-center">
-            {isMobile && (
-              <button onClick={toggleSidebar} className="mr-4 p-2 rounded-md hover:bg-muted">
-                <Menu size={20} />
-              </button>
-            )}
-            <h1 className="text-lg font-medium capitalize">
-              {location.pathname === '/' ? 'Dashboard' : location.pathname.split('/')[1]}
-            </h1>
-          </div>
-
+        <header className="h-16 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-end px-6 shrink-0 z-10">
           <div className="flex items-center space-x-4">
-            <div className="w-64 hidden md:block">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full bg-muted/50 border border-border rounded-full px-4 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
-                />
-              </div>
-            </div>
             {isAdmin && (
               <div className="relative" ref={bellRef}>
                 <button

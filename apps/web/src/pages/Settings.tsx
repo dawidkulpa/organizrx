@@ -56,11 +56,11 @@ export default function SettingsLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
+      <section className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
         <div className="mx-auto max-w-5xl">
           <Outlet />
         </div>
-      </main>
+      </section>
     </div>
   )
 }
