@@ -1,6 +1,6 @@
 /**
  * Seed script for default groups.
- * Creates 6 groups with exact IDs matching legacy Organizr schema.
+ * Creates 3 essential groups: Admin (0), User (4), Guest (999).
  */
 
 import { getRawDb, getDialect } from './connection'
@@ -13,7 +13,7 @@ export interface GroupSeed {
   name: string
   group_id: number
   isDefault: number
-  image: string
+  image: string | null
 }
 
 export const defaultGroups: GroupSeed[] = [
@@ -21,37 +21,19 @@ export const defaultGroups: GroupSeed[] = [
     name: 'Admin',
     group_id: 0,
     isDefault: 0,
-    image: 'plugins/images/groups/admin.png',
-  },
-  {
-    name: 'Co-Admin',
-    group_id: 1,
-    isDefault: 0,
-    image: 'plugins/images/groups/coadmin.png',
-  },
-  {
-    name: 'Super User',
-    group_id: 2,
-    isDefault: 0,
-    image: 'plugins/images/groups/superuser.png',
-  },
-  {
-    name: 'Power User',
-    group_id: 3,
-    isDefault: 0,
-    image: 'plugins/images/groups/poweruser.png',
+    image: null,
   },
   {
     name: 'User',
     group_id: 4,
     isDefault: 1,
-    image: 'plugins/images/groups/user.png',
+    image: null,
   },
   {
     name: 'Guest',
     group_id: 999,
     isDefault: 0,
-    image: 'plugins/images/groups/guest.png',
+    image: null,
   },
 ]
 
@@ -73,7 +55,10 @@ export async function seedDefaultGroups(): Promise<void> {
         }
         case 'mysql': {
           const mysqlDb = db as MysqlDb
-          await mysqlDb.insert(mysqlSchema.groups).values(group).onDuplicateKeyUpdate({ set: { name: group.name } })
+          await mysqlDb
+            .insert(mysqlSchema.groups)
+            .values(group)
+            .onDuplicateKeyUpdate({ set: { name: group.name } })
           break
         }
         case 'postgresql': {

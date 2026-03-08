@@ -212,9 +212,9 @@ describe('groups service', () => {
       const groups = await listGroups()
       const userGroup = groups.find((g) => g.name === 'User')
 
-      expect(
-        updateGroup(userGroup!.id, { group_id: 10 })
-      ).rejects.toThrow('Cannot change group_id of default groups')
+      expect(updateGroup(userGroup!.id, { group_id: 10 })).rejects.toThrow(
+        'Cannot change group_id of default groups'
+      )
     })
   })
 
@@ -249,9 +249,7 @@ describe('groups service', () => {
       const groups = await listGroups()
       const userGroup = groups.find((g) => g.isDefault === 1)
 
-      expect(
-        deleteGroup(userGroup!.id)
-      ).rejects.toThrow('Cannot delete default groups')
+      expect(deleteGroup(userGroup!.id)).rejects.toThrow('Cannot delete default groups')
     })
 
     it('should throw error when deleting default group by group_id', async () => {
@@ -259,9 +257,7 @@ describe('groups service', () => {
       const groups = await listGroups()
       const adminGroup = groups.find((g) => g.group_id === 0)
 
-      expect(
-        deleteGroup(adminGroup!.id)
-      ).rejects.toThrow('Cannot delete default groups')
+      expect(deleteGroup(adminGroup!.id)).rejects.toThrow('Cannot delete default groups')
     })
 
     it('should throw error when deleting group with users', async () => {
@@ -279,9 +275,9 @@ describe('groups service', () => {
         VALUES ('testuser', 'hash', ${created.group_id})
       `)
 
-      expect(
-        deleteGroup(created.id)
-      ).rejects.toThrow('Cannot delete group that has users assigned to it')
+      expect(deleteGroup(created.id)).rejects.toThrow(
+        'Cannot delete group that has users assigned to it'
+      )
     })
   })
 
@@ -292,15 +288,14 @@ describe('groups service', () => {
   describe('isDefaultGroup', () => {
     it('should return true for default group IDs', () => {
       expect(isDefaultGroup(0)).toBe(true)
-      expect(isDefaultGroup(1)).toBe(true)
-      expect(isDefaultGroup(2)).toBe(true)
-      expect(isDefaultGroup(3)).toBe(true)
       expect(isDefaultGroup(4)).toBe(true)
       expect(isDefaultGroup(999)).toBe(true)
     })
 
     it('should return false for custom group IDs', () => {
-      expect(isDefaultGroup(-1)).toBe(false)
+      expect(isDefaultGroup(1)).toBe(false)
+      expect(isDefaultGroup(2)).toBe(false)
+      expect(isDefaultGroup(3)).toBe(false)
       expect(isDefaultGroup(5)).toBe(false)
       expect(isDefaultGroup(100)).toBe(false)
     })

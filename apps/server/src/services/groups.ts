@@ -36,16 +36,36 @@ export interface UpdateGroupData {
 // ---------------------------------------------------------------------------
 
 type DialectResult =
-  | { db: SqliteDb; groups: typeof sqliteSchema.groups; users: typeof sqliteSchema.users; dialect: 'sqlite' }
-  | { db: MysqlDb; groups: typeof mysqlSchema.groups; users: typeof mysqlSchema.users; dialect: 'mysql' }
-  | { db: PostgresDb; groups: typeof pgSchema.groups; users: typeof pgSchema.users; dialect: 'postgresql' }
+  | {
+      db: SqliteDb
+      groups: typeof sqliteSchema.groups
+      users: typeof sqliteSchema.users
+      dialect: 'sqlite'
+    }
+  | {
+      db: MysqlDb
+      groups: typeof mysqlSchema.groups
+      users: typeof mysqlSchema.users
+      dialect: 'mysql'
+    }
+  | {
+      db: PostgresDb
+      groups: typeof pgSchema.groups
+      users: typeof pgSchema.users
+      dialect: 'postgresql'
+    }
 
 function dialectCtx(): DialectResult {
   const dialect = getDialect()
   const raw = getRawDb()
   switch (dialect) {
     case 'sqlite':
-      return { db: raw as SqliteDb, groups: sqliteSchema.groups, users: sqliteSchema.users, dialect }
+      return {
+        db: raw as SqliteDb,
+        groups: sqliteSchema.groups,
+        users: sqliteSchema.users,
+        dialect,
+      }
     case 'mysql':
       return { db: raw as MysqlDb, groups: mysqlSchema.groups, users: mysqlSchema.users, dialect }
     case 'postgresql':
@@ -59,7 +79,7 @@ function dialectCtx(): DialectResult {
 // Default group checks
 // ---------------------------------------------------------------------------
 
-const DEFAULT_GROUP_IDS = [0, 1, 2, 3, 4, 999]
+const DEFAULT_GROUP_IDS = [0, 4, 999]
 
 export function isDefaultGroup(groupId: number): boolean {
   return DEFAULT_GROUP_IDS.includes(groupId)
@@ -197,11 +217,21 @@ export async function groupHasUsers(groupId: number): Promise<boolean> {
   let rows: unknown[]
 
   if (ctx.dialect === 'sqlite') {
-    rows = ctx.db.select({ id: ctx.users.id }).from(ctx.users).where(eq(ctx.users.group_id, groupId)).all()
+    rows = ctx.db
+      .select({ id: ctx.users.id })
+      .from(ctx.users)
+      .where(eq(ctx.users.group_id, groupId))
+      .all()
   } else if (ctx.dialect === 'mysql') {
-    rows = await ctx.db.select({ id: ctx.users.id }).from(ctx.users).where(eq(ctx.users.group_id, groupId))
+    rows = await ctx.db
+      .select({ id: ctx.users.id })
+      .from(ctx.users)
+      .where(eq(ctx.users.group_id, groupId))
   } else {
-    rows = await ctx.db.select({ id: ctx.users.id }).from(ctx.users).where(eq(ctx.users.group_id, groupId))
+    rows = await ctx.db
+      .select({ id: ctx.users.id })
+      .from(ctx.users)
+      .where(eq(ctx.users.group_id, groupId))
   }
 
   return rows.length > 0
