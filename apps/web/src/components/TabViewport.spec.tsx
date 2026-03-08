@@ -1,0 +1,157 @@
+import { GlobalWindow } from 'happy-dom'
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
+import { render, waitFor, cleanup } from '@testing-library/react'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { useTabStore } from '../store'
+
+const happyWindow = new GlobalWindow({ url: 'http://localhost:5173' })
+const domGlobals = [
+  'document',
+  'navigator',
+  'location',
+  'history',
+  'localStorage',
+  'sessionStorage',
+  'getComputedStyle',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'MutationObserver',
+  'DOMParser',
+  'XMLSerializer',
+  'HTMLElement',
+  'HTMLDivElement',
+  'HTMLButtonElement',
+  'HTMLInputElement',
+  'HTMLFormElement',
+  'HTMLAnchorElement',
+  'DocumentFragment',
+  'Element',
+  'Node',
+  'Text',
+  'Comment',
+  'Event',
+  'CustomEvent',
+  'MouseEvent',
+  'KeyboardEvent',
+]
+for (const key of Object.getOwnPropertyNames(happyWindow)) {
+  if (key === 'undefined' || key === 'NaN' || key === 'Infinity') continue
+  if (key in globalThis && !domGlobals.includes(key)) continue
+  try {
+    const desc = Object.getOwnPropertyDescriptor(happyWindow, key)
+    if (desc) Object.defineProperty(globalThis, key, { ...desc, configurable: true })
+  } catch {}
+}
+Object.defineProperty(globalThis, 'window', {
+  value: happyWindow,
+  writable: true,
+  configurable: true,
+})
+
+const mockSidebar = mock(() =>
+  Promise.resolve({
+    data: {
+      data: {
+        tabs: [
+          {
+            id: 101,
+            name: 'Plex',
+            url: 'https://plex.example',
+            url_local: null,
+            enabled: 1,
+            type: 0,
+            timeout: 10000,
+            timeout_ms: null,
+          },
+          {
+            id: 202,
+            name: 'Users',
+            url: '/users',
+            url_local: null,
+            enabled: 1,
+            type: 1,
+            timeout: 10000,
+            timeout_ms: null,
+          },
+        ],
+      },
+    },
+  })
+)
+
+mock.module('../api/client', () => ({
+  default: {},
+  api: {
+    tabs: {
+      sidebar: mockSidebar,
+    },
+  },
+}))
+
+import TabViewport from './TabViewport'
+
+describe('TabViewport', () => {
+  beforeEach(() => {
+    useTabStore.getState().resetTabs()
+    mockSidebar.mockClear()
+  })
+
+  afterEach(() => {
+    cleanup()
+    useTabStore.getState().resetTabs()
+  })
+
+  it('keeps visited iframe tab mounted while hidden after navigation', async () => {
+    useTabStore.getState().setActiveTabId(101)
+
+    const { container, rerender } = render(
+      <MemoryRouter initialEntries={['/tab/101']}>
+        <Routes>
+          <Route path="/tab/:id" element={<TabViewport />} />
+          <Route path="/settings" element={<TabViewport />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-mounted-tab-id="101"]')).toBeTruthy()
+    })
+
+    useTabStore.getState().setActiveTabId(null)
+
+    rerender(
+      <MemoryRouter initialEntries={['/settings']}>
+        <Routes>
+          <Route path="/tab/:id" element={<TabViewport />} />
+          <Route path="/settings" element={<TabViewport />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      const mounted = container.querySelector('[data-mounted-tab-id="101"]')
+      expect(mounted).toBeTruthy()
+      expect(mounted?.className).toContain('invisible')
+      expect(container.querySelector('iframe')).toBeTruthy()
+    })
+  })
+
+  it('does not render internal tabs as iframes', async () => {
+    useTabStore.getState().setActiveTabId(202)
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/tab/202']}>
+        <Routes>
+          <Route path="/tab/:id" element={<TabViewport />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(mockSidebar).toHaveBeenCalled()
+    })
+
+    expect(container.querySelector('[data-mounted-tab-id="202"]')).toBeNull()
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+})

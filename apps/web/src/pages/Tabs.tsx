@@ -1,52 +1,55 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import TabContent, { type TabData } from '../components/TabContent'
+import { useTabStore } from '../store'
 
 export default function Tabs() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [tab, setTab] = useState<TabData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const fetchTab = useCallback(async (tabId: number) => {
-    setIsLoading(true)
-    try {
-      const res = await api.tabs.getById(tabId)
-      setTab(res.data.data)
-    } catch {
-      setTab(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+  const setActiveTabId = useTabStore((s) => s.setActiveTabId)
+  const mountTab = useTabStore((s) => s.mountTab)
 
   useEffect(() => {
+    let cancelled = false
+
     const tabId = parseInt(id ?? '', 10)
     if (isNaN(tabId)) {
-      setTab(null)
-      setIsLoading(false)
+      setActiveTabId(null)
+      navigate('/', { replace: true })
       return
     }
-    fetchTab(tabId)
-  }, [id, fetchTab])
 
-  useEffect(() => {
-    if (tab && tab.type === 0 && tab.url) {
-      const INTERNAL_ROUTES: Record<string, string> = {
-        '/': '/',
-        '/dashboard': '/',
-        '/users': '/users',
-        '/settings': '/settings',
+    const syncTab = async () => {
+      try {
+        const res = await api.tabs.getById(tabId)
+        const tab = res.data?.data as { id: number; enabled: number | null; type: number | null }
+
+        if (cancelled) return
+
+        const isAccessible = tab.enabled !== 0
+        const isExternal = tab.type === 0 || tab.type === null
+
+        if (!isAccessible || !isExternal) {
+          setActiveTabId(null)
+          navigate('/', { replace: true })
+          return
+        }
+
+        setActiveTabId(tab.id)
+        mountTab(tab.id)
+      } catch {
+        if (cancelled) return
+        setActiveTabId(null)
+        navigate('/', { replace: true })
       }
-      const route = INTERNAL_ROUTES[tab.url] ?? tab.url
-      navigate(route, { replace: true })
     }
-  }, [tab, navigate])
 
-  return (
-    <div className="h-full -m-6">
-      <TabContent tab={tab} isLoading={isLoading} />
-    </div>
-  )
+    syncTab()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, navigate, setActiveTabId, mountTab])
+
+  return null
 }

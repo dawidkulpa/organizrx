@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useMatch } from 'react-router-dom'
 import { useAuthStore, useUIStore } from '../store'
 import { Bell, Menu } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -9,10 +9,12 @@ import { useIdleTimeout } from '../hooks/useIdleTimeout'
 import { api } from '../api/client'
 import LockScreen from './LockScreen'
 import Sidebar from './Sidebar'
+import TabViewport from './TabViewport'
 
 export default function Layout() {
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const location = useLocation()
+  const tabRouteMatch = useMatch('/tab/:id')
 
   // ── Hooks: auto-refresh, theme, idle timeout ──────────────────
   useAutoRefresh()
@@ -140,11 +142,15 @@ export default function Layout() {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto p-6 scroll-smooth">
-          <div className="max-w-7xl mx-auto animate-reveal">
-            <Outlet />
-          </div>
+        <main className="flex-1 overflow-hidden relative">
+          <TabViewport />
+          {!tabRouteMatch && (
+            <div className="h-full overflow-auto p-6 scroll-smooth">
+              <div className="max-w-7xl mx-auto animate-reveal">
+                <Outlet />
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

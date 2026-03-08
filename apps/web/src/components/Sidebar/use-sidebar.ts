@@ -32,11 +32,9 @@ const INTERNAL_ROUTES: Record<string, string> = {
 }
 
 export function getTabRoute(tab: SidebarTab): string {
-  // type=0 tabs are internal — route to their mapped path
-  if (tab.type === 0 && tab.url) {
+  if (tab.type === 1 && tab.url && INTERNAL_ROUTES[tab.url]) {
     return INTERNAL_ROUTES[tab.url] ?? tab.url
   }
-  // type=1 tabs are iframes — route to /tab/:id
   return `/tab/${tab.id}`
 }
 

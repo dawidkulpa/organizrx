@@ -60,8 +60,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isLoading: false })
       const message =
         err instanceof Error
-          ? (err as { response?: { data?: { error?: { message?: string } } } }).response?.data
-              ?.error?.message ?? err.message
+          ? ((err as { response?: { data?: { error?: { message?: string } } } }).response?.data
+              ?.error?.message ?? err.message)
           : 'Login failed'
       return { ok: false as const, requires2fa: false as const, error: message }
     }
@@ -193,7 +193,9 @@ interface LockscreenState {
 export const useLockscreenStore = create<LockscreenState>((set) => ({
   isLocked: false,
   lockPin: readLocalStorage(LOCK_PIN_KEY, ''),
-  idleTimeout: Number(readLocalStorage(LOCK_TIMEOUT_KEY, String(DEFAULT_IDLE_TIMEOUT))) || DEFAULT_IDLE_TIMEOUT,
+  idleTimeout:
+    Number(readLocalStorage(LOCK_TIMEOUT_KEY, String(DEFAULT_IDLE_TIMEOUT))) ||
+    DEFAULT_IDLE_TIMEOUT,
 
   lock: () => set({ isLocked: true }),
   unlock: () => set({ isLocked: false }),
@@ -224,4 +226,23 @@ export const useUIStore = create<UIState>((set) => ({
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   bumpSidebar: () => set((state) => ({ sidebarVersion: state.sidebarVersion + 1 })),
+}))
+
+interface TabViewportState {
+  activeTabId: number | null
+  mountedTabs: number[]
+  setActiveTabId: (id: number | null) => void
+  mountTab: (id: number) => void
+  resetTabs: () => void
+}
+
+export const useTabStore = create<TabViewportState>((set) => ({
+  activeTabId: null,
+  mountedTabs: [],
+  setActiveTabId: (id) => set({ activeTabId: id }),
+  mountTab: (id) =>
+    set((state) => ({
+      mountedTabs: state.mountedTabs.includes(id) ? state.mountedTabs : [...state.mountedTabs, id],
+    })),
+  resetTabs: () => set({ activeTabId: null, mountedTabs: [] }),
 }))

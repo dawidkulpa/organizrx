@@ -55,7 +55,12 @@ Object.defineProperty(globalThis, 'window', {
 // Mock API client
 const mockSidebar = mock(() =>
   Promise.resolve({
-    data: { data: { tabs: [] as Array<Record<string, unknown>>, categories: [] as Array<Record<string, unknown>> } },
+    data: {
+      data: {
+        tabs: [] as Array<Record<string, unknown>>,
+        categories: [] as Array<Record<string, unknown>>,
+      },
+    },
   })
 )
 
@@ -88,7 +93,12 @@ describe('Sidebar', () => {
     useUIStore.getState().setSidebarOpen(true)
     mockSidebar.mockImplementation(() =>
       Promise.resolve({
-        data: { data: { tabs: [] as Array<Record<string, unknown>>, categories: [] as Array<Record<string, unknown>> } },
+        data: {
+          data: {
+            tabs: [] as Array<Record<string, unknown>>,
+            categories: [] as Array<Record<string, unknown>>,
+          },
+        },
       })
     )
   })
@@ -117,7 +127,19 @@ describe('Sidebar', () => {
         data: {
           data: {
             tabs: [
-              { id: 1, order: 0, category_id: null, name: 'Dashboard', url: '/', url_local: null, enabled: 1, group_id: 999, image: 'fa-home', type: 0, isDefault: 1 },
+              {
+                id: 1,
+                order: 0,
+                category_id: null,
+                name: 'Dashboard',
+                url: '/',
+                url_local: null,
+                enabled: 1,
+                group_id: 999,
+                image: 'fa-home',
+                type: 1,
+                isDefault: 1,
+              },
             ],
             categories: [],
           },
@@ -142,7 +164,19 @@ describe('Sidebar', () => {
         data: {
           data: {
             tabs: [
-              { id: 2, order: 1, category_id: null, name: 'Settings', url: '/settings', url_local: null, enabled: 1, group_id: 0, image: 'fa-cog', type: 0, isDefault: 1 },
+              {
+                id: 2,
+                order: 1,
+                category_id: null,
+                name: 'Settings',
+                url: '/settings',
+                url_local: null,
+                enabled: 1,
+                group_id: 0,
+                image: 'fa-cog',
+                type: 1,
+                isDefault: 1,
+              },
             ],
             categories: [],
           },
@@ -176,7 +210,19 @@ describe('Sidebar', () => {
         data: {
           data: {
             tabs: [
-              { id: 3, order: 2, category_id: null, name: 'Users', url: '/users', url_local: null, enabled: 1, group_id: 0, image: 'fa-users', type: 0, isDefault: 1 },
+              {
+                id: 3,
+                order: 2,
+                category_id: null,
+                name: 'Users',
+                url: '/users',
+                url_local: null,
+                enabled: 1,
+                group_id: 0,
+                image: 'fa-users',
+                type: 1,
+                isDefault: 1,
+              },
             ],
             categories: [],
           },
@@ -211,7 +257,7 @@ describe('Sidebar', () => {
                 enabled: 1,
                 group_id: 0,
                 image: null,
-                type: 1,
+                type: 0,
               },
               {
                 id: 2,
@@ -223,7 +269,7 @@ describe('Sidebar', () => {
                 enabled: 1,
                 group_id: 0,
                 image: null,
-                type: 1,
+                type: 0,
               },
             ],
             categories: [],

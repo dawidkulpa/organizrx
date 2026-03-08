@@ -57,7 +57,9 @@ mock.module('../api/client', () => ({
   default: { get: mock(() => Promise.resolve({ data: [] })) },
   api: {
     settings: { getAll: mock(() => Promise.resolve({ data: [] })) },
-    tabs: { sidebar: mock(() => Promise.resolve({ data: { data: { tabs: [], categories: [] } } })) },
+    tabs: {
+      sidebar: mock(() => Promise.resolve({ data: { data: { tabs: [], categories: [] } } })),
+    },
   },
 }))
 
@@ -80,7 +82,7 @@ function createTab(overrides?: Partial<TabData>): TabData {
     name: 'Test Tab',
     url: 'https://example.com',
     url_local: null,
-    type: 1,
+    type: 0,
     enabled: 1,
     image: null,
     ...overrides,
@@ -91,9 +93,9 @@ function createTab(overrides?: Partial<TabData>): TabData {
 // TabContent Component Tests
 // ============================================================================
 
-  afterEach(() => {
-    cleanup()
-  })
+afterEach(() => {
+  cleanup()
+})
 
 describe('TabContent', () => {
   it('should show loading spinner when isLoading is true', () => {
@@ -117,18 +119,18 @@ describe('TabContent', () => {
     expect(getByText("This tab doesn't exist or has been disabled.")).toBeTruthy()
   })
 
-  it('should show "No URL configured" when tab type=1 but no URL set', () => {
+  it('should show "No URL configured" when tab type=0 but no URL set', () => {
     const { getByText } = render(
-      <TabContent tab={createTab({ type: 1, url: null, url_local: null })} isLoading={false} />
+      <TabContent tab={createTab({ type: 0, url: null, url_local: null })} isLoading={false} />
     )
 
     expect(getByText('No URL configured')).toBeTruthy()
     expect(getByText('This tab has no URL set.')).toBeTruthy()
   })
 
-  it('should render iframe with correct src when tab type=1 and URL is set', () => {
+  it('should render iframe with correct src when tab type=0 and URL is set', () => {
     const { container } = render(
-      <TabContent tab={createTab({ type: 1, url: 'https://example.com' })} isLoading={false} />
+      <TabContent tab={createTab({ type: 0, url: 'https://example.com' })} isLoading={false} />
     )
 
     const iframe = container.querySelector('iframe')
@@ -138,7 +140,7 @@ describe('TabContent', () => {
 
   it('should show iframe sandbox attributes correctly', () => {
     const { container } = render(
-      <TabContent tab={createTab({ type: 1, url: 'https://example.com' })} isLoading={false} />
+      <TabContent tab={createTab({ type: 0, url: 'https://example.com' })} isLoading={false} />
     )
 
     const iframe = container.querySelector('iframe')
@@ -151,7 +153,7 @@ describe('TabContent', () => {
   it('should set iframe title to tab name', () => {
     const { container } = render(
       <TabContent
-        tab={createTab({ type: 1, name: 'Plex', url: 'https://example.com' })}
+        tab={createTab({ type: 0, name: 'Plex', url: 'https://example.com' })}
         isLoading={false}
       />
     )
@@ -163,7 +165,7 @@ describe('TabContent', () => {
   it('should use url_local when url is not available', () => {
     const { container } = render(
       <TabContent
-        tab={createTab({ type: 1, url: null, url_local: 'http://localhost:32400' })}
+        tab={createTab({ type: 0, url: null, url_local: 'http://localhost:32400' })}
         isLoading={false}
       />
     )
@@ -175,7 +177,7 @@ describe('TabContent', () => {
   it('should show loading overlay initially (iframeLoading state defaults to true)', () => {
     const { container, getByText } = render(
       <TabContent
-        tab={createTab({ type: 1, name: 'Test Tab', url: 'https://example.com' })}
+        tab={createTab({ type: 0, name: 'Test Tab', url: 'https://example.com' })}
         isLoading={false}
       />
     )
@@ -185,10 +187,10 @@ describe('TabContent', () => {
     expect(loadingOverlay).toBeTruthy()
   })
 
-  it('should render internal component when tab type=0 with mapped URL', () => {
+  it('should render internal component when tab type=1 with mapped URL', () => {
     const { container } = render(
       <MemoryRouter>
-        <TabContent tab={createTab({ type: 0, name: 'Dashboard', url: '/' })} isLoading={false} />
+        <TabContent tab={createTab({ type: 1, name: 'Dashboard', url: '/' })} isLoading={false} />
       </MemoryRouter>
     )
 
@@ -199,9 +201,9 @@ describe('TabContent', () => {
     expect(container.textContent).not.toContain('Unknown tab type')
   })
 
-  it('should show unknown tab type fallback when type=0 and URL is not mapped', () => {
+  it('should show unknown tab type fallback when type=1 and URL is not mapped', () => {
     const { getByText } = render(
-      <TabContent tab={createTab({ type: 0, name: null, url: '/nonexistent' })} isLoading={false} />
+      <TabContent tab={createTab({ type: 1, name: null, url: '/nonexistent' })} isLoading={false} />
     )
 
     expect(getByText('Unknown tab type')).toBeTruthy()
@@ -211,7 +213,7 @@ describe('TabContent', () => {
   it('should use "Tab content" as default iframe title when name is null', () => {
     const { container } = render(
       <TabContent
-        tab={createTab({ type: 1, name: null, url: 'https://example.com' })}
+        tab={createTab({ type: 0, name: null, url: 'https://example.com' })}
         isLoading={false}
       />
     )

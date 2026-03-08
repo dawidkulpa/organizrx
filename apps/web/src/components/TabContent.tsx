@@ -52,9 +52,7 @@ export default function TabContent({ tab, isLoading }: TabContentProps) {
     )
   }
 
-  // type === 1: iframe (external service) — legacy Organizr uses 1 for iframe tabs
-  // type === 0: internal page (built-in Organizr API pages)
-  if (tab.type === 1) {
+  if (tab.type === 0 || tab.type === null) {
     const src = tab.url || tab.url_local
     if (!src) {
       return (
@@ -90,8 +88,7 @@ export default function TabContent({ tab, isLoading }: TabContentProps) {
     )
   }
 
-  // type === 0 or other: internal/native component
-  if (tab.type === 0 && tab.url) {
+  if (tab.type === 1 && tab.url) {
     const InternalComponent = INTERNAL_COMPONENTS[tab.url]
     if (InternalComponent) {
       return <InternalComponent />
