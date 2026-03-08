@@ -47,7 +47,7 @@ wizard.post('/complete', async (c) => {
   if (total > 0) {
     return c.json(
       { error: { code: 'WIZARD_COMPLETED', message: 'Setup has already been completed' } },
-      403,
+      403
     )
   }
 
@@ -56,8 +56,13 @@ wizard.post('/complete', async (c) => {
 
   if (!parsed.success) {
     return c.json(
-      { error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input' } },
-      400,
+      {
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: parsed.error.issues[0]?.message ?? 'Invalid input',
+        },
+      },
+      400
     )
   }
 
@@ -75,10 +80,10 @@ wizard.post('/complete', async (c) => {
 
   // Save initial settings
   const initialSettings: Record<string, string> = {
-    WIZARD_COMPLETED: 'true',
+    wizardCompleted: 'true',
   }
   if (siteTitle) {
-    initialSettings.SITE_TITLE = siteTitle
+    initialSettings.siteTitle = siteTitle
   }
   await setSettings(initialSettings)
 

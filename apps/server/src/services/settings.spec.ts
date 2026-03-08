@@ -17,6 +17,7 @@ import {
   setSettings,
   deleteSetting,
   seedDefaultSettings,
+  migrateSettingsKeys,
   _clearSettingsCache,
 } from './settings'
 
@@ -252,7 +253,11 @@ describe('settings service', () => {
       await seedDefaultSettings()
 
       const all = await getAllSettings()
-      expect(all.title).toBe('OrganizrX')
+      expect(all.siteTitle).toBe('OrganizrX')
+      expect(all.baseUrl).toBe('')
+      expect(all.defaultPage).toBe('dashboard')
+      expect(all.registrationEnabled).toBe('false')
+      expect(all.timezone).toBe('UTC')
       expect(all.theme).toBe('dark')
       expect(all.loginWallpaper).toBe('')
       expect(all.unsortedTabs).toBe('bottom')
@@ -265,12 +270,38 @@ describe('settings service', () => {
 
     it('should not overwrite existing settings when seeding', async () => {
       await setupDb()
-      await setSetting('title', 'CustomTitle')
+      await setSetting('siteTitle', 'CustomTitle')
 
       await seedDefaultSettings()
 
-      const title = await getSetting('title')
+      const title = await getSetting('siteTitle')
       expect(title).toBe('CustomTitle')
+    })
+  })
+
+  describe('key migration', () => {
+    it('should migrate old uppercase keys to camelCase', async () => {
+      await setupDb()
+      await setSetting('SITE_TITLE', 'My Site')
+      await setSetting('WIZARD_COMPLETED', 'true')
+
+      const count = await migrateSettingsKeys()
+      expect(count).toBeGreaterThan(0)
+
+      const title = await getSetting('siteTitle')
+      expect(title).toBe('My Site')
+
+      const oldTitle = await getSetting('SITE_TITLE')
+      expect(oldTitle).toBe(null)
+    })
+
+    it('should be idempotent (no-op on second run)', async () => {
+      await setupDb()
+      await setSetting('SITE_TITLE', 'My Site')
+
+      await migrateSettingsKeys()
+      const count = await migrateSettingsKeys()
+      expect(count).toBe(0)
     })
   })
 })

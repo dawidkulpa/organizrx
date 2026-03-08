@@ -22,7 +22,7 @@ import { authRateLimiter } from './middleware/rate-limit'
 import { loadAllPlugins, mountPluginRoutes, unloadAllPlugins } from './plugins'
 import pluginManagementRoutes from './routes/plugins'
 import wizardRoutes from './routes/wizard'
-import { getSetting } from './services/settings'
+import { getSetting, migrateSettingsKeys, seedDefaultSettings } from './services/settings'
 import migrationRoutes from './routes/migration'
 import backupRoutes from './routes/backup'
 import connectionTesterRoutes from './routes/connection-tester'
@@ -66,6 +66,8 @@ await runMigrations()
 }
 // Seed default groups if they don't exist
 await seedDefaultGroups()
+await migrateSettingsKeys()
+await seedDefaultSettings()
 
 // Load plugins (after DB, before route mounting)
 await loadAllPlugins()
@@ -89,7 +91,7 @@ app.use('/api/auth/*', authRateLimiter())
 
 // ── Public settings endpoint (no auth) ─────────────────────────
 // Exposes only allowlisted settings needed by the Login page.
-const PUBLIC_SETTINGS_KEYS = ['LDAP_ENABLED', 'PLEX_ENABLED', 'OIDC_ENABLED', 'SITE_TITLE']
+const PUBLIC_SETTINGS_KEYS = ['ldapEnabled', 'plexEnabled', 'oidcEnabled', 'siteTitle']
 app.get('/api/settings/public', async (c) => {
   try {
     const results: Record<string, string> = {}

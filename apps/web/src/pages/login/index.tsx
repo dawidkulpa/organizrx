@@ -127,7 +127,7 @@ export default function Login() {
               {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Sign in'}
             </button>
 
-            {authSettings['LDAP_ENABLED'] === 'true' && (
+            {authSettings['ldapEnabled'] === 'true' && (
               <button
                 type="button"
                 onClick={handleLdapLogin}

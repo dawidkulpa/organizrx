@@ -18,7 +18,7 @@ client.interceptors.request.use(
     }
     return config
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 )
 
 // ── Response interceptor — refresh on 401, toast on 5xx ─────────
@@ -92,7 +92,7 @@ client.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  },
+  }
 )
 
 export default client
@@ -102,20 +102,17 @@ export const api = {
   auth: {
     login: (data: { username: string; password: string; rememberMe?: boolean }) =>
       client.post('/auth/login', data),
-    logout: () =>
-      client.post('/auth/logout'),
-    refresh: () =>
-      client.post('/auth/refresh'),
+    logout: () => client.post('/auth/logout'),
+    refresh: () => client.post('/auth/refresh'),
     verify2fa: (data: { temp_token: string; totp_code?: string; backup_code?: string }) =>
       client.post('/auth/2fa/verify', data),
     me: () => client.get('/auth/me'),
   },
   settings: {
     getPublic: () => client.get('/settings/public'),
-    getAll: (key?: string) =>
-      client.get('/settings', { params: key ? { key } : undefined }),
+    getAll: (key?: string) => client.get('/settings', { params: key ? { key } : undefined }),
     update: (data: { key: string; value: string }) =>
-      client.put('/settings', data),
+      client.put(`/settings/${data.key}`, { value: data.value }),
   },
   tabs: {
     getAll: () => client.get('/tabs'),

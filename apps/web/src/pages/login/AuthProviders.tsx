@@ -11,7 +11,7 @@ export function AuthProviders({
   isLoading,
   handleExternalLogin,
 }: AuthProvidersProps) {
-  if (authSettings['PLEX_ENABLED'] !== 'true' && authSettings['OIDC_ENABLED'] !== 'true') {
+  if (authSettings['plexEnabled'] !== 'true' && authSettings['oidcEnabled'] !== 'true') {
     return null
   }
 
@@ -27,7 +27,7 @@ export function AuthProviders({
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {authSettings['PLEX_ENABLED'] === 'true' && (
+        {authSettings['plexEnabled'] === 'true' && (
           <button
             type="button"
             onClick={() => handleExternalLogin('plex')}
@@ -39,7 +39,7 @@ export function AuthProviders({
           </button>
         )}
 
-        {authSettings['OIDC_ENABLED'] === 'true' && (
+        {authSettings['oidcEnabled'] === 'true' && (
           <button
             type="button"
             onClick={() => handleExternalLogin('oidc')}

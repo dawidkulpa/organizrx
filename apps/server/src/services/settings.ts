@@ -132,10 +132,14 @@ export async function setSetting(key: string, value: string): Promise<void> {
 
   if (ctx.dialect === 'sqlite') {
     // SQLite: use INSERT OR REPLACE
-    ctx.db.insert(ctx.options).values({ name: key, value }).onConflictDoUpdate({
-      target: ctx.options.name,
-      set: { value },
-    }).run()
+    ctx.db
+      .insert(ctx.options)
+      .values({ name: key, value })
+      .onConflictDoUpdate({
+        target: ctx.options.name,
+        set: { value },
+      })
+      .run()
   } else if (ctx.dialect === 'mysql') {
     // MySQL: use ON DUPLICATE KEY UPDATE
     await ctx.db.insert(ctx.options).values({ name: key, value }).onDuplicateKeyUpdate({
@@ -178,13 +182,59 @@ export async function deleteSetting(key: string): Promise<void> {
   _clearSettingsCache()
 }
 
+export async function migrateSettingsKeys(): Promise<number> {
+  const ctx = dialectCtx()
+  const keyMap: Record<string, string> = {
+    SITE_TITLE: 'siteTitle',
+    WIZARD_COMPLETED: 'wizardCompleted',
+    title: 'siteTitle',
+    BASE_URL: 'baseUrl',
+  }
+
+  let migratedCount = 0
+
+  for (const [oldKey, newKey] of Object.entries(keyMap)) {
+    const oldValue = await getSetting(oldKey)
+    if (oldValue === null) continue
+
+    const newValue = await getSetting(newKey)
+
+    if (newValue === null) {
+      if (ctx.dialect === 'sqlite') {
+        ctx.db.update(ctx.options).set({ name: newKey }).where(eq(ctx.options.name, oldKey)).run()
+      } else if (ctx.dialect === 'mysql') {
+        await ctx.db.update(ctx.options).set({ name: newKey }).where(eq(ctx.options.name, oldKey))
+      } else {
+        await ctx.db.update(ctx.options).set({ name: newKey }).where(eq(ctx.options.name, oldKey))
+      }
+    } else {
+      if (ctx.dialect === 'sqlite') {
+        ctx.db.delete(ctx.options).where(eq(ctx.options.name, oldKey)).run()
+      } else if (ctx.dialect === 'mysql') {
+        await ctx.db.delete(ctx.options).where(eq(ctx.options.name, oldKey))
+      } else {
+        await ctx.db.delete(ctx.options).where(eq(ctx.options.name, oldKey))
+      }
+    }
+
+    migratedCount += 1
+    _clearSettingsCache()
+  }
+
+  return migratedCount
+}
+
 // ---------------------------------------------------------------------------
 // Seed defaults
 // ---------------------------------------------------------------------------
 
 export async function seedDefaultSettings(): Promise<void> {
   const defaults: Record<string, string> = {
-    title: 'OrganizrX',
+    siteTitle: 'OrganizrX',
+    baseUrl: '',
+    defaultPage: 'dashboard',
+    registrationEnabled: 'false',
+    timezone: 'UTC',
     theme: 'dark',
     loginWallpaper: '',
     unsortedTabs: 'bottom',
