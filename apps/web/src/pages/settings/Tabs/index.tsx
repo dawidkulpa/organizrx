@@ -6,7 +6,6 @@ import { TabsList } from './TabsList'
 
 export default function TabsSettings() {
   const {
-
     categories,
     groups,
     isLoading,
@@ -67,6 +66,10 @@ export default function TabsSettings() {
         handleDelete={handleDelete}
         searchQuery={searchQuery}
         selectedCategory={selectedCategory}
+        onAddTab={() => {
+          setEditingTab(null)
+          setIsFormOpen(true)
+        }}
       />
 
       <TabForm

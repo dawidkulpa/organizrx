@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Loader2, Lock, LogOut } from 'lucide-react'
 import { cn } from '../../utils'
+import { getInitials, getAvatarColor } from '../../utils/avatar-utils'
 import { useSidebar } from './use-sidebar'
 import { TabNavItem } from './TabNavItem'
 import { CategorySection } from './CategorySection'
@@ -74,8 +75,11 @@ export default function Sidebar() {
 
       <div className="p-4 border-t border-border">
         <div className={cn('flex items-center', !sidebarOpen && 'justify-center')}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold shrink-0">
-            {user?.username?.[0] || 'U'}
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shrink-0 text-sm"
+            style={{ backgroundColor: getAvatarColor(user?.username || '') }}
+          >
+            {getInitials(user?.username || '')}
           </div>
 
           {sidebarOpen && (

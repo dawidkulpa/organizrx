@@ -5,6 +5,7 @@ import { useUsers } from './use-users'
 import { UsersTable } from './UsersTable'
 import { UsersMobileList } from './UsersMobileList'
 import { BulkGroupDialog } from './BulkGroupDialog'
+import { EmptyState } from '../../../components/EmptyState'
 
 export default function SettingsUsers() {
   const {

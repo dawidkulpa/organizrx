@@ -49,6 +49,8 @@ client.interceptors.response.use(
 
     // Don't retry auth endpoints or already-retried requests
     const isAuthEndpoint = AUTH_PATHS.some((p) => originalRequest?.url?.endsWith(p))
+    // Suppress expected 401 on /auth/refresh (initial page load, no token yet)
+    const isRefreshEndpoint = originalRequest?.url?.endsWith('/auth/refresh')
 
     if (status === 401 && !isAuthEndpoint && !originalRequest._retry) {
       if (isRefreshing) {
@@ -80,6 +82,10 @@ client.interceptors.response.use(
         const path = window.location.pathname
         if (path !== '/login' && path !== '/wizard') {
           window.location.href = '/login'
+        }
+        // Suppress expected 401 on /auth/refresh (initial page load, no token yet)
+        if (isRefreshEndpoint) {
+          return Promise.resolve(undefined)
         }
         return Promise.reject(refreshError)
       } finally {

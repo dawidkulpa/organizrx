@@ -87,6 +87,7 @@ export function TwoFactorForm({ tempToken }: TwoFactorFormProps) {
                 id="code"
                 name="code"
                 type="text"
+                autoComplete="one-time-code"
                 required
                 className={cn(
                   'block w-full rounded-md border border-input bg-muted py-2 pl-10 pr-3 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary sm:text-sm',

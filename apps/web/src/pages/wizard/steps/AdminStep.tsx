@@ -31,6 +31,7 @@ export function AdminStep({ data, errors, update }: AdminStepProps) {
           <input
             id="wiz-username"
             type="text"
+            autoComplete="username"
             className={inputClass('username')}
             placeholder="admin"
             value={data.username}
@@ -65,6 +66,7 @@ export function AdminStep({ data, errors, update }: AdminStepProps) {
           <input
             id="wiz-password"
             type="password"
+            autoComplete="new-password"
             className={inputClass('password')}
             placeholder="••••••••"
             value={data.password}
@@ -82,6 +84,7 @@ export function AdminStep({ data, errors, update }: AdminStepProps) {
           <input
             id="wiz-confirm"
             type="password"
+            autoComplete="new-password"
             className={inputClass('confirmPassword')}
             placeholder="••••••••"
             value={data.confirmPassword}

@@ -45,12 +45,11 @@ export default function SettingsGroups() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [groupsRes, usersRes] = await Promise.all([
-        api.groups.getAll(),
-        api.users.getAll()
-      ])
+      const [groupsRes, usersRes] = await Promise.all([api.groups.getAll(), api.users.getAll()])
       const groupData = groupsRes.data.data
-      setGroups(Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || [])
+      setGroups(
+        Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || []
+      )
       const userData = usersRes.data.data
       setUsers(Array.isArray(userData) ? userData : (userData as { users: User[] }).users || [])
     } catch (error) {
@@ -108,7 +107,7 @@ export default function SettingsGroups() {
       toast.error('Cannot delete the default group')
       return
     }
-    
+
     if (!confirm(`Are you sure you want to delete group "${group.name}"?`)) return
 
     try {
@@ -121,7 +120,7 @@ export default function SettingsGroups() {
   }
 
   const getMemberCount = (groupId: number) => {
-    return users.filter(u => u.group_id === groupId).length
+    return users.filter((u) => u.group_id === groupId).length
   }
 
   return (
@@ -129,9 +128,7 @@ export default function SettingsGroups() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium text-foreground">Groups</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage user groups and permissions.
-          </p>
+          <p className="text-sm text-muted-foreground">Manage user groups and permissions.</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
@@ -193,18 +190,18 @@ export default function SettingsGroups() {
                   Edit
                 </button>
                 <div className="mx-1 h-4 w-[1px] bg-border" />
-                <button
-                  onClick={() => handleDelete(group)}
-                  disabled={group.isDefault === 1}
-                  className={cn(
-                    "flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-destructive/10 hover:text-destructive h-9 px-3",
-                    group.isDefault === 1 && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground"
-                  )}
-                  title={group.isDefault === 1 ? "Cannot delete default group" : "Delete group"}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </button>
+                {group.isDefault === 1 ? (
+                  <div className="flex-1 h-9" />
+                ) : (
+                  <button
+                    onClick={() => handleDelete(group)}
+                    className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-destructive/10 hover:text-destructive h-9 px-3"
+                    title="Delete group"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -233,14 +230,12 @@ export default function SettingsGroups() {
                 <input
                   {...register('name')}
                   className={cn(
-                    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                    errors.name && "border-destructive focus-visible:ring-destructive"
+                    'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                    errors.name && 'border-destructive focus-visible:ring-destructive'
                   )}
                   placeholder="Group Name"
                 />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
-                )}
+                {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -267,8 +262,8 @@ export default function SettingsGroups() {
                   type="submit"
                   disabled={isSubmitting}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:brightness-110 transition-all",
-                    isSubmitting && "opacity-70 cursor-wait"
+                    'flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:brightness-110 transition-all',
+                    isSubmitting && 'opacity-70 cursor-wait'
                   )}
                 >
                   {isSubmitting ? (

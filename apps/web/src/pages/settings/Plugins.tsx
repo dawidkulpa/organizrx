@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { Search, Download, Trash2, RefreshCw, Box, Loader2 } from 'lucide-react'
 import { api } from '../../api/client'
 import { cn } from '../../utils'
+import { EmptyState } from '../../components/EmptyState'
 
 interface Plugin {
   name: string
@@ -13,7 +14,8 @@ interface Plugin {
   updateAvailable?: boolean
 }
 
-const INPUT_CLASS = "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+const INPUT_CLASS =
+  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
 export default function PluginsSettings() {
   const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([])
@@ -67,8 +69,8 @@ export default function PluginsSettings() {
       toast.success(`Installed ${plugin.name}`)
       await fetchInstalled()
       // Remove from search results or mark as installed
-      setSearchResults((prev) => 
-        prev.map(p => p.name === plugin.name ? { ...p, installed: true } : p)
+      setSearchResults((prev) =>
+        prev.map((p) => (p.name === plugin.name ? { ...p, installed: true } : p))
       )
     } catch (error) {
       toast.error(`Failed to install ${plugin.name}`)
@@ -108,7 +110,13 @@ export default function PluginsSettings() {
     }
   }
 
-  const PluginCard = ({ plugin, isInstalledList = false }: { plugin: Plugin, isInstalledList?: boolean }) => {
+  const PluginCard = ({
+    plugin,
+    isInstalledList = false,
+  }: {
+    plugin: Plugin
+    isInstalledList?: boolean
+  }) => {
     const isProcessing = processing === plugin.name
 
     return (
@@ -119,14 +127,16 @@ export default function PluginsSettings() {
           </div>
           <div>
             <h4 className="font-semibold">{plugin.name}</h4>
-            <p className="text-sm text-muted-foreground">{plugin.description || 'No description available'}</p>
+            <p className="text-sm text-muted-foreground">
+              {plugin.description || 'No description available'}
+            </p>
             <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
               <span className="bg-secondary px-2 py-0.5 rounded">v{plugin.version}</span>
               {plugin.author && <span>by {plugin.author}</span>}
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {isProcessing ? (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -142,7 +152,7 @@ export default function PluginsSettings() {
                   Update
                 </button>
               )}
-              
+
               {isInstalledList ? (
                 <button
                   onClick={() => handleRemove(plugin)}
@@ -157,13 +167,15 @@ export default function PluginsSettings() {
                   onClick={() => handleInstall(plugin)}
                   disabled={plugin.installed}
                   className={cn(
-                    "inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                    plugin.installed 
-                      ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    'inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                    plugin.installed
+                      ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                      : 'bg-primary text-primary-foreground hover:bg-primary/90'
                   )}
                 >
-                  {plugin.installed ? 'Installed' : (
+                  {plugin.installed ? (
+                    'Installed'
+                  ) : (
                     <>
                       <Download className="h-4 w-4 mr-2" />
                       Install
@@ -191,7 +203,7 @@ export default function PluginsSettings() {
         <input
           type="search"
           placeholder="Search for plugins..."
-          className={cn(INPUT_CLASS, "pl-10 h-10")}
+          className={cn(INPUT_CLASS, 'pl-10 h-10')}
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
         />
@@ -202,9 +214,9 @@ export default function PluginsSettings() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Search Results</h3>
           {isSearching ? (
-             <div className="flex h-20 items-center justify-center">
-               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-             </div>
+            <div className="flex h-20 items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
           ) : searchResults.length > 0 ? (
             <div className="grid gap-4">
               {searchResults.map((plugin) => (
@@ -232,9 +244,11 @@ export default function PluginsSettings() {
               ))}
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-              No plugins installed. Search above to find some!
-            </div>
+            <EmptyState
+              message="No plugins configured. Click Add Plugin to get started."
+              actionLabel="Add Plugin"
+              onAction={() => handleSearch('')}
+            />
           )}
         </div>
       )}

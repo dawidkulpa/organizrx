@@ -53,6 +53,7 @@ export default function Login() {
                   id="username"
                   name="username"
                   type="text"
+                  autoComplete="username"
                   required
                   className="block w-full rounded-md border border-input bg-muted py-2 pl-10 pr-3 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary sm:text-sm"
                   placeholder="Username"
@@ -78,6 +79,7 @@ export default function Login() {
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   required
                   className="block w-full rounded-md border border-input bg-muted py-2 pl-10 pr-10 text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary sm:text-sm"
                   placeholder="Password"

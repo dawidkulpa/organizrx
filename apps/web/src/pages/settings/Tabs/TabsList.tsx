@@ -1,7 +1,7 @@
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
-import { LayoutGrid } from 'lucide-react'
 import { Tab } from './use-tabs'
 import { TabRow } from './TabRow'
+import { EmptyState } from '../../../components/EmptyState'
 
 interface TabsListProps {
   filteredTabs: Tab[]
@@ -15,6 +15,7 @@ interface TabsListProps {
   handleDelete: (id: number) => void
   searchQuery: string
   selectedCategory: string
+  onAddTab?: () => void
 }
 
 export function TabsList({
@@ -29,14 +30,15 @@ export function TabsList({
   handleDelete,
   searchQuery,
   selectedCategory,
+  onAddTab,
 }: TabsListProps) {
   if (filteredTabs.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm p-12 text-center text-muted-foreground">
-        <LayoutGrid className="w-12 h-12 mx-auto mb-4 opacity-20" />
-        <h3 className="text-lg font-medium text-foreground">No tabs found</h3>
-        <p>Try adjusting your filters or add a new tab.</p>
-      </div>
+      <EmptyState
+        message="No custom tabs yet. Click Add Tab to create one."
+        actionLabel="Add Tab"
+        onAction={onAddTab}
+      />
     )
   }
 
