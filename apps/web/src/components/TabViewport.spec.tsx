@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { render, waitFor, cleanup } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { useTabStore } from '../store'
+import type { Tab } from '@organizrx/shared'
 
 const happyWindow = new GlobalWindow({ url: 'http://localhost:5173' })
 const domGlobals = [
@@ -48,36 +49,56 @@ Object.defineProperty(globalThis, 'window', {
   configurable: true,
 })
 
-const mockSidebar = mock(() =>
-  Promise.resolve({
+type SidebarTab = Pick<
+  Tab,
+  | 'id'
+  | 'name'
+  | 'url'
+  | 'url_local'
+  | 'enabled'
+  | 'type'
+  | 'timeout'
+  | 'timeout_ms'
+  | 'preload'
+  | 'splash'
+>
+
+const createSidebarResponse = (tabs: SidebarTab[]) => ({
+  data: {
     data: {
-      data: {
-        tabs: [
-          {
-            id: 101,
-            name: 'Plex',
-            url: 'https://plex.example',
-            url_local: null,
-            enabled: 1,
-            type: 0,
-            timeout: 10000,
-            timeout_ms: null,
-          },
-          {
-            id: 202,
-            name: 'Users',
-            url: '/users',
-            url_local: null,
-            enabled: 1,
-            type: 1,
-            timeout: 10000,
-            timeout_ms: null,
-          },
-        ],
-      },
+      tabs,
     },
-  })
-)
+  },
+})
+
+const defaultTabs: SidebarTab[] = [
+  {
+    id: 101,
+    name: 'Plex',
+    url: 'https://plex.example',
+    url_local: null,
+    enabled: 1,
+    type: 0,
+    timeout: 10000,
+    timeout_ms: null,
+    preload: 0,
+    splash: 1,
+  },
+  {
+    id: 202,
+    name: 'Users',
+    url: '/users',
+    url_local: null,
+    enabled: 1,
+    type: 1,
+    timeout: 10000,
+    timeout_ms: null,
+    preload: 0,
+    splash: 0,
+  },
+]
+
+const mockSidebar = mock(() => Promise.resolve(createSidebarResponse(defaultTabs)))
 
 mock.module('../api/client', () => ({
   default: {},
@@ -153,5 +174,92 @@ describe('TabViewport', () => {
 
     expect(container.querySelector('[data-mounted-tab-id="202"]')).toBeNull()
     expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  it('preloads only tabs with preload enabled on app start', async () => {
+    mockSidebar.mockResolvedValueOnce(
+      createSidebarResponse([
+        {
+          id: 303,
+          name: 'Radarr',
+          url: 'https://radarr.example',
+          url_local: null,
+          enabled: 1,
+          type: 0,
+          timeout: 10000,
+          timeout_ms: null,
+          preload: 1,
+          splash: 0,
+        },
+        {
+          id: 404,
+          name: 'Sonarr',
+          url: 'https://sonarr.example',
+          url_local: null,
+          enabled: 1,
+          type: 0,
+          timeout: 10000,
+          timeout_ms: null,
+          preload: 0,
+          splash: 0,
+        },
+      ])
+    )
+
+    const { container } = render(
+      <MemoryRouter initialEntries={['/settings']}>
+        <Routes>
+          <Route path="/tab/:id" element={<TabViewport />} />
+          <Route path="/settings" element={<TabViewport />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(useTabStore.getState().mountedTabs).toContain(303)
+      expect(container.querySelector('[data-mounted-tab-id="303"]')).toBeTruthy()
+    })
+
+    expect(useTabStore.getState().mountedTabs).not.toContain(404)
+    expect(container.querySelector('[data-mounted-tab-id="404"]')).toBeNull()
+
+    const preloadedIframe = container.querySelector('iframe')
+    expect(preloadedIframe?.getAttribute('loading')).toBe('eager')
+    expect(container.querySelector('[data-mounted-tab-id="303"]')?.className).toContain('invisible')
+  })
+
+  it('does not render a splash overlay for tabs with splash disabled', async () => {
+    mockSidebar.mockResolvedValueOnce(
+      createSidebarResponse([
+        {
+          id: 303,
+          name: 'No Splash',
+          url: 'https://nosplash.example',
+          url_local: null,
+          enabled: 1,
+          type: 0,
+          timeout: null,
+          timeout_ms: null,
+          preload: 0,
+          splash: 0,
+        },
+      ])
+    )
+
+    useTabStore.getState().setActiveTabId(303)
+
+    const { container, queryByTestId } = render(
+      <MemoryRouter initialEntries={['/tab/303']}>
+        <Routes>
+          <Route path="/tab/:id" element={<TabViewport />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-mounted-tab-id="303"]')).toBeTruthy()
+    })
+
+    expect(queryByTestId('iframe-loading-overlay')).toBeNull()
   })
 })

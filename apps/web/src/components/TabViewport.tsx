@@ -1,20 +1,25 @@
+import type { Tab } from '@organizrx/shared'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMatch } from 'react-router-dom'
 import { api } from '../api/client'
 import { cn } from '../utils'
 import { useTabStore } from '../store'
+import { useTabPingStore } from '../store/tab-ping'
 import ManagedIframe from './ManagedIframe'
 
-interface ViewportTab {
-  id: number
-  name: string | null
-  url: string | null
-  url_local: string | null
-  enabled: number | null
-  type: number | null
-  timeout: number | null
-  timeout_ms: number | null
-}
+type ViewportTab = Pick<
+  Tab,
+  | 'id'
+  | 'name'
+  | 'url'
+  | 'url_local'
+  | 'enabled'
+  | 'type'
+  | 'timeout'
+  | 'timeout_ms'
+  | 'preload'
+  | 'splash'
+>
 
 interface SidebarResponse {
   tabs: ViewportTab[]
@@ -62,10 +67,20 @@ export default function TabViewport() {
     [tabs]
   )
 
+  useEffect(() => {
+    externalTabs
+      .filter((tab) => tab.preload === 1)
+      .forEach((tab) => {
+        mountTab(tab.id)
+      })
+  }, [externalTabs, mountTab])
+
   const renderedTabs = useMemo(
     () => externalTabs.filter((tab) => tab.id === activeTabId || mountedTabs.includes(tab.id)),
     [externalTabs, activeTabId, mountedTabs]
   )
+
+  const pingResults = useTabPingStore((state) => state.results)
 
   if (renderedTabs.length === 0) {
     return null
@@ -78,6 +93,8 @@ export default function TabViewport() {
         if (!url) return null
 
         const isVisible = tabRouteMatch !== null && tab.id === activeTabId
+        const pingResult = pingResults[tab.id]
+        const isIframeBlocked = pingResult?.reachable === true && pingResult.iframeAllowed === false
 
         return (
           <div
@@ -93,7 +110,10 @@ export default function TabViewport() {
               title={tab.name ?? 'Tab content'}
               tabId={tab.id}
               isActive={isVisible}
-              timeoutMs={tab.timeout_ms ?? tab.timeout ?? 10000}
+              iframeBlocked={isIframeBlocked}
+              preload={tab.preload === 1}
+              splash={tab.splash !== 0}
+              timeoutMs={tab.timeout_ms ?? tab.timeout ?? undefined}
             />
           </div>
         )
