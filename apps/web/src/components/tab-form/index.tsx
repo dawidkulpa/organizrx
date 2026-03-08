@@ -48,6 +48,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
   // Reset form when tab changes (Create vs Edit)
   useEffect(() => {
     if (tab) {
+      const isUrl = tab.image?.startsWith('http') || tab.image?.startsWith('/')
       reset({
         name: tab.name,
         url: tab.url,
@@ -55,7 +56,8 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
         category_id: tab.category_id,
         group_id: tab.group_id,
         type: tab.type,
-        image: tab.image,
+        image: isUrl ? '' : tab.image,
+        custom_image_url: isUrl ? tab.image : '',
         enabled: Boolean(tab.enabled),
         ping: Boolean(tab.ping),
         ping_url: tab.ping_url,
@@ -73,6 +75,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
         group_id: 0,
         type: 0,
         image: '',
+        custom_image_url: '',
         enabled: true,
         ping: false,
         ping_url: '',
@@ -87,8 +90,10 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
   const onSubmit = async (data: TabFormData) => {
     try {
       // Map booleans to numbers (1/0) for API compatibility
+      const { custom_image_url: _customImageUrl, ...rest } = data
       const payload = {
-        ...data,
+        ...rest,
+        image: data.image || data.custom_image_url || '',
         enabled: data.enabled ? 1 : 0,
         ping: data.ping ? 1 : 0,
         preload: data.preload ? 1 : 0,
@@ -141,6 +146,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
             watch={watch}
             categories={categories}
             groups={groups}
+            isDefault={tab?.isDefault === 1}
           />
 
           {/* Footer Actions */}

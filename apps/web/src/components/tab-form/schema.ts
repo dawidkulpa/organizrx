@@ -13,6 +13,7 @@ export const tabSchema = z.object({
   group_id: z.coerce.number().min(0, 'Group is required'),
   type: z.coerce.number().min(0).max(2),
   image: z.string().optional().nullable(),
+  custom_image_url: z.string().optional().nullable(),
   enabled: z.boolean().default(true),
   ping: z.boolean().default(false),
   ping_url: z.string().optional().nullable(),
@@ -35,6 +36,7 @@ export interface Tab {
   group_id: number
   type: number
   enabled: number
+  isDefault?: number | null
   splash: number | null
   ping: number | null
   ping_url: string | null

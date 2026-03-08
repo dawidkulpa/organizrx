@@ -8,10 +8,19 @@ interface TabFormFieldsProps {
   watch: UseFormWatch<TabFormData>
   categories: Category[]
   groups: Group[]
+  isDefault?: boolean
 }
 
-export function TabFormFields({ register, errors, watch, categories, groups }: TabFormFieldsProps) {
+export function TabFormFields({
+  register,
+  errors,
+  watch,
+  categories,
+  groups,
+  isDefault,
+}: TabFormFieldsProps) {
   const pingEnabled = watch('ping')
+  const tabType = watch('type')
 
   return (
     <>
@@ -33,12 +42,33 @@ export function TabFormFields({ register, errors, watch, categories, groups }: T
 
         {/* URL */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">URL</label>
-          <input
-            {...register('url')}
-            className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-            placeholder="https://example.com"
-          />
+          <label className="text-sm font-medium text-foreground">
+            URL{' '}
+            {isDefault && (
+              <span className="text-xs text-muted-foreground ml-2">
+                (Cannot change URL for built-in tabs)
+              </span>
+            )}
+          </label>
+          {tabType === 0 && !isDefault ? (
+            <select
+              {...register('url')}
+              disabled={isDefault}
+              className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="/">Dashboard (/)</option>
+              <option value="/settings">Settings (/settings)</option>
+              <option value="/users">Users (/users)</option>
+            </select>
+          ) : (
+            <input
+              {...register('url')}
+              disabled={isDefault}
+              title={isDefault ? 'Cannot change type/URL for built-in tabs' : ''}
+              className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="https://example.com"
+            />
+          )}
           {errors.url && (
             <p className="text-xs text-red-500 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> {errors.url.message}
@@ -58,14 +88,26 @@ export function TabFormFields({ register, errors, watch, categories, groups }: T
           />
         </div>
 
-        {/* Image/Icon */}
+        {/* Icon Class */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Image / Icon</label>
+          <label className="text-sm font-medium text-foreground">Icon Class</label>
           <input
             {...register('image')}
             className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-            placeholder="fa-home or URL"
+            placeholder="fa-home"
           />
+          <p className="text-xs text-muted-foreground">FontAwesome class name</p>
+        </div>
+
+        {/* Custom Image URL */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Custom Image URL</label>
+          <input
+            {...register('custom_image_url')}
+            className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+            placeholder="https://example.com/icon.png"
+          />
+          <p className="text-xs text-muted-foreground">URL to a custom icon image</p>
         </div>
 
         {/* Category */}
@@ -102,10 +144,17 @@ export function TabFormFields({ register, errors, watch, categories, groups }: T
 
         {/* Type */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Tab Type</label>
+          <label className="text-sm font-medium text-foreground">
+            Tab Type{' '}
+            {isDefault && (
+              <span className="text-xs text-muted-foreground ml-2">(Fixed for built-in tabs)</span>
+            )}
+          </label>
           <select
             {...register('type', { valueAsNumber: true })}
-            className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none"
+            disabled={isDefault}
+            title={isDefault ? 'Cannot change type/URL for built-in tabs' : ''}
+            className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value={0}>Internal</option>
             <option value={1}>iFrame</option>

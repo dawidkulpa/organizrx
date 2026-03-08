@@ -131,7 +131,7 @@ export function useTabs() {
   }
 
   const handleDelete = async (id: number) => {
-    if (tabs.find(t => t.id === id)?.isDefault === 1) return
+    if (tabs.find((t) => t.id === id)?.isDefault === 1) return
     if (!confirm('Are you sure you want to delete this tab?')) return
     try {
       await api.tabs.delete(id)
@@ -145,7 +145,9 @@ export function useTabs() {
 
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selectedTabs.length} tabs?`)) return
-    const deletableIds = selectedTabs.filter(id => !tabs.find(t => t.id === id && t.isDefault === 1))
+    const deletableIds = selectedTabs.filter(
+      (id) => !tabs.find((t) => t.id === id && t.isDefault === 1)
+    )
     if (deletableIds.length === 0) return
     try {
       await Promise.all(deletableIds.map((id) => api.tabs.delete(id)))
@@ -159,7 +161,6 @@ export function useTabs() {
   }
 
   const toggleSelection = (id: number) => {
-    if (tabs.find(t => t.id === id)?.isDefault === 1) return
     setSelectedTabs((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
   }
 
