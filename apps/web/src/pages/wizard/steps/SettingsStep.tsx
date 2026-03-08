@@ -34,6 +34,28 @@ export function SettingsStep({ data, errors, update }: SettingsStepProps) {
         />
         {errors.siteTitle && <p className="mt-1 text-xs text-destructive">{errors.siteTitle}</p>}
       </div>
+
+      <div>
+        <label
+          htmlFor="wiz-base-url"
+          className="block text-sm font-medium text-muted-foreground mb-1"
+        >
+          Base URL
+        </label>
+        <p className="mb-1 text-xs text-muted-foreground">
+          If you access OrganizrX through a reverse proxy, enter that URL here. Leave empty for
+          direct access.
+        </p>
+        <input
+          id="wiz-base-url"
+          type="url"
+          className={inputClass('baseUrl')}
+          placeholder="https://dash.example.com"
+          value={data.baseUrl}
+          onChange={(e) => update('baseUrl', e.target.value)}
+        />
+        {errors.baseUrl && <p className="mt-1 text-xs text-destructive">{errors.baseUrl}</p>}
+      </div>
     </div>
   )
 }

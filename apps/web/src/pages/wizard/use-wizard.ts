@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { z } from 'zod'
 import { api } from '../../api/client'
 import { toast } from 'sonner'
 import { TOTAL_STEPS } from './WizardStepper'
+
+const baseUrlSchema = z.url('Must be a valid URL').or(z.literal(''))
 
 export interface WizardData {
   // Admin
@@ -12,6 +15,7 @@ export interface WizardData {
   email: string
   // Settings
   siteTitle: string
+  baseUrl: string
   // DB (informational)
   dbDialect: 'sqlite' | 'mysql' | 'postgresql'
 }
@@ -22,6 +26,7 @@ const initialData: WizardData = {
   confirmPassword: '',
   email: '',
   siteTitle: 'OrganizrX',
+  baseUrl: '',
   dbDialect: 'sqlite',
 }
 
@@ -60,6 +65,10 @@ export function useWizard() {
       if (!data.siteTitle || data.siteTitle.length < 1) {
         errs.siteTitle = 'Site title is required'
       }
+
+      if (!baseUrlSchema.safeParse(data.baseUrl).success) {
+        errs.baseUrl = 'Must be a valid URL'
+      }
     }
 
     setErrors(errs)
@@ -83,6 +92,7 @@ export function useWizard() {
         password: data.password,
         email: data.email || undefined,
         siteTitle: data.siteTitle || undefined,
+        baseUrl: data.baseUrl,
       })
       toast.success('Setup complete! Redirecting to login…')
       navigate('/login', { replace: true })

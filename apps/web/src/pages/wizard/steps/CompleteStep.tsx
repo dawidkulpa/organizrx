@@ -37,6 +37,12 @@ export function CompleteStep({ data }: CompleteStepProps) {
           <span className="text-muted-foreground">Site Title</span>
           <span className="font-medium">{data.siteTitle}</span>
         </div>
+        {data.baseUrl && (
+          <div className="flex justify-between gap-4">
+            <span className="text-muted-foreground">Base URL</span>
+            <span className="font-medium break-all text-right">{data.baseUrl}</span>
+          </div>
+        )}
       </div>
       <p className="text-sm text-muted-foreground">
         Click &quot;Complete Setup&quot; to create your admin account and finalize the

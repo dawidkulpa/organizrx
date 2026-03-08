@@ -7,6 +7,16 @@ import { createTab } from '../services/tabs'
 import { resetSetupCache } from '../services/setup'
 
 const wizard = new Hono()
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function isValidUrl(value: string) {
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
+}
 
 // ── GET /api/wizard/status ─────────────────────────────────────
 // Returns whether the application needs initial setup (no users exist).
@@ -29,10 +39,16 @@ const wizardCompleteSchema = z.object({
   // Admin user
   username: z.string().min(3).max(64),
   password: z.string().min(8).max(128),
-  email: z.string().email().optional(),
+  email: z
+    .string()
+    .refine((value) => emailPattern.test(value), 'Invalid email address')
+    .optional(),
 
   // Basic settings
   siteTitle: z.string().min(1).max(128).optional(),
+  baseUrl: z
+    .union([z.literal(''), z.string().refine((value) => isValidUrl(value), 'Invalid URL')])
+    .optional(),
 
   // Database (informational — connection is already established)
   dbDialect: z.enum(['sqlite', 'mysql', 'postgresql']).optional(),
@@ -66,7 +82,7 @@ wizard.post('/complete', async (c) => {
     )
   }
 
-  const { username, password, email, siteTitle } = parsed.data
+  const { username, password, email, siteTitle, baseUrl } = parsed.data
 
   // Create admin user (group_id 0 = admin)
   const hashedPassword = await hashPassword(password)
@@ -84,6 +100,9 @@ wizard.post('/complete', async (c) => {
   }
   if (siteTitle) {
     initialSettings.siteTitle = siteTitle
+  }
+  if (baseUrl !== undefined) {
+    initialSettings.baseUrl = baseUrl
   }
   await setSettings(initialSettings)
 
