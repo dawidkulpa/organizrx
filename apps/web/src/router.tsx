@@ -26,7 +26,6 @@ import SettingsPlugins from './pages/settings/Plugins'
 import SettingsSystem from './pages/settings/System'
 import SettingsProfile from './pages/settings/Profile'
 import SettingsAccount from './pages/settings/Account'
-import SettingsLogs from './pages/settings/Logs'
 
 // ── Route guards ────────────────────────────────────────────────
 const FullScreenLoader = () => (
@@ -126,7 +125,6 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
           { path: 'system', element: <SettingsSystem /> },
           { path: 'profile', element: <SettingsProfile /> },
           { path: 'account', element: <SettingsAccount /> },
-          { path: 'logs', element: <SettingsLogs /> },
         ],
       },
     ],

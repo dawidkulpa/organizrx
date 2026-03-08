@@ -10,8 +10,7 @@ import {
   Server,
   Puzzle,
   Key,
-  FileText,
-}  from 'lucide-react'
+} from 'lucide-react'
 import { cn } from '../utils'
 
 export default function SettingsLayout() {
@@ -26,7 +25,6 @@ export default function SettingsLayout() {
     { icon: Server, label: 'System', to: '/settings/system' },
     { icon: Puzzle, label: 'Plugins', to: '/settings/plugins' },
     { icon: Key, label: 'SSO', to: '/settings/sso' },
-    { icon: FileText, label: 'Logs', to: '/settings/logs' },
   ]
 
   return (
@@ -37,7 +35,7 @@ export default function SettingsLayout() {
           <Settings className="mr-2 h-5 w-5 text-primary" />
           <span className="font-bold tracking-tight">Settings</span>
         </div>
-        
+
         <nav className="flex overflow-x-auto p-4 md:flex-col md:overflow-visible md:space-y-1">
           {sidebarItems.map((item) => (
             <NavLink
