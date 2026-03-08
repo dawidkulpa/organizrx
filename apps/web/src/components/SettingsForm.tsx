@@ -23,6 +23,7 @@ export function SettingsForm<T extends FieldValues>({
 }: SettingsFormProps<T>) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null)
 
   const form = useForm<T>({
     resolver: typedZodResolver<T>(schema),
@@ -40,11 +41,11 @@ export function SettingsForm<T extends FieldValues>({
         // Based on client.ts, it returns axios response.
         // Let's assume the data payload is a Record<string, any> map of settings
         const data = response.data as Record<string, unknown>
-        
+
         // If the API returns a list of settings objects, we might need to transform it.
         // But for now, assuming standard key-value map from backend for this category.
         // If keys are like "general.title", we assume schema matches.
-        
+
         form.reset(data as T)
       } catch (error) {
         toast.error('Failed to load settings. Please try again.')
@@ -56,11 +57,22 @@ export function SettingsForm<T extends FieldValues>({
     fetchSettings()
   }, [settingsKey, form])
 
+  // Auto-clear success status after 3 seconds
+  useEffect(() => {
+    if (saveStatus === 'success') {
+      const timer = setTimeout(() => {
+        setSaveStatus(null)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+    return undefined
+  }, [saveStatus])
+
   const onSubmit = async (data: T) => {
     try {
       setIsSaving(true)
       const dirtyFields = Object.keys(form.formState.dirtyFields)
-      
+
       if (dirtyFields.length === 0) {
         toast.info('No changes to save')
         return
@@ -74,7 +86,7 @@ export function SettingsForm<T extends FieldValues>({
         // Convert non-string values to string if necessary, or assume API handles it.
         // client.ts says value: string. So we must stringify if it's not a string.
         const stringValue = typeof value === 'string' ? value : JSON.stringify(value)
-        
+
         return api.settings.update({
           key: field,
           value: stringValue,
@@ -85,9 +97,9 @@ export function SettingsForm<T extends FieldValues>({
 
       // Re-fetch or just reset dirty state with new values
       form.reset(data)
-      toast.success('Settings saved successfully')
+      setSaveStatus('success')
     } catch (error) {
-      toast.error('Failed to save settings')
+      setSaveStatus('error')
     } finally {
       setIsSaving(false)
     }
@@ -120,24 +132,22 @@ export function SettingsForm<T extends FieldValues>({
                 <AlertCircle className="h-4 w-4 text-amber-500" />
                 <span className="text-amber-500 font-medium">Unsaved changes</span>
               </>
-            ) : (
-              <span>Values are up to date</span>
-            )}
+            ) : saveStatus === 'success' ? (
+              <span className="text-green-600 font-medium">Settings saved successfully</span>
+            ) : saveStatus === 'error' ? (
+              <span className="text-red-600 font-medium">Failed to save settings</span>
+            ) : null}
           </div>
 
           <button
             type="submit"
             disabled={!form.formState.isDirty || isSaving}
             className={cn(
-              "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-              "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+              'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+              'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
             )}
           >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Changes
           </button>
         </div>
