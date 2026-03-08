@@ -14,7 +14,7 @@ export type {
   BookmarkTab,
   Settings,
   ChatMessage,
-} from './types/db';
+} from './types/db'
 
 // Authentication types
 export type {
@@ -26,7 +26,7 @@ export type {
   RefreshTokenRequest,
   RefreshTokenResponse,
   LogoutRequest,
-} from './types/auth';
+} from './types/auth'
 // API types
 export type {
   ApiError,
@@ -87,7 +87,7 @@ export type {
   HealthResponse,
   StatusResponse,
   PaginationQuery,
-} from './types/api';
+} from './types/api'
 
 // Plugin types
 export type {
@@ -98,8 +98,8 @@ export type {
   PluginAPI,
   PluginEntry,
   PluginRegistryEntry,
-} from './types/plugin';
-export { type PluginHook } from './types/plugin';
+} from './types/plugin'
+export { type PluginHook } from './types/plugin'
 
 // ============================================
 // VALIDATION SCHEMAS - EXPORTS
@@ -123,7 +123,7 @@ export {
   verifySetupTwoFactorResponseSchema,
   verifyTwoFactorResponseSchema,
   disableTwoFactorResponseSchema,
-  } from './schemas/auth'
+} from './schemas/auth'
 
 // Database schemas
 export {
@@ -137,7 +137,7 @@ export {
   bookmarkTabSchema,
   settingsSchema,
   chatMessageSchema,
-} from './schemas/db';
+} from './schemas/db'
 
 // API schemas
 export {
@@ -160,8 +160,9 @@ export {
   createBackupRequestSchema,
   restoreBackupRequestSchema,
   testConnectionRequestSchema,
+  checkTabUrlQuerySchema,
   imageProxyQuerySchema,
-} from './schemas/api';
+} from './schemas/api'
 
 // Plugin schemas
 export {
@@ -172,13 +173,13 @@ export {
   pluginManifestUploadSchema,
   createPluginConfigSchema,
   updatePluginConfigSchema,
-} from './schemas/plugin';
+} from './schemas/plugin'
 
 // ============================================
 // CONSTANTS
 // ============================================
 
-export const API_BASE_URL = '/api';
+export const API_BASE_URL = '/api'
 
 // ============================================
 // UTILITIES
@@ -188,5 +189,5 @@ export const API_BASE_URL = '/api';
  * Health check response - used by status endpoint
  */
 export interface HealthCheck {
-  status: 'ok' | 'error';
+  status: 'ok' | 'error'
 }

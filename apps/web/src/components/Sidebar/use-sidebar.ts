@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useAuthStore, useUIStore, useLockscreenStore } from '../../store'
 import { api } from '../../api/client'
+import { useTabPing } from '../../hooks/use-tab-ping'
 
 export interface SidebarTab {
   id: number
@@ -73,7 +74,8 @@ export function useSidebar() {
     fetchSidebarData()
   }, [fetchSidebarData, sidebarVersion])
 
-  const enabledTabs = tabs.filter((t) => t.enabled !== 0)
+  const enabledTabs = useMemo(() => tabs.filter((t) => t.enabled !== 0), [tabs])
+  useTabPing(enabledTabs)
 
   const sortedTabs = [...enabledTabs].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 

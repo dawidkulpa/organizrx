@@ -38,7 +38,6 @@ export function useTabPing(tab: Tab | null) {
           mode: 'no-cors',
           signal: controller.signal,
         })
-        // no-cors means opaque response — if fetch doesn't throw, server is reachable
         setIsOnline(true)
       } catch {
         setIsOnline(false)
@@ -75,13 +74,11 @@ export default function TabViewer({
       if (isLocalNetwork && tab.url_local) return tab.url_local
       return tab.url
     },
-    [isLocalNetwork],
+    [isLocalNetwork]
   )
 
   // Filter to external-only tabs (type 0/null with a URL)
-  const externalTabs = tabs.filter(
-    (t) => (t.type === 0 || t.type === null) && t.url,
-  )
+  const externalTabs = tabs.filter((t) => (t.type === 0 || t.type === null) && t.url)
 
   // Preloaded tabs stay mounted even when not active
   const preloadedTabs = externalTabs.filter((t) => t.preload === 1)
@@ -158,13 +155,13 @@ export default function TabViewer({
         <div
           className={cn(
             'absolute inset-0 z-20 flex flex-col items-center justify-center bg-background transition-opacity duration-500',
-            splashTabId === activeTabId ? 'animate-pulse opacity-100' : 'opacity-0 pointer-events-none',
+            splashTabId === activeTabId
+              ? 'animate-pulse opacity-100'
+              : 'opacity-0 pointer-events-none'
           )}
         >
           <Monitor className="mb-4 h-16 w-16 text-primary" />
-          <h2 className="text-2xl font-bold text-foreground">
-            {activeTab?.name ?? 'Loading…'}
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">{activeTab?.name ?? 'Loading…'}</h2>
         </div>
       )}
 

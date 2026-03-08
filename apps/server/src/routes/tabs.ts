@@ -1,5 +1,9 @@
 import { Hono } from 'hono'
-import { createTabRequestSchema, updateTabRequestSchema } from '@organizrx/shared'
+import {
+  createTabRequestSchema,
+  updateTabRequestSchema,
+  checkTabUrlQuerySchema,
+} from '@organizrx/shared'
 import {
   listTabs,
   getTabById,
@@ -11,8 +15,12 @@ import {
 } from '../services/tabs'
 import { listCategories } from '../services/categories'
 import { authMiddleware, requireGroup } from '../middleware/auth'
+import { tabUrlCheckRateLimiter } from '../middleware/rate-limit'
+import { checkTabUrl } from '../services/tab-url-check'
+import { createChildLogger } from '../services/logger'
 
 const tabs = new Hono()
+const logger = createChildLogger('tabs-routes')
 
 // GET /api/tabs — List all tabs ordered by order (public, no filtering)
 tabs.get('/', async (c) => {
@@ -36,7 +44,10 @@ tabs.get('/category/:categoryId', async (c) => {
     const result = await getTabsByCategory(categoryId, null)
     return c.json({ data: result })
   } catch (error) {
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to list tabs by category' } }, 500)
+    return c.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Failed to list tabs by category' } },
+      500
+    )
   }
 })
 
@@ -45,16 +56,73 @@ tabs.get('/sidebar', authMiddleware(), async (c) => {
   try {
     const user = c.get('user')
     const groupId = user.groupID ?? 0
-    const [tabsResult, categoriesResult] = await Promise.all([
-      listTabs(groupId),
-      listCategories(),
-    ])
+    const [tabsResult, categoriesResult] = await Promise.all([listTabs(groupId), listCategories()])
     return c.json({ data: { tabs: tabsResult, categories: categoriesResult } })
   } catch (error) {
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to load sidebar data' } }, 500)
+    return c.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Failed to load sidebar data' } },
+      500
+    )
   }
 })
 
+tabs.get('/check-url', authMiddleware(), tabUrlCheckRateLimiter(), async (c) => {
+  try {
+    const query = { url: c.req.query('url') ?? '' }
+    const parsed = checkTabUrlQuerySchema.safeParse(query)
+
+    if (!parsed.success) {
+      return c.json(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: parsed.error.issues[0]?.message ?? 'Invalid URL',
+          },
+        },
+        400
+      )
+    }
+
+    const requestOrigin = c.req.header('Origin')
+    const host = c.req.header('Host')
+    const forwardedProto = c.req.header('X-Forwarded-Proto')
+    const protocol = forwardedProto
+      ? `${forwardedProto.replace(':', '')}:`
+      : new URL(c.req.url).protocol
+    const fallbackOrigin = host ? `${protocol}//${host}` : null
+    const embedderOrigin = requestOrigin ?? fallbackOrigin
+
+    try {
+      const result = await checkTabUrl(parsed.data.url, embedderOrigin)
+      return c.json(result)
+    } catch (error) {
+      if (error instanceof Error) {
+        return c.json(
+          {
+            error: {
+              code: 'SSRF_BLOCKED',
+              message: error.message,
+            },
+          },
+          400
+        )
+      }
+
+      return c.json(
+        {
+          error: {
+            code: 'SSRF_BLOCKED',
+            message: 'URL blocked by SSRF protection',
+          },
+        },
+        400
+      )
+    }
+  } catch (error) {
+    logger.error({ error }, 'Failed to check tab URL')
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to check URL' } }, 500)
+  }
+})
 
 // GET /api/tabs/:id — Get tab by ID
 tabs.get('/:id', async (c) => {
@@ -119,7 +187,10 @@ tabs.put('/reorder', authMiddleware(), requireGroup(0), async (c) => {
       if (typeof item.id !== 'number' || typeof item.order !== 'number') {
         return c.json(
           {
-            error: { code: 'VALIDATION_ERROR', message: 'Each item must have id and order as numbers' },
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Each item must have id and order as numbers',
+            },
           },
           400
         )
@@ -142,6 +213,12 @@ tabs.put('/:id', authMiddleware(), requireGroup(0), async (c) => {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid tab ID' } }, 400)
     }
 
+    const tab = await getTabById(id)
+
+    if (!tab) {
+      return c.json({ error: { code: 'NOT_FOUND', message: 'Tab not found' } }, 404)
+    }
+
     const body = await c.req.json()
     const parsed = updateTabRequestSchema.safeParse(body)
 
@@ -152,6 +229,21 @@ tabs.put('/:id', authMiddleware(), requireGroup(0), async (c) => {
         },
         400
       )
+    }
+
+    if (tab.isDefault === 1) {
+      if (parsed.data.type !== undefined && parsed.data.type !== tab.type) {
+        return c.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Cannot change type for built-in tabs' } },
+          400
+        )
+      }
+      if (parsed.data.url !== undefined && parsed.data.url !== tab.url) {
+        return c.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Cannot change URL for built-in tabs' } },
+          400
+        )
+      }
     }
 
     const updated = await updateTab(id, parsed.data)
@@ -182,7 +274,10 @@ tabs.delete('/:id', authMiddleware(), requireGroup(0), async (c) => {
     }
 
     if (tab.isDefault === 1) {
-      return c.json({ error: { code: 'FORBIDDEN', message: 'Cannot delete a built-in system tab' } }, 403)
+      return c.json(
+        { error: { code: 'FORBIDDEN', message: 'Cannot delete a built-in system tab' } },
+        403
+      )
     }
 
     await deleteTab(id)

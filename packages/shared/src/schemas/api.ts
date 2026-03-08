@@ -89,7 +89,7 @@ export const updateCategoryRequestSchema = z.object({
 export const createTabRequestSchema = z.object({
   name: z.string().min(1).max(255),
   category_id: z.number().int().nullable(),
-  url: z.string().url().optional(),
+  url: z.string().min(1).optional(),
   url_local: z.string().optional(),
   group_id: z.number().int(),
   order: z.number().int().optional(),
@@ -107,7 +107,7 @@ export const createTabRequestSchema = z.object({
 export const updateTabRequestSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   category_id: z.number().int().nullable().optional(),
-  url: z.string().url().optional(),
+  url: z.string().min(1).optional(),
   url_local: z.string().optional(),
   group_id: z.number().int().optional(),
   order: z.number().int().optional(),
@@ -191,6 +191,10 @@ export const testConnectionRequestSchema = z.object({
   username: z.string().optional(),
   password: z.string().optional(),
   timeout: z.number().int().min(1000).max(30000).default(10000).optional(),
+})
+
+export const checkTabUrlQuerySchema = z.object({
+  url: z.string().url(),
 })
 
 // ============================================

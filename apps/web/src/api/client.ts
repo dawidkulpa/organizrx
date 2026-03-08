@@ -123,6 +123,7 @@ export const api = {
     delete: (id: number) => client.delete(`/tabs/${id}`),
     reorder: (data: { tabs: Array<{ id: number; order: number }> }) =>
       client.put('/tabs/reorder', data),
+    checkUrl: (url: string) => client.get('/tabs/check-url', { params: { url } }),
   },
   categories: {
     getAll: () => client.get('/categories'),
@@ -160,8 +161,13 @@ export const api = {
   },
   wizard: {
     status: () => client.get('/wizard/status'),
-    complete: (data: { username: string; password: string; email?: string; siteTitle?: string }) =>
-      client.post('/wizard/complete', data),
+    complete: (data: {
+      username: string
+      password: string
+      email?: string
+      siteTitle?: string
+      baseUrl?: string
+    }) => client.post('/wizard/complete', data),
   },
   update: {
     check: () => client.get('/update'),

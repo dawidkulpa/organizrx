@@ -33,3 +33,34 @@ export function authRateLimiter() {
     },
   })
 }
+
+export function tabUrlCheckRateLimiter() {
+  let limiter: ReturnType<typeof rateLimiter> | null = null
+
+  return async (c: any, next: any) => {
+    if (!limiter) {
+      const { security } = getConfig()
+      limiter = rateLimiter({
+        windowMs: security.rateLimitWindowMs,
+        limit: security.rateLimitMaxRequests,
+        keyGenerator: (c) =>
+          c.req.header('X-Real-IP') ??
+          c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ??
+          'anonymous',
+        standardHeaders: 'draft-7',
+        handler: (c) => {
+          return c.json(
+            {
+              error: {
+                code: 'RATE_LIMITED',
+                message: 'Too many URL check requests. Please try again later.',
+              },
+            },
+            429
+          )
+        },
+      })
+    }
+    return limiter(c, next)
+  }
+}

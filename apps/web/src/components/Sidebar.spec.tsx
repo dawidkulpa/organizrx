@@ -63,11 +63,17 @@ const mockSidebar = mock(() =>
     },
   })
 )
+const mockCheckUrl = mock(() =>
+  Promise.resolve({ data: { reachable: true, iframeAllowed: true, status: 200 } })
+)
 
 mock.module('../api/client', () => ({
   default: {},
   api: {
-    tabs: { sidebar: mockSidebar },
+    tabs: {
+      sidebar: mockSidebar,
+      checkUrl: mockCheckUrl,
+    },
   },
 }))
 
@@ -100,6 +106,9 @@ describe('Sidebar', () => {
           },
         },
       })
+    )
+    mockCheckUrl.mockImplementation(() =>
+      Promise.resolve({ data: { reachable: true, iframeAllowed: true, status: 200 } })
     )
   })
 
@@ -307,6 +316,43 @@ describe('Sidebar', () => {
     await waitFor(() => {
       const spinner = container.querySelector('.animate-spin')
       expect(spinner).toBeTruthy()
+    })
+  })
+
+  it('shows green ping dot for reachable iframe-allowed tab', async () => {
+    mockSidebar.mockImplementation(() =>
+      Promise.resolve({
+        data: {
+          data: {
+            tabs: [
+              {
+                id: 1,
+                order: 1,
+                category_id: 0,
+                name: 'Plex',
+                url: 'http://plex:32400',
+                url_local: null,
+                enabled: 1,
+                group_id: 0,
+                image: null,
+                type: 0,
+              },
+            ],
+            categories: [],
+          },
+        },
+      })
+    )
+
+    const { findByTestId } = render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>
+    )
+
+    const dot = await findByTestId('ping-dot-1')
+    await waitFor(() => {
+      expect(dot.className).toContain('bg-emerald-500')
     })
   })
 })

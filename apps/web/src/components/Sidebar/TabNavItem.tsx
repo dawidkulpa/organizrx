@@ -27,7 +27,7 @@ export function TabNavItem({ tab, sidebarOpen }: TabNavItemProps) {
         )
       }
     >
-      <TabIcon image={tab.image} sidebarOpen={sidebarOpen} />
+      <TabIcon tabId={tab.id} image={tab.image} sidebarOpen={sidebarOpen} />
       {sidebarOpen && <span className="truncate">{tab.name}</span>}
       {!sidebarOpen && (
         <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">

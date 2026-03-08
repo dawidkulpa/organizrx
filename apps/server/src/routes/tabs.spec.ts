@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { mkdirSync } from 'node:fs'
@@ -8,6 +8,7 @@ import { initDb, closeDb, getRawDb } from '../db'
 import type { SqliteDb } from '../db'
 import { initConfig, _resetConfig } from '../config'
 import { _clearSettingsCache } from '../services/settings'
+import { _resetTabUrlCheckCache } from '../services/tab-url-check'
 import tabs from './tabs'
 
 // ---------------------------------------------------------------------------
@@ -135,14 +136,20 @@ function createApp(): Hono {
 // ---------------------------------------------------------------------------
 
 describe('tabs routes', () => {
+  let originalFetch: typeof globalThis.fetch
+
   beforeEach(async () => {
     await closeDb()
     _clearSettingsCache()
+    _resetTabUrlCheckCache()
+    originalFetch = globalThis.fetch
   })
 
   afterEach(async () => {
     await closeDb()
     _clearSettingsCache()
+    _resetTabUrlCheckCache()
+    globalThis.fetch = originalFetch
   })
 
   // -------------------------------------------------------------------------
@@ -316,6 +323,221 @@ describe('tabs routes', () => {
       expect(json.data.tabs.length).toBe(0)
       expect(json.data.categories).toBeArray()
       expect(json.data.categories.length).toBe(0)
+    })
+  })
+
+  describe('GET /api/tabs/check-url', () => {
+    async function createAuthedApp() {
+      const db = await setupDb()
+
+      db.$client.exec(`
+        INSERT INTO users (id, username, email, "group", group_id, auth_service, locked)
+        VALUES (1, 'admin', 'admin@test.com', 'Admin', 0, 'internal', 0)
+      `)
+
+      const { createAccessToken, toAuthUser } = await import('../services/auth')
+      const authUser = toAuthUser({
+        id: 1,
+        username: 'admin',
+        email: 'admin@test.com',
+        groupName: 'Admin',
+        group_id: 0,
+        image: null,
+      })
+
+      return {
+        app: createApp(),
+        jwt: await createAccessToken(authUser),
+      }
+    }
+
+    it('returns reachable and iframeAllowed for reachable URL', async () => {
+      const fetchMock = mock(() =>
+        Promise.resolve(
+          new Response(null, {
+            status: 204,
+            headers: {},
+          })
+        )
+      )
+      globalThis.fetch = fetchMock as unknown as typeof fetch
+
+      const { app, jwt } = await createAuthedApp()
+      const res = await app.request('/api/tabs/check-url?url=https%3A%2F%2Fexample.com', {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.reachable).toBe(true)
+      expect(json.iframeAllowed).toBe(true)
+      expect(json.status).toBe(204)
+    })
+
+    it('blocks iframe when X-Frame-Options is DENY', async () => {
+      const fetchMock = mock(() =>
+        Promise.resolve(
+          new Response(null, {
+            status: 200,
+            headers: {
+              'X-Frame-Options': 'DENY',
+            },
+          })
+        )
+      )
+      globalThis.fetch = fetchMock as unknown as typeof fetch
+
+      const { app, jwt } = await createAuthedApp()
+      const res = await app.request('/api/tabs/check-url?url=https%3A%2F%2Fexample.com', {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.reachable).toBe(true)
+      expect(json.iframeAllowed).toBe(false)
+      expect(json.status).toBe(200)
+    })
+
+    it('blocks cloud metadata URLs via SSRF protection', async () => {
+      const { app, jwt } = await createAuthedApp()
+      const res = await app.request(
+        '/api/tabs/check-url?url=http%3A%2F%2F169.254.169.254%2Flatest',
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      )
+
+      expect(res.status).toBe(400)
+      const json = await res.json()
+      expect(json.error.code).toBe('SSRF_BLOCKED')
+    })
+
+    it('allows private IP URLs for home-lab use', async () => {
+      const fetchMock = mock(() =>
+        Promise.resolve(
+          new Response(null, {
+            status: 200,
+            headers: {},
+          })
+        )
+      )
+      globalThis.fetch = fetchMock as unknown as typeof fetch
+
+      const { app, jwt } = await createAuthedApp()
+      const res = await app.request('/api/tabs/check-url?url=http%3A%2F%2F192.168.1.10%3A8989', {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.reachable).toBe(true)
+      expect(json.iframeAllowed).toBe(true)
+      expect(json.status).toBe(200)
+    })
+  })
+
+  describe('PUT /api/tabs/:id', () => {
+    async function createAuthedApp() {
+      const db = await setupDb()
+
+      db.$client.exec(`
+        INSERT INTO users (id, username, email, "group", group_id, auth_service, locked)
+        VALUES (1, 'admin', 'admin@test.com', 'Admin', 0, 'internal', 0)
+      `)
+
+      const { createAccessToken, toAuthUser } = await import('../services/auth')
+      const authUser = toAuthUser({
+        id: 1,
+        username: 'admin',
+        email: 'admin@test.com',
+        groupName: 'Admin',
+        group_id: 0,
+        image: null,
+      })
+
+      return {
+        db,
+        app: createApp(),
+        jwt: await createAccessToken(authUser),
+      }
+    }
+
+    it('allows updating allowed fields for a default tab', async () => {
+      const { app, jwt, db } = await createAuthedApp()
+      
+      // Insert default tab
+      db.$client.exec(`
+        INSERT INTO tabs (id, name, url, enabled, group_id, category_id, "order", "default", type)
+        VALUES (99, 'Dashboard', '/', 1, 0, 1, 1, 1, 0)
+      `)
+
+      const payload = {
+        name: 'Updated Dashboard',
+        enabled: 0,
+        group_id: 1,
+      }
+
+      const res = await app.request('/api/tabs/99', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.data.name).toBe('Updated Dashboard')
+      expect(json.data.enabled).toBe(0)
+      expect(json.data.group_id).toBe(1)
+    })
+
+    it('rejects updating type or url for a default tab', async () => {
+      const { app, jwt, db } = await createAuthedApp()
+      
+      // Insert default tab
+      db.$client.exec(`
+        INSERT INTO tabs (id, name, url, enabled, group_id, category_id, "order", "default", type)
+        VALUES (99, 'Dashboard', '/', 1, 0, 1, 1, 1, 0)
+      `)
+
+      // Test URL change rejection
+      let res = await app.request('/api/tabs/99', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: '/new-url' }),
+      })
+
+      expect(res.status).toBe(400)
+      let json = await res.json()
+      expect(json.error.message).toBe('Cannot change URL for built-in tabs')
+
+      // Test Type change rejection
+      res = await app.request('/api/tabs/99', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 1 }),
+      })
+
+      expect(res.status).toBe(400)
+      json = await res.json()
+      expect(json.error.message).toBe('Cannot change type for built-in tabs')
     })
   })
 })
