@@ -131,11 +131,11 @@ export default function SettingsUsers() {
           ))}
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-border rounded-lg">
-          <UsersIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-          <h3 className="text-lg font-medium text-foreground">No users found</h3>
-          <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
-        </div>
+        <EmptyState
+          message="No additional users. Click Invite to add team members."
+          actionLabel="Invite"
+          onAction={() => setIsInviteOpen(true)}
+        />
       ) : (
         <>
           <UsersTable

@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Users, Plus, Pencil, Trash2, Shield, X, Save, Image as ImageIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { EmptyState } from '../../components/EmptyState'
 
 interface Group {
   id: number
@@ -145,6 +146,12 @@ export default function SettingsGroups() {
             <div key={i} className="h-32 rounded-lg border border-border bg-card animate-pulse" />
           ))}
         </div>
+      ) : groups.length === 0 ? (
+        <EmptyState
+          message="No custom groups. Click Add Group to organize users."
+          actionLabel="Add Group"
+          onAction={() => handleOpenModal()}
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {groups.map((group) => (
