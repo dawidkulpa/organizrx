@@ -17,7 +17,6 @@ import { useSessionInit } from './hooks/useAuth'
 import SettingsGeneral from './pages/settings/General'
 import SettingsAppearance from './pages/settings/Appearance'
 import SettingsAuthentication from './pages/settings/Authentication'
-import SettingsSSO from './pages/settings/SSO'
 import SettingsHomepage from './pages/settings/Homepage'
 import SettingsTabs from './pages/settings/Tabs'
 import SettingsUsers from './pages/settings/Users'
@@ -116,7 +115,6 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
           { path: 'general', element: <SettingsGeneral /> },
           { path: 'appearance', element: <SettingsAppearance /> },
           { path: 'authentication', element: <SettingsAuthentication /> },
-          { path: 'sso', element: <SettingsSSO /> },
           { path: 'homepage', element: <SettingsHomepage /> },
           { path: 'tabs', element: <SettingsTabs /> },
           { path: 'users', element: <SettingsUsers /> },

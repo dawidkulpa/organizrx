@@ -1,15 +1,12 @@
-import { z } from 'zod'
 import { SettingsForm } from '../../components/SettingsForm'
-
-const INPUT_CLASS = "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-
-const authSchema = z.object({
-  authMethod: z.enum(['local', 'ldap', 'both']),
-  sessionTimeout: z.coerce.number().min(1, 'Must be at least 1 minute'),
-  maxLoginAttempts: z.coerce.number().min(1, 'Must be at least 1 attempt'),
-  lockoutDuration: z.coerce.number().min(1, 'Must be at least 1 minute'),
-  enforce2fa: z.enum(['disabled', 'optional', 'required']),
-})
+import {
+  authSchema,
+  authenticationSectionClass,
+  SectionHeader,
+  SelectField,
+  TextField,
+  ToggleField,
+} from './authentication-form-controls'
 
 export default function AuthenticationSettings() {
   return (
@@ -21,103 +18,152 @@ export default function AuthenticationSettings() {
     >
       {(form) => (
         <div className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="authMethod" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Authentication Method
-            </label>
-            <p className="text-[0.8rem] text-muted-foreground">
-              Choose the primary authentication source.
-            </p>
-            <select
-              id="authMethod"
-              {...form.register('authMethod')}
-              className={INPUT_CLASS}
-            >
-              <option value="local">Local Database Only</option>
-              <option value="ldap">LDAP / Active Directory Only</option>
-              <option value="both">Both (Local + LDAP)</option>
-            </select>
-          </div>
+          <section className={authenticationSectionClass}>
+            <SectionHeader
+              title="Local Authentication"
+              description="Manage direct sign-in methods, session policy, and account protection rules."
+            />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="sessionTimeout" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Session Timeout (Minutes)
-              </label>
-              <p className="text-[0.8rem] text-muted-foreground">
-                Logout after inactivity.
-              </p>
-              <input
+            <SelectField
+              form={form}
+              id="authMethod"
+              label="Authentication Method"
+              help="Choose the primary authentication source."
+              options={[
+                { value: 'local', label: 'Local Database Only' },
+                { value: 'ldap', label: 'LDAP / Active Directory Only' },
+                { value: 'both', label: 'Both (Local + LDAP)' },
+              ]}
+            />
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <TextField
+                form={form}
                 id="sessionTimeout"
                 type="number"
-                {...form.register('sessionTimeout')}
-                className={INPUT_CLASS}
+                label="Session Timeout (Minutes)"
+                help="Logout after inactivity."
               />
-              {form.formState.errors.sessionTimeout && (
-                <p className="text-[0.8rem] font-medium text-destructive">
-                  {form.formState.errors.sessionTimeout.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="maxLoginAttempts" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Max Login Attempts
-              </label>
-              <p className="text-[0.8rem] text-muted-foreground">
-                Before temporary lockout.
-              </p>
-              <input
+              <TextField
+                form={form}
                 id="maxLoginAttempts"
                 type="number"
-                {...form.register('maxLoginAttempts')}
-                className={INPUT_CLASS}
+                label="Max Login Attempts"
+                help="Before temporary lockout."
               />
-              {form.formState.errors.maxLoginAttempts && (
-                <p className="text-[0.8rem] font-medium text-destructive">
-                  {form.formState.errors.maxLoginAttempts.message}
-                </p>
-              )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label htmlFor="lockoutDuration" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Lockout Duration (Minutes)
-            </label>
-            <p className="text-[0.8rem] text-muted-foreground">
-              How long to block IPs after failed attempts.
-            </p>
-            <input
-              id="lockoutDuration"
-              type="number"
-              {...form.register('lockoutDuration')}
-              className={INPUT_CLASS}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <TextField
+                form={form}
+                id="lockoutDuration"
+                type="number"
+                label="Lockout Duration (Minutes)"
+                help="How long to block IPs after failed attempts."
+              />
+              <SelectField
+                form={form}
+                id="enforce2fa"
+                label="Two-Factor Authentication (2FA)"
+                help="Require users to set up 2FA."
+                options={[
+                  { value: 'disabled', label: 'Disabled (User Choice)' },
+                  { value: 'optional', label: 'Optional (Recommended)' },
+                  { value: 'required', label: 'Required (Enforced)' },
+                ]}
+              />
+            </div>
+          </section>
+
+          <section className={authenticationSectionClass}>
+            <SectionHeader
+              title="Single Sign-On"
+              description="Configure shared authentication cookies for connected services."
             />
-            {form.formState.errors.lockoutDuration && (
-              <p className="text-[0.8rem] font-medium text-destructive">
-                {form.formState.errors.lockoutDuration.message}
-              </p>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <label htmlFor="enforce2fa" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Two-Factor Authentication (2FA)
-            </label>
-            <p className="text-[0.8rem] text-muted-foreground">
-              Require users to set up 2FA.
-            </p>
-            <select
-              id="enforce2fa"
-              {...form.register('enforce2fa')}
-              className={INPUT_CLASS}
-            >
-              <option value="disabled">Disabled (User Choice)</option>
-              <option value="optional">Optional (Recommended)</option>
-              <option value="required">Required (Enforced)</option>
-            </select>
-          </div>
+            <ToggleField
+              form={form}
+              id="ssoEnabled"
+              label="Enable SSO"
+              help="Allow users to sign in once and access all services."
+            />
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <TextField
+                form={form}
+                id="cookieDomain"
+                label="SSO Domain"
+                help="Domain used for shared authentication cookies."
+                placeholder=".example.com"
+              />
+              <TextField
+                form={form}
+                id="cookieName"
+                label="Cookie Name"
+                help="Name used for the shared SSO cookie."
+                placeholder="organizr_token"
+              />
+              <div className="md:col-span-2">
+                <TextField
+                  form={form}
+                  id="cookieExpire"
+                  type="number"
+                  label="Expiration (Hours)"
+                  help="How long the shared cookie remains valid."
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className={authenticationSectionClass}>
+            <SectionHeader
+              title="Plex Authentication"
+              description="Control whether Plex participates in the unified authentication flow."
+            />
+
+            <ToggleField
+              form={form}
+              id="plexSsoEnabled"
+              label="Enable Plex Authentication"
+              help="Share Plex authentication tokens through the SSO configuration above."
+            />
+          </section>
+
+          <section className={authenticationSectionClass}>
+            <SectionHeader
+              title="OIDC"
+              description="Connect an OpenID Connect provider for external identity-based sign in."
+            />
+
+            <ToggleField
+              form={form}
+              id="oidcSsoEnabled"
+              label="Enable OIDC"
+              help="Allow an external identity provider to participate in sign in."
+            />
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <TextField form={form} id="oidc_client_id" label="OIDC Client ID" />
+              <TextField
+                form={form}
+                id="oidc_client_secret"
+                type="password"
+                label="OIDC Client Secret"
+              />
+              <TextField
+                form={form}
+                id="oidc_provider_url"
+                label="OIDC Issuer"
+                placeholder="https://auth.example.com/application/o/organizrx/"
+              />
+              <TextField
+                form={form}
+                id="oidc_redirect_uri"
+                label="OIDC Redirect URI"
+                placeholder="https://organizrx.example.com/api/auth/oidc/callback"
+              />
+            </div>
+          </section>
         </div>
       )}
     </SettingsForm>
