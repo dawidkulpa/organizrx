@@ -28,6 +28,7 @@
 
 /* ── Dark theme (class-based) ──────────────────────────────────── */
 .dark {
+  color-scheme: dark;
   --color-background: hsl(222.2 84% 4.9%);
   --color-foreground: hsl(210 40% 98%);
   --color-card: hsl(222.2 84% 4.9%);
@@ -63,7 +64,11 @@
   html.theme-transition *,
   html.theme-transition *::before,
   html.theme-transition *::after {
-    transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    transition:
+      background-color 0.3s ease,
+      color 0.2s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease !important;
     transition-delay: 0s !important;
   }
 }
