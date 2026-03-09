@@ -36,15 +36,8 @@ export function SettingsForm<T extends FieldValues>({
       try {
         setIsLoading(true)
         const response = await api.settings.getAll(settingsKey)
-        // Assuming API returns an object { key: value, key2: value2 }
-        // or an array of { key: '...', value: '...' }
-        // Based on client.ts, it returns axios response.
-        // Let's assume the data payload is a Record<string, any> map of settings
-        const data = response.data as Record<string, unknown>
-
-        // If the API returns a list of settings objects, we might need to transform it.
-        // But for now, assuming standard key-value map from backend for this category.
-        // If keys are like "general.title", we assume schema matches.
+        // API returns { data: { key: value, ... } } envelope
+        const data = response.data.data as Record<string, unknown>
 
         form.reset(data as T)
       } catch (error) {
