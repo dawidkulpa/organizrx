@@ -371,9 +371,9 @@ describe('tabs routes', () => {
 
       expect(res.status).toBe(200)
       const json = await res.json()
-      expect(json.reachable).toBe(true)
-      expect(json.iframeAllowed).toBe(true)
-      expect(json.status).toBe(204)
+      expect(json.data.reachable).toBe(true)
+      expect(json.data.iframeAllowed).toBe(true)
+      expect(json.data.status).toBe(204)
     })
 
     it('blocks iframe when X-Frame-Options is DENY', async () => {
@@ -398,9 +398,9 @@ describe('tabs routes', () => {
 
       expect(res.status).toBe(200)
       const json = await res.json()
-      expect(json.reachable).toBe(true)
-      expect(json.iframeAllowed).toBe(false)
-      expect(json.status).toBe(200)
+      expect(json.data.reachable).toBe(true)
+      expect(json.data.iframeAllowed).toBe(false)
+      expect(json.data.status).toBe(200)
     })
 
     it('blocks cloud metadata URLs via SSRF protection', async () => {
@@ -439,9 +439,9 @@ describe('tabs routes', () => {
 
       expect(res.status).toBe(200)
       const json = await res.json()
-      expect(json.reachable).toBe(true)
-      expect(json.iframeAllowed).toBe(true)
-      expect(json.status).toBe(200)
+      expect(json.data.reachable).toBe(true)
+      expect(json.data.iframeAllowed).toBe(true)
+      expect(json.data.status).toBe(200)
     })
   })
 
@@ -473,7 +473,7 @@ describe('tabs routes', () => {
 
     it('allows updating allowed fields for a default tab', async () => {
       const { app, jwt, db } = await createAuthedApp()
-      
+
       // Insert default tab
       db.$client.exec(`
         INSERT INTO tabs (id, name, url, enabled, group_id, category_id, "order", "default", type)
@@ -504,7 +504,7 @@ describe('tabs routes', () => {
 
     it('rejects updating type or url for a default tab', async () => {
       const { app, jwt, db } = await createAuthedApp()
-      
+
       // Insert default tab
       db.$client.exec(`
         INSERT INTO tabs (id, name, url, enabled, group_id, category_id, "order", "default", type)

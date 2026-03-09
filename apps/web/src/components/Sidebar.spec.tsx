@@ -64,7 +64,7 @@ const mockSidebar = mock(() =>
   })
 )
 const mockCheckUrl = mock(() =>
-  Promise.resolve({ data: { reachable: true, iframeAllowed: true, status: 200 } })
+  Promise.resolve({ data: { data: { reachable: true, iframeAllowed: true, status: 200 } } })
 )
 
 mock.module('../api/client', () => ({
@@ -108,7 +108,7 @@ describe('Sidebar', () => {
       })
     )
     mockCheckUrl.mockImplementation(() =>
-      Promise.resolve({ data: { reachable: true, iframeAllowed: true, status: 200 } })
+      Promise.resolve({ data: { data: { reachable: true, iframeAllowed: true, status: 200 } } })
     )
   })
 

@@ -30,9 +30,9 @@ export default function PluginsSettings() {
       setIsLoading(true)
       const res = await api.plugins.getAll()
       // Assuming res.data is Plugin[]
-      setInstalledPlugins(res.data as Plugin[])
+      const response = res.data as { data: Plugin[] }
+      setInstalledPlugins(response.data)
     } catch (error) {
-      toast.error('Failed to load installed plugins')
       toast.error('Failed to load installed plugins')
     } finally {
       setIsLoading(false)
@@ -53,9 +53,9 @@ export default function PluginsSettings() {
     try {
       setIsSearching(true)
       const res = await api.plugins.search(query)
-      setSearchResults(res.data as Plugin[])
+      const response = res.data as { data: Plugin[] }
+      setSearchResults(response.data)
     } catch (error) {
-      toast.error('Plugin search failed')
       toast.error('Plugin search failed')
     } finally {
       setIsSearching(false)
@@ -74,7 +74,6 @@ export default function PluginsSettings() {
       )
     } catch (error) {
       toast.error(`Failed to install ${plugin.name}`)
-      toast.error(`Failed to install ${plugin.name}`)
     } finally {
       setProcessing(null)
     }
@@ -90,7 +89,6 @@ export default function PluginsSettings() {
       await fetchInstalled()
     } catch (error) {
       toast.error(`Failed to remove ${plugin.name}`)
-      toast.error(`Failed to remove ${plugin.name}`)
     } finally {
       setProcessing(null)
     }
@@ -103,7 +101,6 @@ export default function PluginsSettings() {
       toast.success(`Updated ${plugin.name}`)
       await fetchInstalled()
     } catch (error) {
-      toast.error(`Failed to update ${plugin.name}`)
       toast.error(`Failed to update ${plugin.name}`)
     } finally {
       setProcessing(null)

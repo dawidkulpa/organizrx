@@ -58,17 +58,23 @@ async function checkUrl(url: string): Promise<TabPingResult> {
 
   const request = api.tabs
     .checkUrl(url)
-    .then((res: { data: { reachable: boolean; iframeAllowed: boolean; status: number } }) => {
-      const payload = res.data as { reachable: boolean; iframeAllowed: boolean; status: number }
-      const result: TabPingResult = {
-        reachable: payload.reachable,
-        iframeAllowed: payload.iframeAllowed,
-        status: payload.status,
-        checkedAt: Date.now(),
+    .then(
+      (res: { data: { data: { reachable: boolean; iframeAllowed: boolean; status: number } } }) => {
+        const payload = res.data.data as {
+          reachable: boolean
+          iframeAllowed: boolean
+          status: number
+        }
+        const result: TabPingResult = {
+          reachable: payload.reachable,
+          iframeAllowed: payload.iframeAllowed,
+          status: payload.status,
+          checkedAt: Date.now(),
+        }
+        setCached(url, result)
+        return result
       }
-      setCached(url, result)
-      return result
-    })
+    )
     .catch(() => {
       const result: TabPingResult = {
         reachable: false,

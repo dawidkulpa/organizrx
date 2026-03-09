@@ -50,7 +50,7 @@ export function TabFormFields({
               </span>
             )}
           </label>
-          {tabType === 0 && !isDefault ? (
+          {tabType === 1 && !isDefault ? (
             <select
               {...register('url')}
               disabled={isDefault}
@@ -156,8 +156,8 @@ export function TabFormFields({
             title={isDefault ? 'Cannot change type/URL for built-in tabs' : ''}
             className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value={0}>Internal</option>
-            <option value={1}>iFrame</option>
+            <option value={0}>iFrame</option>
+            <option value={1}>Internal</option>
             <option value={2}>New Window</option>
           </select>
         </div>

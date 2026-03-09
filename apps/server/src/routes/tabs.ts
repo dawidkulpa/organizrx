@@ -94,7 +94,7 @@ tabs.get('/check-url', authMiddleware(), tabUrlCheckRateLimiter(), async (c) => 
 
     try {
       const result = await checkTabUrl(parsed.data.url, embedderOrigin)
-      return c.json(result)
+      return c.json({ data: result })
     } catch (error) {
       if (error instanceof Error) {
         return c.json(
