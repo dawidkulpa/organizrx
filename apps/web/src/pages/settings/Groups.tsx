@@ -27,6 +27,12 @@ const groupSchema = z.object({
 
 type GroupFormData = z.infer<typeof groupSchema>
 
+const BUILT_IN_GROUP_IDS = [0, 4, 999]
+
+function isBuiltInGroup(group: Group): boolean {
+  return group.isDefault === 1 || BUILT_IN_GROUP_IDS.includes(group.group_id)
+}
+
 export default function SettingsGroups() {
   const [groups, setGroups] = useState<Group[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -104,8 +110,8 @@ export default function SettingsGroups() {
   }
 
   const handleDelete = async (group: Group) => {
-    if (group.isDefault === 1) {
-      toast.error('Cannot delete the default group')
+    if (isBuiltInGroup(group)) {
+      toast.error('Cannot delete a built-in group')
       return
     }
 
@@ -181,9 +187,9 @@ export default function SettingsGroups() {
                       </p>
                     </div>
                   </div>
-                  {group.isDefault === 1 && (
+                  {isBuiltInGroup(group) && (
                     <span className="inline-flex items-center rounded-full border border-transparent bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                      Default
+                      Built-in
                     </span>
                   )}
                 </div>
@@ -197,7 +203,7 @@ export default function SettingsGroups() {
                   Edit
                 </button>
                 <div className="mx-1 h-4 w-[1px] bg-border" />
-                {group.isDefault === 1 ? (
+                {isBuiltInGroup(group) ? (
                   <div className="flex-1 h-9" />
                 ) : (
                   <button

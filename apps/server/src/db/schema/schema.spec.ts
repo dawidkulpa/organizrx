@@ -35,7 +35,7 @@ describe('Adapter', () => {
   })
 
   it('should throw error for unsupported dialect', () => {
-    expect(() => createAdapter('invalid' as any)).toThrow('Unsupported dialect: invalid')
+    expect(() => createAdapter('invalid' as 'sqlite')).toThrow('Unsupported dialect: invalid')
   })
 })
 
@@ -80,10 +80,11 @@ describe('Schema Structure', () => {
   })
 
   it('should use exact bookmark table names with hyphens', () => {
-    // @ts-ignore - accessing internal table name
-    expect(sqliteSchema.bookmarkCategories[Symbol.for('drizzle:Name')]).toBe('BOOKMARK-categories')
-    // @ts-ignore - accessing internal table name
-    expect(sqliteSchema.bookmarkTabs[Symbol.for('drizzle:Name')]).toBe('BOOKMARK-tabs')
+    const drizzleNameSymbol = Symbol.for('drizzle:Name')
+    const catTable = sqliteSchema.bookmarkCategories as unknown as Record<symbol, string>
+    const tabTable = sqliteSchema.bookmarkTabs as unknown as Record<symbol, string>
+    expect(catTable[drizzleNameSymbol]).toBe('BOOKMARK-categories')
+    expect(tabTable[drizzleNameSymbol]).toBe('BOOKMARK-tabs')
   })
 })
 

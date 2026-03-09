@@ -1,9 +1,19 @@
-import { useRouteError } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+import { isRouteErrorResponse, useRouteError } from 'react-router-dom'
+import { AlertCircle } from 'lucide-react'
+
+function getErrorMessage(error: unknown): string {
+  if (isRouteErrorResponse(error)) {
+    return error.statusText || `${error.status} Error`
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'An unexpected error occurred'
+}
 
 export default function ErrorBoundary() {
-  const error = useRouteError() as any;
-  console.error(error);
+  const error = useRouteError()
+  const errorMessage = error ? getErrorMessage(error) : null
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-foreground animate-in fade-in zoom-in duration-500">
@@ -15,11 +25,9 @@ export default function ErrorBoundary() {
         <p className="max-w-[500px] text-muted-foreground md:text-xl">
           We apologize for the inconvenience. Please try again later.
         </p>
-        {error && (
+        {errorMessage && (
           <div className="mt-4 rounded bg-muted/50 p-4 text-left text-sm font-mono text-muted-foreground max-w-[600px] overflow-auto">
-            <pre className="whitespace-pre-wrap break-all">
-              {error.statusText || error.message || JSON.stringify(error, null, 2)}
-            </pre>
+            <pre className="whitespace-pre-wrap break-all">{errorMessage}</pre>
           </div>
         )}
         <button
@@ -30,5 +38,5 @@ export default function ErrorBoundary() {
         </button>
       </div>
     </div>
-  );
+  )
 }

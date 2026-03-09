@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { discoverWidgets, PluginWidgetRegistration } from '../plugins/widget-registry'
 import { WidgetGrid } from '../components/WidgetGrid'
@@ -8,6 +9,7 @@ import { RefreshCw, LayoutGrid } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const [widgets, setWidgets] = useState<PluginWidgetRegistration[]>([])
   const [layout, setLayout] = useState<LayoutItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -104,7 +106,7 @@ export default function Dashboard() {
           <EmptyState
             message="Your dashboard is empty. Add tabs to see them here."
             actionLabel="Browse Tabs"
-            onAction={() => {}}
+            onAction={() => navigate('/settings', { state: { tab: 'tabs' } })}
           />
         ) : (
           <WidgetGrid widgets={widgets} layout={layout} onLayoutChange={handleLayoutChange} />
