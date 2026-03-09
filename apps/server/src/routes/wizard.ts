@@ -107,10 +107,12 @@ wizard.post('/complete', async (c) => {
   await setSettings(initialSettings)
 
   // Seed internal tabs (Dashboard, Settings, Users)
+  // type: 1 = internal (routed via INTERNAL_ROUTES in sidebar)
+  // type: 0 = external (rendered as iframe in TabViewport)
   await createTab({
     name: 'Dashboard',
     url: '/',
-    type: 0,
+    type: 1,
     order: 0,
     category_id: null,
     group_id: 999,
@@ -121,7 +123,7 @@ wizard.post('/complete', async (c) => {
   await createTab({
     name: 'Settings',
     url: '/settings',
-    type: 0,
+    type: 1,
     order: 1,
     category_id: null,
     group_id: 0,
@@ -132,7 +134,7 @@ wizard.post('/complete', async (c) => {
   await createTab({
     name: 'Users',
     url: '/users',
-    type: 0,
+    type: 1,
     order: 2,
     category_id: null,
     group_id: 0,
