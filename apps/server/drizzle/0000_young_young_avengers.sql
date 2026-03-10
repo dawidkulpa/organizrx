@@ -1,4 +1,4 @@
-CREATE TABLE `BOOKMARK-categories` (
+CREATE TABLE IF NOT EXISTS `BOOKMARK-categories` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`order` integer,
 	`category` text,
@@ -6,8 +6,8 @@ CREATE TABLE `BOOKMARK-categories` (
 	`default` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `BOOKMARK-categories_category_unique` ON `BOOKMARK-categories` (`category`);--> statement-breakpoint
-CREATE TABLE `BOOKMARK-tabs` (
+CREATE UNIQUE INDEX IF NOT EXISTS `BOOKMARK-categories_category_unique` ON `BOOKMARK-categories` (`category`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `BOOKMARK-tabs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`order` integer,
 	`category_id` integer,
@@ -20,7 +20,7 @@ CREATE TABLE `BOOKMARK-tabs` (
 	`text_color` text
 );
 --> statement-breakpoint
-CREATE TABLE `categories` (
+CREATE TABLE IF NOT EXISTS `categories` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`order` integer,
 	`category` text,
@@ -29,8 +29,8 @@ CREATE TABLE `categories` (
 	`default` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `categories_category_unique` ON `categories` (`category`);--> statement-breakpoint
-CREATE TABLE `chatroom` (
+CREATE UNIQUE INDEX IF NOT EXISTS `categories_category_unique` ON `categories` (`category`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `chatroom` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`username` text,
 	`gravatar` text,
@@ -40,7 +40,7 @@ CREATE TABLE `chatroom` (
 	`message` text
 );
 --> statement-breakpoint
-CREATE TABLE `groups` (
+CREATE TABLE IF NOT EXISTS `groups` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`group` text,
 	`group_id` integer,
@@ -48,8 +48,8 @@ CREATE TABLE `groups` (
 	`default` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `groups_group_unique` ON `groups` (`group`);--> statement-breakpoint
-CREATE TABLE `invites` (
+CREATE UNIQUE INDEX IF NOT EXISTS `groups_group_unique` ON `groups` (`group`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `invites` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`code` text,
 	`date` text,
@@ -63,15 +63,15 @@ CREATE TABLE `invites` (
 	`invitedby` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `invites_code_unique` ON `invites` (`code`);--> statement-breakpoint
-CREATE TABLE `options` (
+CREATE UNIQUE INDEX IF NOT EXISTS `invites_code_unique` ON `invites` (`code`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `options` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text,
 	`value` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `options_name_unique` ON `options` (`name`);--> statement-breakpoint
-CREATE TABLE `tabs` (
+CREATE UNIQUE INDEX IF NOT EXISTS `options_name_unique` ON `options` (`name`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `tabs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`order` integer,
 	`category_id` integer,
@@ -93,7 +93,7 @@ CREATE TABLE `tabs` (
 	`preload` integer
 );
 --> statement-breakpoint
-CREATE TABLE `tokens` (
+CREATE TABLE IF NOT EXISTS `tokens` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`token` text,
 	`user_id` integer,
@@ -103,8 +103,8 @@ CREATE TABLE `tokens` (
 	`expires` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `tokens_token_unique` ON `tokens` (`token`);--> statement-breakpoint
-CREATE TABLE `users` (
+CREATE UNIQUE INDEX IF NOT EXISTS `tokens_token_unique` ON `tokens` (`token`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`username` text,
 	`password` text,
@@ -118,4 +118,4 @@ CREATE TABLE `users` (
 	`auth_service` text DEFAULT 'internal'
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);
+CREATE UNIQUE INDEX IF NOT EXISTS `users_username_unique` ON `users` (`username`);

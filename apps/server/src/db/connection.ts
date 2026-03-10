@@ -19,6 +19,8 @@ import { sql } from 'drizzle-orm'
 import { createPool, type Pool } from 'mysql2/promise'
 import postgres, { type Sql } from 'postgres'
 
+import { existsSync } from 'node:fs'
+
 import type { DatabaseDialect } from '../config/env'
 
 import * as sqliteSchema from './schema/sqlite'
@@ -29,15 +31,22 @@ import { ensureMysqlSchema } from './mysql-bootstrap'
 import { ensurePgSchema } from './pg-bootstrap'
 
 /** Retry an async operation with exponential backoff (for container startup). */
-async function withRetry<T>(fn: () => Promise<T>, label: string, maxRetries = 10, baseDelayMs = 1000): Promise<T> {
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+  maxRetries = 10,
+  baseDelayMs = 1000
+): Promise<T> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await fn()
     } catch (err) {
       if (attempt === maxRetries) throw err
       const delay = baseDelayMs * Math.min(attempt, 5)
-      console.warn(`[db] ${label} attempt ${attempt}/${maxRetries} failed, retrying in ${delay}ms...`)
-      await new Promise(r => setTimeout(r, delay))
+      console.warn(
+        `[db] ${label} attempt ${attempt}/${maxRetries} failed, retrying in ${delay}ms...`
+      )
+      await new Promise((r) => setTimeout(r, delay))
     }
   }
   throw new Error('unreachable')
@@ -110,7 +119,9 @@ export interface InitDbOptions {
  */
 export async function initDb(opts: InitDbOptions): Promise<{ db: DrizzleDb; schema: DbSchema }> {
   if (_db) {
-    throw new Error('Database already initialized. Call closeDb() first if you need to reinitialize.')
+    throw new Error(
+      'Database already initialized. Call closeDb() first if you need to reinitialize.'
+    )
   }
 
   _dialect = opts.dialect
@@ -127,12 +138,15 @@ export async function initDb(opts: InitDbOptions): Promise<{ db: DrizzleDb; sche
       }
 
       sqliteClient = new Database(dbPath)
-      // Enable WAL mode for better concurrent read performance
       sqliteClient.exec('PRAGMA journal_mode = WAL')
       sqliteClient.exec('PRAGMA foreign_keys = ON')
 
-      // Ensure all tables exist (first-run schema bootstrap)
-      ensureSqliteSchema(sqliteClient)
+      // When Drizzle migration files exist, skip bootstrap — migrations
+      // handle schema creation and the bootstrap would collide with
+      // ALTER TABLE statements in later migrations.
+      if (!existsSync('./drizzle')) {
+        ensureSqliteSchema(sqliteClient)
+      }
 
       _schema = sqliteSchema
       _db = drizzleBunSqlite({ client: sqliteClient, schema: sqliteSchema })
@@ -236,7 +250,12 @@ export function getDialect(): DatabaseDialect {
  */
 export async function healthCheck(): Promise<HealthCheckResult> {
   if (!_db || !_dialect) {
-    return { ok: false, dialect: _dialect ?? 'sqlite', latencyMs: 0, error: 'Database not initialized' }
+    return {
+      ok: false,
+      dialect: _dialect ?? 'sqlite',
+      latencyMs: 0,
+      error: 'Database not initialized',
+    }
   }
 
   const start = performance.now()
