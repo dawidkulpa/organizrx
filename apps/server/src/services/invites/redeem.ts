@@ -2,9 +2,14 @@ import { eq } from 'drizzle-orm'
 
 import { dialectCtx } from '../../db/dialect-ctx'
 import { hashPassword } from '../auth'
+import { createChildLogger } from '../logger'
 import { getSettingNumber } from '../settings'
-import { getInviteByCode } from './db'
+import { getInviteByCode, parseInviteType } from './db'
 import { verifyInvite } from './logic'
+
+const log = createChildLogger('invite-redeem')
+
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/
 
 // ---------------------------------------------------------------------------
 // Invite Redemption
@@ -19,9 +24,15 @@ export async function redeemInvite(
 ): Promise<{ userId: number }> {
   const ctx = dialectCtx('invites', 'users')
 
+  // Validate username format (alphanumeric + underscores only)
+  if (!USERNAME_PATTERN.test(username)) {
+    throw new Error('Username may only contain letters, numbers, and underscores')
+  }
+
   // Verify invite is valid
   const verification = await verifyInvite(code)
   if (!verification.valid) {
+    log.warn({ code: code.slice(0, 4) + '***' }, 'invite redemption failed: invalid code')
     throw new Error(verification.reason ?? 'Invalid invite code')
   }
 
@@ -32,7 +43,22 @@ export async function redeemInvite(
 
   // Check email restriction
   if (invite.email && invite.email.toLowerCase() !== email.toLowerCase()) {
+    log.warn({ inviteId: invite.id }, 'invite redemption failed: email mismatch')
     throw new Error('This invite is restricted to a different email address')
+  }
+
+  // Check if email already exists
+  let existingEmail: unknown[]
+  if (ctx.dialect === 'sqlite') {
+    existingEmail = ctx.db.select().from(ctx.users).where(eq(ctx.users.email, email)).all()
+  } else if (ctx.dialect === 'mysql') {
+    existingEmail = await ctx.db.select().from(ctx.users).where(eq(ctx.users.email, email))
+  } else {
+    existingEmail = await ctx.db.select().from(ctx.users).where(eq(ctx.users.email, email))
+  }
+
+  if (existingEmail.length > 0) {
+    throw new Error('An account with this email already exists')
   }
 
   // Check if username already exists
@@ -119,11 +145,13 @@ export async function redeemInvite(
   }
 
   // Mark invite as used
+  const { reusable } = parseInviteType(invite.type)
+
   if (ctx.dialect === 'sqlite') {
     ctx.db
       .update(ctx.invites)
       .set({
-        valid: 'No',
+        valid: reusable ? 'Yes' : 'No',
         usedby: username,
         dateused: now.toISOString(),
         username,
@@ -135,7 +163,7 @@ export async function redeemInvite(
     await ctx.db
       .update(ctx.invites)
       .set({
-        valid: 'No',
+        valid: reusable ? 'Yes' : 'No',
         usedby: username,
         dateused: now,
         username,
@@ -146,7 +174,7 @@ export async function redeemInvite(
     await ctx.db
       .update(ctx.invites)
       .set({
-        valid: 'No',
+        valid: reusable ? 'Yes' : 'No',
         usedby: username,
         dateused: now,
         username,
@@ -154,6 +182,11 @@ export async function redeemInvite(
       })
       .where(eq(ctx.invites.id, invite.id))
   }
+
+  log.info(
+    { userId, inviteId: invite.id, username, ip: ip ?? 'unknown' },
+    'invite redeemed successfully'
+  )
 
   return { userId }
 }

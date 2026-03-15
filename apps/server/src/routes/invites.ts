@@ -9,17 +9,23 @@ import {
   revokeInvite,
 } from '../services/invites'
 import { authMiddleware } from '../middleware/auth'
+import { inviteVerifyRateLimiter, inviteRedeemRateLimiter } from '../middleware/rate-limit'
 
 const invites = new Hono()
 
 // Validation schemas
 const createInviteSchema = z.object({
   email: z.string().email().optional(),
+  expiresInDays: z.number().int().min(1).max(365).nullable().optional(),
+  reusable: z.boolean().optional(),
 })
 
 const redeemInviteSchema = z.object({
   code: z.string().min(1, 'Invite code is required'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Username may only contain letters, numbers, and underscores'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   email: z.string().email('Valid email is required'),
 })
@@ -33,33 +39,40 @@ invites.get('/', authMiddleware(), async (c) => {
     const inviteList = await getInvites(String(user.userID), isAdmin)
     return c.json({ data: inviteList })
   } catch (error) {
-    return c.json({
-      error: {
-        code: 'FETCH_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to fetch invites',
+    return c.json(
+      {
+        error: {
+          code: 'FETCH_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch invites',
+        },
       },
-    }, 500)
+      500
+    )
   }
 })
 
 // POST /api/invites — create new invite (requires auth)
 invites.post('/', authMiddleware(), async (c) => {
   const user = c.get('user')
-  
+
   const body = await c.req.json()
   const parsed = createInviteSchema.safeParse(body)
 
   if (!parsed.success) {
-    return c.json({
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
+      },
+      400
+    )
   }
 
   try {
     const result = await createInvite({
       email: parsed.data.email,
+      expiresInDays: parsed.data.expiresInDays,
+      reusable: parsed.data.reusable,
       invitedby: String(user.userID),
-      type: 'user',
     })
 
     return c.json({
@@ -69,39 +82,48 @@ invites.post('/', authMiddleware(), async (c) => {
       },
     })
   } catch (error) {
-    return c.json({
-      error: {
-        code: 'CREATE_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to create invite',
+    return c.json(
+      {
+        error: {
+          code: 'CREATE_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create invite',
+        },
       },
-    }, 400)
+      400
+    )
   }
 })
 
-// GET /api/invites/:code/verify — verify invite code (PUBLIC)
-invites.get('/:code/verify', async (c) => {
+// GET /api/invites/:code/verify — verify invite code (PUBLIC, rate-limited)
+invites.get('/:code/verify', inviteVerifyRateLimiter(), async (c) => {
   const code = c.req.param('code')
 
   if (!code) {
-    return c.json({
-      error: { code: 'VALIDATION_ERROR', message: 'Invite code is required' },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'VALIDATION_ERROR', message: 'Invite code is required' },
+      },
+      400
+    )
   }
 
   try {
     const result = await verifyInvite(code)
-    
+
     if (!result.valid) {
-      return c.json({
-        error: {
-          code: 'INVALID_INVITE',
-          message: result.reason ?? 'Invalid invite code',
+      return c.json(
+        {
+          error: {
+            code: 'INVALID_INVITE',
+            message: result.reason ?? 'Invalid invite code',
+          },
         },
-      }, 400)
+        400
+      )
     }
 
     const invite = await getInviteByCode(code)
-    
+
     return c.json({
       data: {
         valid: true,
@@ -109,36 +131,41 @@ invites.get('/:code/verify', async (c) => {
       },
     })
   } catch (error) {
-    return c.json({
-      error: {
-        code: 'VERIFICATION_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to verify invite',
+    return c.json(
+      {
+        error: {
+          code: 'VERIFICATION_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to verify invite',
+        },
       },
-    }, 500)
+      500
+    )
   }
 })
 
-// POST /api/invites/redeem — redeem invite code (PUBLIC)
-invites.post('/redeem', async (c) => {
+// POST /api/invites/redeem — redeem invite code (PUBLIC, rate-limited)
+invites.post('/redeem', inviteRedeemRateLimiter(), async (c) => {
   const body = await c.req.json()
   const parsed = redeemInviteSchema.safeParse(body)
 
   if (!parsed.success) {
-    return c.json({
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
+      },
+      400
+    )
   }
 
   const { code, username, password, email } = parsed.data
 
   // Extract client IP
-  const ip = c.req.header('X-Forwarded-For')?.split(',')[0].trim() 
-    ?? c.req.header('X-Real-IP') 
-    ?? null
+  const ip =
+    c.req.header('X-Forwarded-For')?.split(',')[0].trim() ?? c.req.header('X-Real-IP') ?? null
 
   try {
     const result = await redeemInvite(code, username, password, email, ip)
-    
+
     return c.json({
       data: {
         userId: result.userId,
@@ -146,12 +173,15 @@ invites.post('/redeem', async (c) => {
       },
     })
   } catch (error) {
-    return c.json({
-      error: {
-        code: 'REDEEM_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to redeem invite',
+    return c.json(
+      {
+        error: {
+          code: 'REDEEM_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to redeem invite',
+        },
       },
-    }, 400)
+      400
+    )
   }
 })
 
@@ -162,26 +192,32 @@ invites.delete('/:id', authMiddleware(), async (c) => {
   const id = Number.parseInt(idParam, 10)
 
   if (Number.isNaN(id)) {
-    return c.json({
-      error: { code: 'VALIDATION_ERROR', message: 'Invalid invite ID' },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'VALIDATION_ERROR', message: 'Invalid invite ID' },
+      },
+      400
+    )
   }
 
   const isAdmin = user.groupID !== null && user.groupID <= 1
 
   try {
     await revokeInvite(id, String(user.userID), isAdmin)
-    
+
     return c.json({
       data: { success: true, message: 'Invite revoked successfully' },
     })
   } catch (error) {
-    return c.json({
-      error: {
-        code: 'REVOKE_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to revoke invite',
+    return c.json(
+      {
+        error: {
+          code: 'REVOKE_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to revoke invite',
+        },
       },
-    }, 403)
+      403
+    )
   }
 })
 

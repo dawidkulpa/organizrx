@@ -34,6 +34,72 @@ export function authRateLimiter() {
   })
 }
 
+/**
+ * Rate limiter for public invite verification (GET /api/invites/:code/verify).
+ * 20 requests per window per IP.
+ */
+export function inviteVerifyRateLimiter() {
+  let limiter: ReturnType<typeof rateLimiter> | null = null
+
+  return async (c: any, next: any) => {
+    if (!limiter) {
+      const { security } = getConfig()
+      limiter = rateLimiter({
+        windowMs: security.rateLimitWindowMs,
+        limit: 20,
+        keyGenerator: (c) =>
+          c.req.header('X-Real-IP') ??
+          c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ??
+          'anonymous',
+        standardHeaders: 'draft-7',
+        handler: (c) => {
+          return c.json(
+            {
+              error: {
+                code: 'RATE_LIMITED',
+                message: 'Too many verification attempts. Please try again later.',
+              },
+            },
+            429
+          )
+        },
+      })
+    }
+    return limiter(c, next)
+  }
+}
+
+export function inviteRedeemRateLimiter() {
+  let limiter: ReturnType<typeof rateLimiter> | null = null
+
+  return async (c: any, next: any) => {
+    if (!limiter) {
+      const { security } = getConfig()
+      limiter = rateLimiter({
+        windowMs: security.rateLimitWindowMs,
+        limit: 5,
+        keyGenerator: (c) =>
+          c.req.header('X-Real-IP') ??
+          c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ??
+          'anonymous',
+        standardHeaders: 'draft-7',
+        handler: (c) => {
+          return c.json(
+            {
+              error: {
+                code: 'RATE_LIMITED',
+                message: 'Too many registration attempts. Please try again later.',
+              },
+            },
+            429
+          )
+        },
+      })
+    }
+    return limiter(c, next)
+  }
+}
+
 export function tabUrlCheckRateLimiter() {
   let limiter: ReturnType<typeof rateLimiter> | null = null
 
