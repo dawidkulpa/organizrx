@@ -1,5 +1,4 @@
 import { User, Lock, Eye, EyeOff, Loader2, Server } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useLogin } from './use-login'
 import { TwoFactorForm } from './TwoFactorForm'
 import { AuthProviders } from './AuthProviders'
@@ -149,18 +148,6 @@ export default function Login() {
           isLoading={isLoading}
           handleExternalLogin={handleExternalLogin}
         />
-
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Have an invite code?{' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              Register here
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   )
