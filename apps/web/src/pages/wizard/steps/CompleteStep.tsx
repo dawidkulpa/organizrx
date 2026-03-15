@@ -14,16 +14,6 @@ export function CompleteStep({ data }: CompleteStepProps) {
       <h3 className="text-xl font-semibold">Ready to Go!</h3>
       <div className="text-left bg-muted/30 rounded-md p-4 space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Database</span>
-          <span className="font-medium">
-            {data.dbDialect === 'sqlite'
-              ? 'SQLite'
-              : data.dbDialect === 'mysql'
-                ? 'MySQL'
-                : 'PostgreSQL'}
-          </span>
-        </div>
-        <div className="flex justify-between">
           <span className="text-muted-foreground">Admin User</span>
           <span className="font-medium">{data.username}</span>
         </div>

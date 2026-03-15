@@ -16,8 +16,6 @@ export interface WizardData {
   // Settings
   siteTitle: string
   baseUrl: string
-  // DB (informational)
-  dbDialect: 'sqlite' | 'mysql' | 'postgresql'
 }
 
 const initialData: WizardData = {
@@ -27,7 +25,6 @@ const initialData: WizardData = {
   email: '',
   siteTitle: 'OrganizrX',
   baseUrl: '',
-  dbDialect: 'sqlite',
 }
 
 export function useWizard() {
@@ -46,7 +43,7 @@ export function useWizard() {
   const validateStep = (s: number): boolean => {
     const errs: Partial<Record<keyof WizardData, string>> = {}
 
-    if (s === 3) {
+    if (s === 2) {
       if (!data.username || data.username.length < 3) {
         errs.username = 'Username must be at least 3 characters'
       }
@@ -61,7 +58,7 @@ export function useWizard() {
       }
     }
 
-    if (s === 4) {
+    if (s === 3) {
       if (!data.siteTitle || data.siteTitle.length < 1) {
         errs.siteTitle = 'Site title is required'
       }

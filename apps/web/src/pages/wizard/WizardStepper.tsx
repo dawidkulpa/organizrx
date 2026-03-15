@@ -1,9 +1,8 @@
 import { cn } from '../../utils'
-import { Check, Zap, Database, UserPlus, Settings, CheckCircle2 } from 'lucide-react'
+import { Check, Zap, UserPlus, Settings, CheckCircle2 } from 'lucide-react'
 
 export const STEPS = [
   { label: 'Welcome', icon: Zap },
-  { label: 'Database', icon: Database },
   { label: 'Admin', icon: UserPlus },
   { label: 'Settings', icon: Settings },
   { label: 'Finish', icon: CheckCircle2 },

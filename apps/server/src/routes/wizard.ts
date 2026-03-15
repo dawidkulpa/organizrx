@@ -49,9 +49,6 @@ const wizardCompleteSchema = z.object({
   baseUrl: z
     .union([z.literal(''), z.string().refine((value) => isValidUrl(value), 'Invalid URL')])
     .optional(),
-
-  // Database (informational — connection is already established)
-  dbDialect: z.enum(['sqlite', 'mysql', 'postgresql']).optional(),
 })
 
 // ── POST /api/wizard/complete ──────────────────────────────────

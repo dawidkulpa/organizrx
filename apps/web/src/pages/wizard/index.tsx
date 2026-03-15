@@ -2,7 +2,6 @@ import { Loader2 } from 'lucide-react'
 import { WizardStepper, TOTAL_STEPS } from './WizardStepper'
 import { useWizard } from './use-wizard'
 import { WelcomeStep } from './steps/WelcomeStep'
-import { DatabaseStep } from './steps/DatabaseStep'
 import { AdminStep } from './steps/AdminStep'
 import { SettingsStep } from './steps/SettingsStep'
 import { CompleteStep } from './steps/CompleteStep'
@@ -15,12 +14,10 @@ export default function Wizard() {
       case 1:
         return <WelcomeStep />
       case 2:
-        return <DatabaseStep data={data} update={update} />
-      case 3:
         return <AdminStep data={data} errors={errors} update={update} />
-      case 4:
+      case 3:
         return <SettingsStep data={data} errors={errors} update={update} />
-      case 5:
+      case 4:
         return <CompleteStep data={data} />
       default:
         return null
