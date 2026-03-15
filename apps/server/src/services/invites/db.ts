@@ -25,6 +25,43 @@ export interface CreateInviteOptions {
   email?: string
   type?: string
   invitedby: string
+  expiresInDays?: number | null
+  reusable?: boolean
+}
+
+export interface InviteTypeConfig {
+  reusable: boolean
+  expiresInDays: number | null
+}
+
+const DEFAULT_INVITE_TYPE_CONFIG: InviteTypeConfig = {
+  reusable: false,
+  expiresInDays: null,
+}
+
+export function parseInviteType(type: string | null): InviteTypeConfig {
+  if (!type || type === 'user') {
+    return DEFAULT_INVITE_TYPE_CONFIG
+  }
+
+  try {
+    const parsed = JSON.parse(type) as Partial<InviteTypeConfig>
+
+    const reusable = typeof parsed.reusable === 'boolean' ? parsed.reusable : false
+
+    const expiresInDays =
+      parsed.expiresInDays === null
+        ? null
+        : typeof parsed.expiresInDays === 'number' &&
+            Number.isInteger(parsed.expiresInDays) &&
+            parsed.expiresInDays >= 0
+          ? parsed.expiresInDays
+          : null
+
+    return { reusable, expiresInDays }
+  } catch {
+    return DEFAULT_INVITE_TYPE_CONFIG
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -39,11 +76,17 @@ export async function createInvite(
   const code = generateInviteCode()
   const now = new Date()
 
-  // Check if invites are enabled
-  const enabled = await getSettingBoolean('invites_enabled', false)
-  if (!enabled) {
-    throw new Error('Invites are currently disabled')
-  }
+  const typeConfigFromLegacyType = opts.type ? parseInviteType(opts.type) : null
+  const reusable = opts.reusable ?? typeConfigFromLegacyType?.reusable ?? false
+  const legacyDefaultExpiresInDays =
+    opts.expiresInDays === undefined && opts.type === 'user'
+      ? await getSettingNumber('invites_expiry_days', 7)
+      : null
+  const expiresInDays =
+    opts.expiresInDays === undefined
+      ? (typeConfigFromLegacyType?.expiresInDays ?? legacyDefaultExpiresInDays)
+      : opts.expiresInDays
+  const serializedType = JSON.stringify({ reusable, expiresInDays })
 
   // Check per-user maximum
   const maxPerUser = await getSettingNumber('invites_max_per_user', 0)
@@ -83,7 +126,7 @@ export async function createInvite(
         code,
         date: now.toISOString(),
         email: opts.email ?? null,
-        type: opts.type ?? 'user',
+        type: serializedType,
         invitedby: opts.invitedby,
         valid: 'Yes',
         username: null,
@@ -100,7 +143,7 @@ export async function createInvite(
       code,
       date: now,
       email: opts.email ?? null,
-      type: opts.type ?? 'user',
+      type: serializedType,
       invitedby: opts.invitedby,
       valid: 'Yes',
       username: null,
@@ -117,7 +160,7 @@ export async function createInvite(
         code,
         date: now,
         email: opts.email ?? null,
-        type: opts.type ?? 'user',
+        type: serializedType,
         invitedby: opts.invitedby,
         valid: 'Yes',
         username: null,

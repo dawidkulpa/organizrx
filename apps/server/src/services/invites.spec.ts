@@ -76,7 +76,6 @@ async function setupDb() {
   `)
 
   // Enable invites by default for tests
-  await setSetting('invites_enabled', 'true')
   await setSetting('invites_expiry_days', '7')
   await setSetting('invites_max_per_user', '0')
   await setSetting('invites_default_group_id', '4')
@@ -148,18 +147,6 @@ describe('invites service', () => {
       const invite = await getInviteByCode(result.code)
       expect(invite).not.toBeNull()
       expect(invite?.email).toBe('test@example.com')
-    })
-
-    it('should throw error when invites are disabled', async () => {
-      await setupDb()
-      await setSetting('invites_enabled', 'false')
-
-      await expect(
-        createInvite({
-          invitedby: '1',
-          type: 'user',
-        })
-      ).rejects.toThrow('Invites are currently disabled')
     })
 
     it('should enforce per-user maximum limit', async () => {
@@ -283,7 +270,7 @@ describe('invites service', () => {
       await setupDb()
 
       const result = await createInvite({ invitedby: '1', type: 'user' })
-      
+
       // Redeem the invite
       await redeemInvite(result.code, 'testuser', 'password123', 'test@example.com')
 
@@ -306,19 +293,6 @@ describe('invites service', () => {
 
       expect(verification.valid).toBe(false)
       expect(verification.reason).toBe('Invite code has expired')
-    })
-
-    it('should reject when invites are disabled', async () => {
-      await setupDb()
-
-      const result = await createInvite({ invitedby: '1', type: 'user' })
-      
-      await setSetting('invites_enabled', 'false')
-
-      const verification = await verifyInvite(result.code)
-
-      expect(verification.valid).toBe(false)
-      expect(verification.reason).toBe('Invites are currently disabled')
     })
   })
 
@@ -386,13 +360,13 @@ describe('invites service', () => {
       await setupDb()
 
       const result = await createInvite({ invitedby: '1', type: 'user' })
-      
+
       // Create first user
       await redeemInvite(result.code, 'existinguser', 'password123', 'user1@example.com')
 
       // Try to create another invite and use same username
       const result2 = await createInvite({ invitedby: '1', type: 'user' })
-      
+
       await expect(
         redeemInvite(result2.code, 'existinguser', 'password456', 'user2@example.com')
       ).rejects.toThrow('Username already exists')
@@ -410,7 +384,7 @@ describe('invites service', () => {
       await setupDb()
 
       const result = await createInvite({ invitedby: '1', type: 'user' })
-      
+
       // First redemption
       await redeemInvite(result.code, 'firstuser', 'password123', 'first@example.com')
 
@@ -430,7 +404,7 @@ describe('invites service', () => {
       await setupDb()
 
       const result = await createInvite({ invitedby: '2', type: 'user' })
-      
+
       await revokeInvite(result.id, '1', true)
 
       const invite = await getInviteByCode(result.code)
@@ -442,7 +416,7 @@ describe('invites service', () => {
       await setSetting('invites_allow_user_delete', 'true')
 
       const result = await createInvite({ invitedby: '2', type: 'user' })
-      
+
       await revokeInvite(result.id, '2', false)
 
       const invite = await getInviteByCode(result.code)
@@ -455,9 +429,9 @@ describe('invites service', () => {
 
       const result = await createInvite({ invitedby: '2', type: 'user' })
 
-      await expect(
-        revokeInvite(result.id, '3', false)
-      ).rejects.toThrow('You can only revoke your own invites')
+      await expect(revokeInvite(result.id, '3', false)).rejects.toThrow(
+        'You can only revoke your own invites'
+      )
     })
 
     it('should prevent non-admin from revoking when not allowed', async () => {
@@ -466,17 +440,15 @@ describe('invites service', () => {
 
       const result = await createInvite({ invitedby: '2', type: 'user' })
 
-      await expect(
-        revokeInvite(result.id, '2', false)
-      ).rejects.toThrow('You do not have permission to revoke invites')
+      await expect(revokeInvite(result.id, '2', false)).rejects.toThrow(
+        'You do not have permission to revoke invites'
+      )
     })
 
     it('should throw error when invite not found', async () => {
       await setupDb()
 
-      await expect(
-        revokeInvite(999, '1', true)
-      ).rejects.toThrow('Invite not found')
+      await expect(revokeInvite(999, '1', true)).rejects.toThrow('Invite not found')
     })
   })
 })
