@@ -256,7 +256,6 @@ describe('settings service', () => {
       expect(all.siteTitle).toBe('OrganizrX')
       expect(all.baseUrl).toBe('')
       expect(all.defaultPage).toBe('dashboard')
-      expect(all.registrationEnabled).toBe('false')
       expect(all.timezone).toBe('UTC')
       expect(all.theme).toBe('dark')
       expect(all.loginWallpaper).toBe('')

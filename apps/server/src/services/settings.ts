@@ -233,7 +233,6 @@ export async function seedDefaultSettings(): Promise<void> {
     siteTitle: 'OrganizrX',
     baseUrl: '',
     defaultPage: 'dashboard',
-    registrationEnabled: 'false',
     timezone: 'UTC',
     theme: 'dark',
     loginWallpaper: '',
