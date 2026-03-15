@@ -119,7 +119,7 @@ docker compose -f docker-compose.test-auth.yml down -v
 2. Redirect to authentik login page at `localhost:9000`
 3. Authenticate as `testuser` / `testpassword`
 4. Redirect back to OrganizrX with auth code
-5. **Verify**: Response contains `accessToken` + `user` object, `Set-Cookie` contains `organizrx_refresh`, user row exists in DB with `group_id=4`
+5. **Verify**: Response contains `{ data: { accessToken, user } }`, `Set-Cookie` contains `organizrx_refresh`, user row exists in DB with `group_id=4`
 
 **Error scenarios:**
 
@@ -128,7 +128,7 @@ docker compose -f docker-compose.test-auth.yml down -v
 - Send callback with missing `code` → verify response: `400` with `OIDC_MISSING_PARAMS`
 - Disable OIDC in settings → verify response: `403` with `OIDC_DISABLED`
 - Remove `oidc_client_id` from settings → verify response: `500` with `OIDC_NOT_CONFIGURED`
-- Use wrong client secret → verify response: `500` with `OIDC_DISCOVERY_FAILED` or `OIDC_AUTH_FAILED`
+- Use wrong client secret → verify response: `500` with `OIDC_AUTH_FAILED` (fails at token exchange, not discovery)
 
 **Group mapping:**
 
@@ -138,62 +138,64 @@ docker compose -f docker-compose.test-auth.yml down -v
 
 **Account linking:**
 
-- `POST /api/auth/oidc/link` with `{ oidcSub: "<sub>" }` while authenticated → verify response: `200` with `{ data: { success: true } }`
+- `POST /api/auth/oidc/link` with `{ oidcSub: "<sub>" }` while authenticated → verify response: `200` with `{ data: { success: true, message: 'OIDC account linked successfully' } }`
 - Attempt without authentication → verify response: `401`
 
 ### 2.2 Local Auth
 
 **POST /api/auth/login:**
 
-- Valid credentials → `200` with `accessToken` + `user` + `Set-Cookie: organizrx_refresh`
+- Valid credentials → `200` with `{ data: { accessToken, user } }` + `Set-Cookie: organizrx_refresh`
 - Wrong password → `401` with `INVALID_CREDENTIALS` + lockout counter incremented
 - 5 failed attempts → `429` with `ACCOUNT_LOCKED`
 - Disabled user (locked=1) → `403` with `ACCOUNT_DISABLED`
-- User with 2FA enabled → `200` with `{ requires_2fa: true, temp_token: "..." }` (no JWT yet)
+- User with 2FA enabled → `200` with `{ data: { requires_2fa: true, temp_token: "..." } }` (no JWT yet)
 - `rememberMe: true` → refresh cookie with extended max-age
 
 **POST /api/auth/refresh:**
 
-- Valid refresh cookie → `200` with new `accessToken` + rotated `Set-Cookie`
+- Valid refresh cookie → `200` with `{ data: { accessToken } }`, rotated `Set-Cookie`
 - Missing cookie → `401` with `MISSING_TOKEN`
 - Revoked token → `401` with `TOKEN_REVOKED`
 - Expired/invalid token → `401` with `INVALID_TOKEN`
 
 **POST /api/auth/logout:**
 
-- With valid cookie → `200` with `{ success: true }`, `Set-Cookie` clears `organizrx_refresh`, SSO cookies cleared
-- Without cookie → `200` (graceful no-op)
+- With valid cookie → `200` with `{ data: { success: true } }`, `Set-Cookie` clears `organizrx_refresh`, SSO cookies cleared
+- Without cookie → `200` with `{ data: { success: true } }` (graceful no-op)
 
 **GET /api/auth/me:**
 
-- Valid JWT → `200` with user data
+- Valid JWT → `200` with `{ data: { user } }`
 - Invalid/missing JWT → `401`
 
 ### 2.3 2FA (TOTP)
 
 **POST /api/auth/2fa/setup** (requires auth):
 
-- Returns `secret`, `qrUri`, `backupCodes`
+- Returns `{ data: { secret, qrUri, backupCodes } }`
 - If 2FA already enabled → `400` with `TWO_FACTOR_ALREADY_ENABLED`
 
 **POST /api/auth/2fa/verify-setup** (requires auth):
 
-- Valid TOTP code + secret → `200` with `{ success: true }`, 2FA now enabled
+- Valid TOTP code + secret → `200` with `{ data: { success: true } }`, 2FA now enabled
 - Invalid TOTP code → `401` with `INVALID_TOTP_CODE`
 
 **POST /api/auth/2fa/verify** (no auth required — uses temp_token):
 
-- Valid `temp_token` + `totp_code` → `200` with `accessToken` + `user` + refresh cookie
-- Valid `temp_token` + `backup_code` → `200` (same), backup code consumed
+- Valid `temp_token` + `totp_code` → `200` with `{ data: { accessToken, user } }` + refresh cookie
+- Valid `temp_token` + `backup_code` → `200` (same shape), backup code consumed
 - Invalid `temp_token` → `401` with `INVALID_TOKEN`
 - Invalid TOTP code → `401` with `INVALID_CODE`
 - Neither `totp_code` nor `backup_code` provided → `400` with `VALIDATION_ERROR`
+- User not found (deleted between temp_token issue and verify) → `404` with `USER_NOT_FOUND`
 
 **DELETE /api/auth/2fa** (requires auth):
 
-- Valid password → `200` with `{ success: true }`, 2FA disabled
+- Valid password → `200` with `{ data: { success: true } }`, 2FA disabled
 - Invalid password → `401` with `INVALID_PASSWORD`
 - 2FA not enabled → `400` with `TWO_FACTOR_NOT_ENABLED`
+- User not found → `404` with `USER_NOT_FOUND`
 
 ### 2.4 Plex OAuth
 
@@ -204,14 +206,14 @@ docker compose -f docker-compose.test-auth.yml down -v
 
 **POST /api/auth/ldap/test** (admin-only, requires auth + group 0):
 
-- Valid LDAP config → `200` with `{ success: true, message: "..." }`
+- Valid LDAP config → `200` with `{ data: { success: true, message: "..." } }`
 - Invalid config → `400` with `LDAP_CONNECTION_FAILED`
 - Non-admin user → `403`
 - Unauthenticated → `401`
 
 **POST /api/auth/ldap/login:**
 
-- Valid LDAP credentials → `200` with `accessToken` + `user` + refresh cookie
+- Valid LDAP credentials → `200` with `{ data: { accessToken, user } }` + refresh cookie
 - Invalid credentials → `401` with `INVALID_CREDENTIALS`, lockout counter incremented
 - LDAP disabled → `400` with `LDAP_DISABLED`
 - Lockout → `429` with `ACCOUNT_LOCKED`
@@ -221,9 +223,9 @@ docker compose -f docker-compose.test-auth.yml down -v
 
 The middleware does **NOT reject** requests — it either attaches a user to the context (proxy auth succeeded) or passes through to normal auth middleware.
 
-- Request with `X-Forwarded-User` header from whitelisted IP → user attached to context, normal auth skipped
-- Request with header from non-whitelisted IP → passes through to normal auth (no rejection)
-- Request without header → passes through to normal auth (no rejection)
+- Request with `X-Forwarded-User` header from whitelisted IP → user attached to context via `c.set('user')`, subsequent middleware sees authenticated user
+- Request with header from non-whitelisted IP → passes through without setting user, subsequent auth middleware handles normally
+- Request without header → passes through without setting user, subsequent auth middleware handles normally
 - DB not ready (first-run) → passes through silently
 
 ### 2.7 SSO Cookies
@@ -245,8 +247,7 @@ The middleware does **NOT reject** requests — it either attaches a user to the
 
 **GET /api/sso/cookies** (requires auth):
 
-- Returns SSO cookies for the authenticated user's downstream services
-- Includes cookie names, domains, paths, and Set-Cookie headers
+- Returns SSO cookies for the authenticated user's downstream services as `{ data: { cookies, headers } }` where `cookies` is an array of `{ name, domain, path, maxAge }` objects and `headers` is an array of serialized `Set-Cookie` strings (not actual response headers)
 
 ## Phase 3: Automated Route-Level Tests
 
@@ -267,28 +268,28 @@ Mock the `openid-client` module to avoid real OIDC discovery.
 
 **GET /oidc (initiate):**
 
-- OIDC enabled + configured → `200` with `{ redirectUrl, state }`, state stored in memory
+- OIDC enabled + configured → `200` with `{ data: { redirectUrl, state } }`, state stored in memory
 - OIDC disabled → `403` with `OIDC_DISABLED`
 - Missing providerUrl or clientId → `500` with `OIDC_NOT_CONFIGURED`
 - Discovery fails (mock throws) → `500` with `OIDC_DISCOVERY_FAILED`
 
 **GET /oidc/callback:**
 
-- Valid code + state + mocked token exchange → `200` with `{ accessToken, user }`, `Set-Cookie` with refresh token, user row created in DB
+- Valid code + state + mocked token exchange → `200` with `{ data: { accessToken, user } }`, `Set-Cookie` with refresh token, user row created in DB
 - Provider error query param → `400` with `OIDC_PROVIDER_ERROR`
 - Missing code or state → `400` with `OIDC_MISSING_PARAMS`
 - Invalid/expired state → `400` with `OIDC_INVALID_STATE`
 - State consumed on first use (one-shot) → second callback with same state returns `OIDC_INVALID_STATE`
 - No `sub` in claims → `400` with `OIDC_NO_SUBJECT`
 - Auto-create disabled + user not found → `403` with `OIDC_USER_DENIED`
-- Token exchange fails (mock throws) → `500` with `OIDC_AUTH_FAILED`
+- Token exchange fails (mock throws) → `500` with `OIDC_AUTH_FAILED` (also covers wrong client secret scenario)
 - OIDC disabled on callback → `403` with `OIDC_DISABLED`
 - Group mapping: claims with `groups: ["organizrx-admins"]` → user created with `group_id=0`
 - Group mapping: no matching groups → user created with `defaultGroupId`
 
 **POST /oidc/link:**
 
-- Authenticated + valid `{ oidcSub }` → `200` with `{ success: true }`
+- Authenticated + valid `{ oidcSub }` → `200` with `{ data: { success: true, message: 'OIDC account linked successfully' } }`
 - Missing/invalid oidcSub → `400` with `VALIDATION_ERROR`
 - Unauthenticated → `401`
 - Linking fails (mock throws) → `500` with `OIDC_LINK_FAILED`
@@ -297,18 +298,18 @@ Mock the `openid-client` module to avoid real OIDC discovery.
 
 **POST /auth/login:**
 
-- Valid credentials → `200` with `accessToken` + `user`, `Set-Cookie` with refresh token, SSO cookies appended
+- Valid credentials → `200` with `{ data: { accessToken, user } }`, `Set-Cookie` with refresh token, SSO cookies appended
 - Wrong password → `401` with `INVALID_CREDENTIALS`
 - Non-existent user → `401` with `INVALID_CREDENTIALS`
 - Disabled user (locked=1) → `403` with `ACCOUNT_DISABLED`
 - 5 failed attempts → `429` with `ACCOUNT_LOCKED`
-- User with 2FA enabled → `200` with `{ requires_2fa: true, temp_token }` (no accessToken)
+- User with 2FA enabled → `200` with `{ data: { requires_2fa: true, temp_token } }` (no accessToken)
 - `rememberMe: true` → extended refresh cookie max-age
 - Invalid body (schema fail) → `400` with `VALIDATION_ERROR`
 
 **POST /auth/refresh:**
 
-- Valid refresh cookie → `200` with new `accessToken`, rotated cookie
+- Valid refresh cookie → `200` with `{ data: { accessToken } }`, rotated cookie
 - Missing cookie → `401` with `MISSING_TOKEN`
 - Revoked token → `401` with `TOKEN_REVOKED`
 - User deleted after token issued → `401` with `USER_NOT_FOUND`
@@ -316,12 +317,12 @@ Mock the `openid-client` module to avoid real OIDC discovery.
 
 **POST /auth/logout:**
 
-- With cookie → `200`, cookie cleared, SSO cookies cleared
-- Without cookie → `200` (graceful)
+- With cookie → `200` with `{ data: { success: true } }`, cookie cleared, SSO cookies cleared
+- Without cookie → `200` with `{ data: { success: true } }` (graceful)
 
 **GET /auth/me:**
 
-- Valid JWT → `200` with user
+- Valid JWT → `200` with `{ data: { user } }`
 - Missing JWT → `401`
 - User deleted → `401` with `USER_NOT_FOUND`
 
@@ -329,32 +330,34 @@ Mock the `openid-client` module to avoid real OIDC discovery.
 
 **POST /2fa/setup:**
 
-- Authenticated, no 2FA → `200` with `{ secret, qrUri, backupCodes }`
+- Authenticated, no 2FA → `200` with `{ data: { secret, qrUri, backupCodes } }`
 - 2FA already enabled → `400` with `TWO_FACTOR_ALREADY_ENABLED`
 - Unauthenticated → `401`
 - User not found → `404` with `USER_NOT_FOUND`
 
 **POST /2fa/verify-setup:**
 
-- Valid TOTP code → `200` with `{ success: true }`
+- Valid TOTP code → `200` with `{ data: { success: true } }`
 - Invalid TOTP code → `401` with `INVALID_TOTP_CODE`
 - Unauthenticated → `401`
 - Validation error → `400`
 
 **POST /2fa/verify:**
 
-- Valid temp_token + totp_code → `200` with `accessToken` + `user` + refresh cookie
-- Valid temp_token + backup_code → `200`, backup code consumed (fewer remaining)
+- Valid temp_token + totp_code → `200` with `{ data: { accessToken, user } }` + refresh cookie
+- Valid temp_token + backup_code → `200` (same shape), backup code consumed (fewer remaining)
 - Invalid temp_token → `401` with `INVALID_TOKEN`
 - Invalid totp_code → `401` with `INVALID_CODE`
 - Neither code provided → `400` with `VALIDATION_ERROR`
 - 2FA not enabled for user → `400` with `TWO_FACTOR_NOT_ENABLED`
+- User not found (deleted between temp_token and verify) → `404` with `USER_NOT_FOUND`
 
 **DELETE /2fa:**
 
-- Valid password → `200` with `{ success: true }`
+- Valid password → `200` with `{ data: { success: true } }`
 - Invalid password → `401` with `INVALID_PASSWORD`
 - 2FA not enabled → `400` with `TWO_FACTOR_NOT_ENABLED`
+- User not found → `404` with `USER_NOT_FOUND`
 - Unauthenticated → `401`
 
 ### 3.4 LDAP Route Tests (`apps/server/src/routes/auth-ldap.spec.ts`)
@@ -363,7 +366,7 @@ Mock `ldapts` module.
 
 **POST /ldap/test:**
 
-- Admin + valid config → `200` with `{ success: true }`
+- Admin + valid config → `200` with `{ data: { success: true, message } }`
 - Invalid config → `400` with `LDAP_CONNECTION_FAILED`
 - Non-admin (group > 0) → `403`
 - Unauthenticated → `401`
@@ -371,7 +374,7 @@ Mock `ldapts` module.
 
 **POST /ldap/login:**
 
-- LDAP enabled + valid credentials → `200` with `accessToken` + `user` + refresh cookie
+- LDAP enabled + valid credentials → `200` with `{ data: { accessToken, user } }` + refresh cookie
 - Invalid credentials → `401` with `INVALID_CREDENTIALS`
 - LDAP disabled → `400` with `LDAP_DISABLED`
 - Lockout → `429` with `ACCOUNT_LOCKED`
@@ -390,19 +393,19 @@ Mock `ldapts` module.
 
 **GET /sso/services:**
 
-- Admin → `200` with services list
+- Admin → `200` with `{ data: { services } }` list
 - Non-admin → `403`
 - Unauthenticated → `401`
 
 **GET /sso/config:**
 
-- Admin → `200` with config array
+- Admin → `200` with `{ data: { config } }` array
 - Non-admin → `403`
 - Unauthenticated → `401`
 
 **PUT /sso/config:**
 
-- Admin + valid body → `200` with updated service config
+- Admin + valid body → `200` with `{ data: { service } }` (updated service config)
 - Invalid service name → `400` with `INVALID_SERVICE`
 - Validation error → `400`
 - Non-admin → `403`
@@ -410,7 +413,7 @@ Mock `ldapts` module.
 
 **GET /sso/cookies:**
 
-- Authenticated → `200` with cookies + Set-Cookie headers
+- Authenticated → `200` with `{ data: { cookies, headers } }` where `cookies` is `[{ name, domain, path, maxAge }]` and `headers` is serialized `Set-Cookie` strings
 - Unauthenticated → `401`
 
 ## Success Criteria
