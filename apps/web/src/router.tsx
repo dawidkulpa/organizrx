@@ -120,7 +120,7 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
         path: 'settings',
         element: <Settings />,
         children: [
-          { index: true, element: <Navigate to="general" replace /> },
+          { index: true, element: <Navigate to="tabs" replace /> },
           { path: 'general', element: <SettingsGeneral /> },
           { path: 'appearance', element: <SettingsAppearance /> },
           { path: 'authentication', element: <SettingsAuthentication /> },
