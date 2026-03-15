@@ -87,7 +87,16 @@ export async function discoverOidcProvider(
   clientId: string,
   clientSecret: string
 ): Promise<client.Configuration> {
-  const config = await client.discovery(new URL(issuerUrl), clientId, clientSecret)
+  const issuer = new URL(issuerUrl)
+  const execute = issuer.protocol === 'http:' ? [client.allowInsecureRequests] : undefined
+
+  const config = await client.discovery(
+    issuer,
+    clientId,
+    clientSecret,
+    undefined,
+    execute ? { execute } : undefined
+  )
   return config
 }
 

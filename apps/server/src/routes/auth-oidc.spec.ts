@@ -182,7 +182,7 @@ async function setupDb() {
 async function createApp(): Promise<Hono> {
   const { default: oidcAuthRoutes } = await import('./auth-oidc')
   const app = new Hono()
-  app.route('/api/auth/oidc', oidcAuthRoutes)
+  app.route('/api/auth', oidcAuthRoutes)
   return app
 }
 

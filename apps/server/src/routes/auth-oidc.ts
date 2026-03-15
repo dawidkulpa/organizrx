@@ -14,11 +14,7 @@ import {
   retrieveAndDeleteOidcState,
   getGroupNameById,
 } from '../services/auth-oidc'
-import {
-  createAccessToken,
-  createRefreshToken,
-  storeRefreshToken,
-} from '../services/auth'
+import { createAccessToken, createRefreshToken, storeRefreshToken } from '../services/auth'
 import { authMiddleware } from '../middleware/auth'
 import { getConfig } from '../config'
 import { buildRefreshCookie } from '../services/refresh-cookie'
@@ -33,33 +29,38 @@ const oidc = new Hono()
 // GET /oidc — Initiate OIDC authorization flow
 // ---------------------------------------------------------------------------
 
-oidc.get('/', async (c) => {
+oidc.get('/oidc', async (c) => {
   const oidcConfig = await getOidcConfig()
 
   if (!oidcConfig.enabled) {
-    return c.json({
-      error: { code: 'OIDC_DISABLED', message: 'OIDC authentication is not enabled' },
-    }, 403)
+    return c.json(
+      {
+        error: { code: 'OIDC_DISABLED', message: 'OIDC authentication is not enabled' },
+      },
+      403
+    )
   }
 
   if (!oidcConfig.providerUrl || !oidcConfig.clientId) {
-    return c.json({
-      error: { code: 'OIDC_NOT_CONFIGURED', message: 'OIDC provider URL or client ID not configured' },
-    }, 500)
+    return c.json(
+      {
+        error: {
+          code: 'OIDC_NOT_CONFIGURED',
+          message: 'OIDC provider URL or client ID not configured',
+        },
+      },
+      500
+    )
   }
 
   try {
     const providerConfig = await discoverOidcProvider(
       oidcConfig.providerUrl,
       oidcConfig.clientId,
-      oidcConfig.clientSecret,
+      oidcConfig.clientSecret
     )
 
-    const result = await buildOidcAuthUrl(
-      providerConfig,
-      oidcConfig.redirectUri,
-      oidcConfig.scopes,
-    )
+    const result = await buildOidcAuthUrl(providerConfig, oidcConfig.redirectUri, oidcConfig.scopes)
 
     // Store PKCE state for callback verification
     storeOidcState(result.state, {
@@ -77,9 +78,12 @@ oidc.get('/', async (c) => {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to initiate OIDC flow'
-    return c.json({
-      error: { code: 'OIDC_DISCOVERY_FAILED', message },
-    }, 500)
+    return c.json(
+      {
+        error: { code: 'OIDC_DISCOVERY_FAILED', message },
+      },
+      500
+    )
   }
 })
 
@@ -87,46 +91,58 @@ oidc.get('/', async (c) => {
 // GET /oidc/callback — Handle OIDC provider callback
 // ---------------------------------------------------------------------------
 
-oidc.get('/callback', async (c) => {
+oidc.get('/oidc/callback', async (c) => {
   const oidcConfig = await getOidcConfig()
 
   if (!oidcConfig.enabled) {
-    return c.json({
-      error: { code: 'OIDC_DISABLED', message: 'OIDC authentication is not enabled' },
-    }, 403)
+    return c.json(
+      {
+        error: { code: 'OIDC_DISABLED', message: 'OIDC authentication is not enabled' },
+      },
+      403
+    )
   }
 
   // Check for error from provider
   const errorParam = c.req.query('error')
   if (errorParam) {
     const errorDescription = c.req.query('error_description') ?? 'Unknown error from OIDC provider'
-    return c.json({
-      error: { code: 'OIDC_PROVIDER_ERROR', message: errorDescription },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'OIDC_PROVIDER_ERROR', message: errorDescription },
+      },
+      400
+    )
   }
 
   const code = c.req.query('code')
   const state = c.req.query('state')
 
   if (!code || !state) {
-    return c.json({
-      error: { code: 'OIDC_MISSING_PARAMS', message: 'Missing code or state parameter' },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'OIDC_MISSING_PARAMS', message: 'Missing code or state parameter' },
+      },
+      400
+    )
   }
 
   // Retrieve and validate state
   const storedState = retrieveAndDeleteOidcState(state)
   if (!storedState) {
-    return c.json({
-      error: { code: 'OIDC_INVALID_STATE', message: 'Invalid or expired state parameter' },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'OIDC_INVALID_STATE', message: 'Invalid or expired state parameter' },
+      },
+      400
+    )
   }
 
   try {
     const providerConfig = await discoverOidcProvider(
       oidcConfig.providerUrl,
       oidcConfig.clientId,
-      oidcConfig.clientSecret,
+      oidcConfig.clientSecret
     )
 
     // Build the full callback URL for token exchange
@@ -137,16 +153,19 @@ oidc.get('/callback', async (c) => {
       callbackUrl,
       storedState.codeVerifier,
       storedState.state,
-      storedState.nonce,
+      storedState.nonce
     )
 
     // Extract user info from ID token claims
     const oidcUserInfo = extractOidcUserInfo(tokenResult.claims, oidcConfig.groupClaim)
 
     if (!oidcUserInfo.sub) {
-      return c.json({
-        error: { code: 'OIDC_NO_SUBJECT', message: 'No subject identifier in OIDC claims' },
-      }, 400)
+      return c.json(
+        {
+          error: { code: 'OIDC_NO_SUBJECT', message: 'No subject identifier in OIDC claims' },
+        },
+        400
+      )
     }
 
     // Map OIDC groups to OrganizrX group_id
@@ -154,7 +173,7 @@ oidc.get('/callback', async (c) => {
       tokenResult.claims,
       oidcConfig.groupClaim,
       oidcConfig.groupMapping,
-      oidcConfig.defaultGroupId,
+      oidcConfig.defaultGroupId
     )
 
     const groupName = getGroupNameById(groupId)
@@ -164,13 +183,19 @@ oidc.get('/callback', async (c) => {
       oidcUserInfo,
       groupId,
       groupName,
-      oidcConfig.autoCreateUser,
+      oidcConfig.autoCreateUser
     )
 
     if (!user) {
-      return c.json({
-        error: { code: 'OIDC_USER_DENIED', message: 'User not found and auto-creation is disabled' },
-      }, 403)
+      return c.json(
+        {
+          error: {
+            code: 'OIDC_USER_DENIED',
+            message: 'User not found and auto-creation is disabled',
+          },
+        },
+        403
+      )
     }
 
     // Issue JWT tokens
@@ -203,9 +228,12 @@ oidc.get('/callback', async (c) => {
     return response
   } catch (err) {
     const message = err instanceof Error ? err.message : 'OIDC authentication failed'
-    return c.json({
-      error: { code: 'OIDC_AUTH_FAILED', message },
-    }, 500)
+    return c.json(
+      {
+        error: { code: 'OIDC_AUTH_FAILED', message },
+      },
+      500
+    )
   }
 })
 
@@ -213,14 +241,17 @@ oidc.get('/callback', async (c) => {
 // POST /oidc/link — Link authenticated user to OIDC identity
 // ---------------------------------------------------------------------------
 
-oidc.post('/link', authMiddleware(), async (c) => {
+oidc.post('/oidc/link', authMiddleware(), async (c) => {
   const body = await c.req.json()
   const parsed = oidcLinkSchema.safeParse(body)
 
   if (!parsed.success) {
-    return c.json({
-      error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
-    }, 400)
+    return c.json(
+      {
+        error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message },
+      },
+      400
+    )
   }
 
   const tokenUser = c.get('user')
@@ -233,9 +264,12 @@ oidc.post('/link', authMiddleware(), async (c) => {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to link OIDC account'
-    return c.json({
-      error: { code: 'OIDC_LINK_FAILED', message },
-    }, 500)
+    return c.json(
+      {
+        error: { code: 'OIDC_LINK_FAILED', message },
+      },
+      500
+    )
   }
 })
 

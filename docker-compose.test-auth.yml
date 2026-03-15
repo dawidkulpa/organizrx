@@ -89,6 +89,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3001:3001'
+    user: root
     environment:
       PORT: 3001
       HOST: 0.0.0.0
