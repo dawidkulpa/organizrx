@@ -3,13 +3,11 @@ import { SettingsForm } from '../../components/SettingsForm'
 
 const INPUT_CLASS =
   'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
-const CHECKBOX_CLASS = 'h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary'
 
 const generalSchema = z.object({
   siteTitle: z.string().min(1, 'Site title is required'),
   baseUrl: z.union([z.literal(''), z.string().url('Must be a valid URL')]),
   defaultPage: z.enum(['dashboard', 'homepage']),
-  registrationEnabled: z.boolean(),
   timezone: z.string().min(1, 'Timezone is required'),
 })
 
@@ -114,27 +112,6 @@ export default function GeneralSettings() {
                 {form.formState.errors.timezone.message}
               </p>
             )}
-          </div>
-
-          {/* Registration Enabled */}
-          <div className="flex items-center space-x-2 rounded-md border p-4">
-            <input
-              id="registrationEnabled"
-              type="checkbox"
-              {...form.register('registrationEnabled')}
-              className={CHECKBOX_CLASS}
-            />
-            <div className="flex-1 space-y-1">
-              <label
-                htmlFor="registrationEnabled"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Enable Registration
-              </label>
-              <p className="text-[0.8rem] text-muted-foreground">
-                Allow new users to create accounts.
-              </p>
-            </div>
           </div>
         </div>
       )}
