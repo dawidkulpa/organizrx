@@ -103,6 +103,12 @@ client.interceptors.response.use(
 
 export default client
 
+export interface CreateInviteRequest {
+  email?: string
+  expiresInDays?: number | null
+  reusable?: boolean
+}
+
 // ── Typed API namespace ──────────────────────────────────────────
 export const api = {
   auth: {
@@ -148,8 +154,11 @@ export const api = {
   },
   invites: {
     getAll: () => client.get('/invites'),
-    create: (data: Record<string, unknown>) => client.post('/invites', data),
+    create: (data: CreateInviteRequest) => client.post('/invites', data),
     delete: (id: number) => client.delete(`/invites/${id}`),
+    verify: (code: string) => client.get(`/invites/${code}/verify`),
+    redeem: (data: { code: string; username: string; password: string; email: string }) =>
+      client.post('/invites/redeem', data),
   },
   plugins: {
     getAll: () => client.get('/plugins'),
