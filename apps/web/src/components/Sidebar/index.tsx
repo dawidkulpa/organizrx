@@ -85,9 +85,9 @@ export default function Sidebar() {
           {sidebarOpen && (
             <div className="ml-3 overflow-hidden flex-1">
               <p className="text-sm font-medium truncate">{user?.username || 'User'}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {user?.email || 'user@example.com'}
-              </p>
+              {user?.email && (
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              )}
             </div>
           )}
 

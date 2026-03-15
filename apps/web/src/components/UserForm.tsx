@@ -110,7 +110,7 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
                 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
                 errors.email && 'border-destructive focus-visible:ring-destructive'
               )}
-              placeholder="user@example.com"
+              placeholder="email@example.com"
             />
             {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
@@ -152,13 +152,13 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
               onClick={() => setValue('locked', !isLocked)}
               className={cn(
                 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                isLocked ? 'bg-destructive' : 'bg-input'
+                isLocked ? 'bg-input' : 'bg-green-500'
               )}
             >
               <span
                 className={cn(
                   'inline-block h-4 w-4 transform rounded-full bg-background transition-transform',
-                  isLocked ? 'translate-x-6' : 'translate-x-1'
+                  isLocked ? 'translate-x-1' : 'translate-x-6'
                 )}
               />
             </button>
