@@ -242,6 +242,10 @@ export async function seedDefaultSettings(): Promise<void> {
     sidebarColor: '#1a1a1a',
     sidebarTextColor: '#ffffff',
     accentColor: '#4caf50',
+    // Homepage defaults
+    layout: 'cards',
+    itemsPerPage: '12',
+    defaultSort: 'name',
   }
 
   const existing = await getAllSettings()
