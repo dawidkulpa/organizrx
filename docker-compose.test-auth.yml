@@ -1,0 +1,127 @@
+# Standalone auth testing stack for OrganizrX.
+# Do NOT merge this into docker-compose.yml or docker-compose.test.yml.
+# Usage:
+#   docker compose -f docker-compose.test-auth.yml --env-file .env.test-auth up --build
+#   docker compose -f docker-compose.test-auth.yml --env-file .env.test-auth down -v
+
+services:
+  authentik-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: authentik
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: authentik-test-password
+    volumes:
+      - authentik-db-data:/var/lib/postgresql/data
+    networks:
+      - test-auth-net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U authentik -d authentik']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  authentik-redis:
+    image: redis:7-alpine
+    networks:
+      - test-auth-net
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  authentik-server:
+    image: ghcr.io/goauthentik/server:latest
+    command: server
+    environment:
+      AUTHENTIK_SECRET_KEY: test-secret-key-not-for-production
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik-test-password
+      AUTHENTIK_BOOTSTRAP_PASSWORD: akadmin-test-password
+      AUTHENTIK_BOOTSTRAP_EMAIL: admin@test.local
+    ports:
+      - '9000:9000'
+    volumes:
+      - ./tests/auth/authentik-blueprint.yaml:/blueprints/custom/organizrx-test.yaml:ro
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+    networks:
+      - test-auth-net
+    healthcheck:
+      test: ['CMD', 'ak', 'healthcheck']
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: test-secret-key-not-for-production
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik-test-password
+      AUTHENTIK_BOOTSTRAP_PASSWORD: akadmin-test-password
+      AUTHENTIK_BOOTSTRAP_EMAIL: admin@test.local
+    volumes:
+      - ./tests/auth/authentik-blueprint.yaml:/blueprints/custom/organizrx-test.yaml:ro
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+    networks:
+      - test-auth-net
+
+  organizrx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      DATABASE_DIALECT: sqlite
+      DATABASE_URL: /app/data/organizr.db
+      JWT_SECRET: test-jwt-secret-min-32-chars-long
+      BCRYPT_ROUNDS: 4
+      LOG_LEVEL: debug
+    volumes:
+      - organizrx-data:/app/data
+    depends_on:
+      authentik-server:
+        condition: service_healthy
+    networks:
+      - test-auth-net
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'bun',
+          '--eval',
+          "fetch('http://localhost:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  authentik-db-data:
+  organizrx-data:
+
+networks:
+  test-auth-net:
+    driver: bridge

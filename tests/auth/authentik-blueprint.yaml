@@ -1,0 +1,108 @@
+# User passwords must be set via the authentik admin UI after boot; this blueprint does not set them.
+version: 1
+metadata:
+  name: OrganizrX Test Setup
+
+entries:
+  - model: authentik_core.group
+    id: organizrx-admins-group
+    identifiers:
+      name: organizrx-admins
+    attrs:
+      name: organizrx-admins
+
+  - model: authentik_core.group
+    id: organizrx-users-group
+    identifiers:
+      name: organizrx-users
+    attrs:
+      name: organizrx-users
+
+  - model: authentik_core.user
+    id: organizrx-test-admin
+    identifiers:
+      username: testadmin
+    attrs:
+      username: testadmin
+      name: Test Admin
+      email: testadmin@test.local
+      is_active: true
+      groups:
+        # yaml-language-server-disable
+        - !KeyOf organizrx-admins-group
+        # yaml-language-server-disable
+        - !KeyOf organizrx-users-group
+
+  - model: authentik_core.user
+    id: organizrx-test-user
+    identifiers:
+      username: testuser
+    attrs:
+      username: testuser
+      name: Test User
+      email: testuser@test.local
+      is_active: true
+      groups:
+        # yaml-language-server-disable
+        - !KeyOf organizrx-users-group
+
+  - model: authentik_crypto.certificatekeypair
+    id: organizrx-test-signing-key
+    state: must_created
+    identifiers:
+      name: organizrx-test-signing-key
+    attrs:
+      name: organizrx-test-signing-key
+      # yaml-language-server-disable
+      certificate_data: ''
+      key_data: ''
+
+  - model: authentik_providers_oauth2.scopemapping
+    id: organizrx-groups-scope
+    identifiers:
+      managed: goauthentik.io/providers/oauth2/scope-organizrx-groups
+    attrs:
+      name: OrganizrX Groups
+      scope_name: groups
+      expression: |
+        return [group.name for group in request.user.ak_groups.all()]
+
+  - model: authentik_providers_oauth2.oauth2provider
+    id: organizrx-oidc-provider
+    identifiers:
+      name: organizrx-test-provider
+    attrs:
+      name: organizrx-test-provider
+      authorization_flow:
+        # yaml-language-server-disable
+        !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      client_type: confidential
+      client_id: organizrx-test
+      client_secret: organizrx-test-secret
+      redirect_uris:
+        - url: http://localhost:3001/api/auth/oidc/callback
+          matching_mode: strict
+      sub_mode: hashed_user_id
+      include_claims_in_id_token: true
+      issuer_mode: per_provider
+      # yaml-language-server-disable
+      signing_key: !KeyOf organizrx-test-signing-key
+      property_mappings:
+        # yaml-language-server-disable
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
+        # yaml-language-server-disable
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        # yaml-language-server-disable
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
+        # yaml-language-server-disable
+        - !KeyOf organizrx-groups-scope
+
+  - model: authentik_core.application
+    identifiers:
+      slug: organizrx-test
+    attrs:
+      name: organizrx-test
+      slug: organizrx-test
+      # yaml-language-server-disable
+      provider: !KeyOf organizrx-oidc-provider
+      meta_launch_url: http://localhost:3001
