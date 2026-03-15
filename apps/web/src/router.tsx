@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
 import Login from './pages/login'
+import Register from './pages/register'
 import Dashboard from './pages/Dashboard'
 import Tabs from './pages/Tabs'
 import Users from './pages/Users'
@@ -78,6 +79,14 @@ export const router: RouterProviderProps['router'] = createBrowserRouter([
     element: (
       <PublicRoute>
         <Login />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: '/register',
+    element: (
+      <PublicRoute>
+        <Register />
       </PublicRoute>
     ),
   },
