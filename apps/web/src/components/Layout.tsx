@@ -1,12 +1,14 @@
 import { Outlet, useMatch } from 'react-router-dom'
 import { useAuthStore, useUIStore } from '../store'
 import { Bell } from 'lucide-react'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { useAutoRefresh } from '../hooks/useAuth'
 import { useTheme } from '../hooks/useTheme'
 import { useIdleTimeout } from '../hooks/useIdleTimeout'
 import { api } from '../api/client'
+import { queryKeys } from '../api/query-keys'
 import LockScreen from './LockScreen'
 import Sidebar from './Sidebar'
 import TabViewport from './TabViewport'
@@ -23,32 +25,20 @@ export default function Layout() {
   // ── Update checker (admin only) ─────────────────────────────────
   const user = useAuthStore((s) => s.user)
   const isAdmin = user?.group_id === 0
-  const [updateAvailable, setUpdateAvailable] = useState(false)
-  const [latestVersion, setLatestVersion] = useState('')
-  const [releaseUrl, setReleaseUrl] = useState('')
   const [bellOpen, setBellOpen] = useState(false)
   const bellRef = useRef<HTMLDivElement>(null)
 
-  const checkUpdate = useCallback(async () => {
-    if (!isAdmin) return
-    try {
-      const res = await api.update.check()
-      const data = res.data?.data
-      if (data) {
-        setUpdateAvailable(data.updateAvailable)
-        setLatestVersion(data.latestVersion)
-        setReleaseUrl(data.releaseUrl)
-      }
-    } catch {
-      // Silently ignore update check errors
-    }
-  }, [isAdmin])
+  const updateQuery = useQuery({
+    queryKey: queryKeys.update.check,
+    queryFn: () => api.update.check(),
+    enabled: isAdmin,
+    refetchInterval: 60 * 60 * 1000,
+    select: (res) => res.data?.data,
+  })
 
-  useEffect(() => {
-    checkUpdate()
-    const interval = setInterval(checkUpdate, 60 * 60 * 1000) // 1 hour
-    return () => clearInterval(interval)
-  }, [checkUpdate])
+  const updateAvailable = updateQuery.data?.updateAvailable ?? false
+  const latestVersion = updateQuery.data?.latestVersion ?? ''
+  const releaseUrl = updateQuery.data?.releaseUrl ?? ''
 
   // Close bell dropdown on outside click
   useEffect(() => {
