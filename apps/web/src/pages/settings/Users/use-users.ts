@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '../../../api/client'
+import { queryKeys } from '../../../api/query-keys'
 
 export interface User {
   id: number
@@ -22,9 +24,8 @@ export interface Group {
 }
 
 export function useUsers() {
-  const [users, setUsers] = useState<User[]>([])
-  const [groups, setGroups] = useState<Group[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+
   const [searchQuery, setSearchQuery] = useState('')
   const [groupFilter, setGroupFilter] = useState<number | 'all'>('all')
   const [selectedUsers, setSelectedUsers] = useState<number[]>([])
@@ -38,26 +39,42 @@ export function useUsers() {
   const [isBulkGroupOpen, setIsBulkGroupOpen] = useState(false)
   const [bulkGroupId, setBulkGroupId] = useState<number | ''>('')
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true)
-      const [usersRes, groupsRes] = await Promise.all([api.users.getAll(), api.groups.getAll()])
-      const userData = usersRes.data.data
-      setUsers(Array.isArray(userData) ? userData : (userData as { users: User[] }).users || [])
-      const groupData = groupsRes.data.data
-      setGroups(
-        Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || []
-      )
-    } catch (error) {
-      toast.error('Failed to load data')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const usersQuery = useQuery({
+    queryKey: queryKeys.users.all,
+    queryFn: async () => {
+      const res = await api.users.getAll()
+      const userData = res.data.data
+      return Array.isArray(userData) ? userData : (userData as { users: User[] }).users || []
+    },
+  })
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  const groupsQuery = useQuery({
+    queryKey: queryKeys.groups.all,
+    queryFn: async () => {
+      const res = await api.groups.getAll()
+      const groupData = res.data.data
+      return Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || []
+    },
+  })
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: number) => api.users.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
+    },
+  })
+
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) =>
+      api.users.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
+    },
+  })
+
+  const users = usersQuery.data || []
+  const groups = groupsQuery.data || []
+  const loading = usersQuery.isLoading || groupsQuery.isLoading
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -91,9 +108,8 @@ export function useUsers() {
     if (!confirm(`Are you sure you want to delete ${selectedUsers.length} users?`)) return
 
     try {
-      await Promise.all(selectedUsers.map((id) => api.users.delete(id)))
+      await Promise.all(selectedUsers.map((id) => deleteUserMutation.mutateAsync(id)))
       toast.success('Users deleted')
-      fetchData()
       setSelectedUsers([])
     } catch (error) {
       toast.error('Failed to delete some users')
@@ -102,9 +118,12 @@ export function useUsers() {
 
   const handleBulkLock = async (locked: boolean) => {
     try {
-      await Promise.all(selectedUsers.map((id) => api.users.update(id, { locked: locked ? 1 : 0 })))
+      await Promise.all(
+        selectedUsers.map((id) =>
+          updateUserMutation.mutateAsync({ id, data: { locked: locked ? 1 : 0 } })
+        )
+      )
       toast.success(locked ? 'Users locked' : 'Users unlocked')
-      fetchData()
       setSelectedUsers([])
     } catch (error) {
       toast.error('Failed to update users')
@@ -114,9 +133,12 @@ export function useUsers() {
   const handleBulkGroupChange = async () => {
     if (bulkGroupId === '') return
     try {
-      await Promise.all(selectedUsers.map((id) => api.users.update(id, { group_id: bulkGroupId })))
+      await Promise.all(
+        selectedUsers.map((id) =>
+          updateUserMutation.mutateAsync({ id, data: { group_id: bulkGroupId } })
+        )
+      )
       toast.success('Group updated for selected users')
-      fetchData()
       setSelectedUsers([])
       setIsBulkGroupOpen(false)
       setBulkGroupId('')
@@ -133,9 +155,8 @@ export function useUsers() {
     )
       return
     try {
-      await api.users.delete(user.id)
+      await deleteUserMutation.mutateAsync(user.id)
       toast.success('User deleted')
-      fetchData()
     } catch (error) {
       toast.error('Failed to delete user')
     }
@@ -148,6 +169,10 @@ export function useUsers() {
 
   const getGroupName = (groupId: number) => {
     return groups.find((g) => g.group_id === groupId)?.name || 'Unknown'
+  }
+
+  const fetchData = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
   }
 
   return {
