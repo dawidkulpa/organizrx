@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { DropResult } from '@hello-pangea/dnd'
@@ -44,7 +44,7 @@ export function useTabs() {
   const queryClient = useQueryClient()
   const tabsQuery = useQuery({ queryKey: queryKeys.tabs.all, queryFn: () => api.tabs.getAll() })
   const categoriesQuery = useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories'] as const,
     queryFn: () => api.categories.getAll(),
   })
   const groupsQuery = useQuery({
@@ -55,9 +55,9 @@ export function useTabs() {
   const tabs = (tabsQuery.data?.data?.data as Tab[] | undefined) ?? []
   const categories = (categoriesQuery.data?.data?.data as Category[] | undefined) ?? []
   const groupData = groupsQuery.data?.data?.data
-  const groups = Array.isArray(groupData)
-    ? groupData
-    : ((groupData as { groups: Group[] } | undefined)?.groups ?? [])
+  const groups: Group[] = Array.isArray(groupData)
+    ? (groupData as Group[])
+    : ((groupData as { groups?: Group[] } | undefined)?.groups ?? [])
   const isLoading = tabsQuery.isLoading || categoriesQuery.isLoading || groupsQuery.isLoading
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,7 +71,7 @@ export function useTabs() {
   const fetchData = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all }),
-      queryClient.invalidateQueries({ queryKey: ['categories'] }),
+      queryClient.invalidateQueries({ queryKey: ['categories'] as const }),
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
     ])
   }

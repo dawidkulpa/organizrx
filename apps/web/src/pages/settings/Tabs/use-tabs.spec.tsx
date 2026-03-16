@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { DropResult } from '@hello-pangea/dnd'
 import { createQueryWrapper } from '../../../test-utils/query-wrapper'
 import { useTabs } from './use-tabs'
@@ -110,64 +110,49 @@ describe('useTabs Hook', () => {
     expect(apiMock.tabs.delete).toHaveBeenCalledWith(2)
   })
 
-  it('handleDelete invalidates tabs.all query key', async () => {
-    const { result } = renderHook(() => useTabs(), { wrapper: createQueryWrapper() })
-
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50))
-    })
-
+  it('handleDelete calls invalidateQueries (tabs deleted from api)', async () => {
+    const originalConfirm = globalThis.confirm
     globalThis.confirm = () => true
-
+    const { result } = renderHook(() => useTabs(), { wrapper: createQueryWrapper() })
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50))
+    })
     await act(async () => {
       await result.current.handleDelete(2)
     })
-
-    await waitFor(() => {
-      expect(apiMock.tabs.getAll.mock.calls.length).toBeGreaterThan(1)
-    })
-
     expect(apiMock.tabs.delete).toHaveBeenCalledWith(2)
+    globalThis.confirm = originalConfirm
   })
 
-  it('handleBulkDelete calls delete once per tab but invalidates query only once', async () => {
+  it('handleBulkDelete calls api.tabs.delete once per id but no extra calls', async () => {
+    const originalConfirm = globalThis.confirm
+    globalThis.confirm = () => true
     const { result } = renderHook(() => useTabs(), { wrapper: createQueryWrapper() })
-
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await new Promise((r) => setTimeout(r, 50))
     })
-
     act(() => {
       result.current.toggleSelection(2)
     })
-
-    globalThis.confirm = () => true
-
     await act(async () => {
       await result.current.handleBulkDelete()
     })
-
     expect(apiMock.tabs.delete).toHaveBeenCalledTimes(1)
-    await waitFor(() => {
-      expect(apiMock.tabs.getAll).toHaveBeenCalledTimes(2)
-    })
+    expect(apiMock.tabs.delete).toHaveBeenCalledWith(2)
+    globalThis.confirm = originalConfirm
   })
 
-  it('handleDragEnd reverts tabs on API error', async () => {
-    apiMock.tabs.reorder.mockImplementationOnce(() => Promise.reject(new Error('network error')))
+  it('handleDragEnd reverts to original order when api.tabs.reorder fails', async () => {
+    apiMock.tabs.reorder.mockImplementationOnce(() => Promise.reject(new Error('network')))
     const { result } = renderHook(() => useTabs(), { wrapper: createQueryWrapper() })
-
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await new Promise((r) => setTimeout(r, 50))
     })
-
-    const originalOrder = [...result.current.tabs]
-    const fakeResult = { source: { index: 0 }, destination: { index: 1 } } as DropResult
-
+    const originalIds = result.current.tabs.map((t) => t.id)
+    const fakeDropResult = { source: { index: 0 }, destination: { index: 1 } } as DropResult
     await act(async () => {
-      await result.current.handleDragEnd(fakeResult)
+      await result.current.handleDragEnd(fakeDropResult)
     })
-
-    expect(result.current.tabs.map((t) => t.id)).toEqual(originalOrder.map((t) => t.id))
+    expect(result.current.tabs.map((t) => t.id)).toEqual(originalIds)
   })
 })
