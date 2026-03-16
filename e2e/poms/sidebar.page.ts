@@ -1,21 +1,25 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 
 export class SidebarPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  async getTabNames(): Promise<string[]> {
-    return this.page.locator('nav a span.truncate').allTextContents()
+  private get sidebar() {
+    return this.page.locator('aside')
   }
 
-  async clickTab(name: string) {
-    await this.page.getByRole('link', { name, exact: true }).click()
+  async waitForLoaded() {
+    await expect(this.sidebar).toBeVisible()
   }
 
-  async waitForTab(name: string) {
-    await this.page.getByRole('link', { name, exact: true }).waitFor()
+  async expectUser(username: string) {
+    await expect(this.sidebar.getByText(username)).toBeVisible()
   }
 
-  async waitForTabGone(name: string) {
-    await this.page.getByRole('link', { name, exact: true }).waitFor({ state: 'detached' })
+  async openTab(name: string) {
+    await this.sidebar.getByRole('link', { name }).click()
+  }
+
+  async logout() {
+    await this.sidebar.locator('button[title="Logout"]').click()
   }
 }

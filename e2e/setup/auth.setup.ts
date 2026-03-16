@@ -1,14 +1,13 @@
-import { test as setup } from '@playwright/test'
-import { mkdirSync } from 'fs'
+import { expect, test as setup } from '@playwright/test'
+import { LoginPage } from '../poms/login.page'
 
-setup('authenticate as admin', async ({ page }) => {
-  mkdirSync('e2e/.auth', { recursive: true })
+setup('authenticate as admin through the real login UI', async ({ page }) => {
+  const loginPage = new LoginPage(page)
 
-  await page.goto('/login')
-  await page.fill('#username', 'admin')
-  await page.fill('#password', 'TestPassword123!')
-  await page.click('button[type="submit"]')
+  await loginPage.goto()
+  await loginPage.login('admin', 'TestPassword123!', true)
   await page.waitForURL('/')
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 
   await page.context().storageState({ path: 'e2e/.auth/admin.json' })
 })

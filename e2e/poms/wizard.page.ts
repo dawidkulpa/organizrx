@@ -1,24 +1,42 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 
 export class WizardPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  async waitForWizard() {
-    await this.page.waitForURL('/wizard')
+  async goto() {
+    await this.page.goto('/wizard')
+    await expect(this.page.getByRole('heading', { name: 'OrganizrX Setup' })).toBeVisible()
   }
 
-  async fillAdminCredentials(username: string, password: string) {
-    await this.page.fill('input[name="username"], #username', username)
-    await this.page.fill('input[name="password"], #password', password)
+  async waitForWizard() {
+    await this.page.waitForURL('**/wizard')
+  }
+
+  async fillAdminCredentials(
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string
+  ) {
+    await this.page.fill('#wiz-username', username)
+    await this.page.fill('#wiz-email', email)
+    await this.page.fill('#wiz-password', password)
+    await this.page.fill('#wiz-confirm', confirmPassword)
+  }
+
+  async fillEmail(email: string) {
+    await this.page.fill('#wiz-email', email)
+  }
+
+  async fillSettingsStep(siteTitle: string) {
+    await this.page.fill('#wiz-title', siteTitle)
   }
 
   async clickNext() {
-    await this.page.click('button:has-text("Next"), button:has-text("Continue")')
+    await this.page.click('button:has-text("Next")')
   }
 
-  async clickFinish() {
-    await this.page.click(
-      'button:has-text("Finish"), button:has-text("Complete"), button:has-text("Done")'
-    )
+  async clickCompleteSetup() {
+    await this.page.click('button:has-text("Complete Setup")')
   }
 }

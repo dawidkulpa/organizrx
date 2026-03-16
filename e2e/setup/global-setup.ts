@@ -1,30 +1,45 @@
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync } from 'fs'
 import { resolve } from 'path'
-import { Database } from 'bun:sqlite'
-import { seedDatabase } from './seed'
+import { seedE2eData } from './seed'
 
-const DB_PATH = '/tmp/e2e-organizrx.db'
+const dbPath = '/tmp/e2e-organizrx.db'
+const readyPath = '/tmp/e2e-organizrx.ready'
+const migrationsDir = resolve(process.cwd(), 'apps/server/drizzle')
+const authDir = resolve(process.cwd(), 'e2e/.auth')
 
-function runMigrationFile(db: Database, fileName: string) {
-  const migration = readFileSync(resolve(process.cwd(), 'apps/server/drizzle', fileName), 'utf-8')
-
-  for (const statement of migration.split('--> statement-breakpoint')) {
-    const sql = statement.trim()
-    if (sql) db.run(sql)
-  }
+function splitStatements(sql: string): string[] {
+  return sql
+    .split('--> statement-breakpoint')
+    .map((statement) => statement.trim())
+    .filter((statement) => statement.length > 0)
 }
 
 export default async function globalSetup() {
-  mkdirSync('e2e/.auth', { recursive: true })
+  const { Database } = await import('bun:sqlite')
 
-  if (existsSync(DB_PATH)) rmSync(DB_PATH)
+  rmSync(readyPath, { force: true })
+  rmSync(dbPath, { force: true })
+  rmSync(authDir, { recursive: true, force: true })
+  mkdirSync(authDir, { recursive: true })
 
-  const db = new Database(DB_PATH)
+  const db = new Database(dbPath)
 
-  runMigrationFile(db, '0000_young_young_avengers.sql')
-  runMigrationFile(db, '0001_wandering_hellion.sql')
+  try {
+    const migrationFiles = readdirSync(migrationsDir)
+      .filter((file: string) => file.endsWith('.sql'))
+      .sort()
 
-  db.close()
+    for (const migrationFile of migrationFiles) {
+      const migrationSql = readFileSync(resolve(migrationsDir, migrationFile), 'utf8')
 
-  await seedDatabase(DB_PATH)
+      for (const statement of splitStatements(migrationSql)) {
+        db.run(statement)
+      }
+    }
+
+    await seedE2eData(db)
+    await Bun.write(readyPath, 'ready')
+  } finally {
+    db.close()
+  }
 }

@@ -1,7 +1,11 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "types": []
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node", "bun"]
   },
   "include": ["./**/*.ts", "./**/*.d.ts"],
   "exclude": ["../node_modules"]

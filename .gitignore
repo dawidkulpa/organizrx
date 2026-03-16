@@ -63,6 +63,7 @@ tmp/
 
 # Manual QA artifacts
 manual-qa-*.png
+e2e/.auth/
 
 # Sisyphus session files
 .sisyphus/

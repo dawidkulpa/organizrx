@@ -1,21 +1,18 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 
 export class SettingsPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  async gotoTabs() {
-    await this.page.goto('/settings/tabs')
+  async goto(section: string = 'general') {
+    await this.page.goto(`/settings/${section}`)
+    await expect(this.page.getByText('Settings')).toBeVisible()
   }
 
-  async gotoUsers() {
-    await this.page.goto('/settings/users')
+  async openSection(name: string) {
+    await this.page.getByRole('link', { name }).click()
   }
 
-  async gotoGeneral() {
-    await this.page.goto('/settings/general')
-  }
-
-  async gotoAppearance() {
-    await this.page.goto('/settings/appearance')
+  field(label: string) {
+    return this.page.getByLabel(label)
   }
 }
