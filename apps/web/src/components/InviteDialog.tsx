@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
+import { queryKeys } from '../api/query-keys'
 import { cn } from '../utils'
 import { toast } from 'sonner'
 import { Copy, Plus, Trash2, X } from 'lucide-react'
@@ -75,59 +77,37 @@ interface InviteDialogProps {
 }
 
 export default function InviteDialog({ open, onClose }: InviteDialogProps) {
-  const [invites, setInvites] = useState<Invite[]>([])
-  const [loading, setLoading] = useState(false)
-  const [generating, setGenerating] = useState(false)
+  const queryClient = useQueryClient()
   const [expiresInSelection, setExpiresInSelection] = useState('7')
   const [reusable, setReusable] = useState(false)
 
-  const fetchInvites = useCallback(async () => {
-    try {
-      setLoading(true)
-      const res = await api.invites.getAll()
-      setInvites(res.data.data || [])
-    } catch (error) {
-      toast.error('Failed to load invites')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const invitesQuery = useQuery({
+    queryKey: queryKeys.invites.all,
+    queryFn: () => api.invites.getAll(),
+    enabled: open,
+    select: (res) => res.data.data || [],
+  })
 
-  useEffect(() => {
-    if (open) {
-      fetchInvites()
-    }
-  }, [open, fetchInvites])
+  const generateMutation = useMutation({
+    mutationFn: () => {
+      const selectedExpiry = EXPIRY_OPTIONS.find((option) => option.value === expiresInSelection)
+      return api.invites.create({ expiresInDays: selectedExpiry?.days ?? 7, reusable })
+    },
+    onSuccess: (res) => {
+      toast.success(`Invite generated: ${res.data.data.code}`)
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.all })
+    },
+    onError: () => toast.error('Failed to generate invite'),
+  })
 
-  const generateInvite = async () => {
-    const selectedExpiry = EXPIRY_OPTIONS.find((option) => option.value === expiresInSelection)
-
-    try {
-      setGenerating(true)
-      const res = await api.invites.create({
-        expiresInDays: selectedExpiry?.days ?? 7,
-        reusable,
-      })
-      const newInvite = res.data.data
-      toast.success(`Invite generated: ${newInvite.code}`)
-      fetchInvites()
-    } catch (error) {
-      toast.error('Failed to generate invite')
-    } finally {
-      setGenerating(false)
-    }
-  }
-
-  const deleteInvite = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this invite?')) return
-    try {
-      await api.invites.delete(id)
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.invites.delete(id),
+    onSuccess: () => {
       toast.success('Invite deleted')
-      setInvites(invites.filter((i) => i.id !== id))
-    } catch (error) {
-      toast.error('Failed to delete invite')
-    }
-  }
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.all })
+    },
+    onError: () => toast.error('Failed to delete invite'),
+  })
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -151,17 +131,17 @@ export default function InviteDialog({ open, onClose }: InviteDialogProps) {
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto">
-          {loading ? (
+          {invitesQuery.isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-12 bg-muted/40 rounded animate-pulse" />
               ))}
             </div>
-          ) : invites.length === 0 ? (
+          ) : (invitesQuery.data ?? []).length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No active invites found.</div>
           ) : (
             <div className="space-y-3">
-              {invites.map((invite) => (
+              {(invitesQuery.data ?? []).map((invite: Invite) => (
                 <div
                   key={invite.id}
                   className="flex items-center justify-between p-3 rounded-md border border-border bg-background/50 hover:bg-muted/20 transition-colors group"
@@ -202,7 +182,11 @@ export default function InviteDialog({ open, onClose }: InviteDialogProps) {
                     )}
                     <button
                       type="button"
-                      onClick={() => deleteInvite(invite.id)}
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this invite?')) {
+                          deleteMutation.mutate(invite.id)
+                        }
+                      }}
                       className="text-muted-foreground hover:text-destructive transition-colors p-2 rounded-md hover:bg-destructive/10"
                       title="Delete Invite"
                     >
@@ -248,14 +232,14 @@ export default function InviteDialog({ open, onClose }: InviteDialogProps) {
 
           <button
             type="button"
-            onClick={generateInvite}
-            disabled={generating}
+            onClick={() => generateMutation.mutate()}
+            disabled={generateMutation.isPending}
             className={cn(
               'w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 px-4 rounded-md font-medium transition-all hover:brightness-110',
-              generating && 'opacity-70 cursor-wait'
+              generateMutation.isPending && 'opacity-70 cursor-wait'
             )}
           >
-            {generating ? (
+            {generateMutation.isPending ? (
               <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : (
               <Plus className="h-4 w-4" />
