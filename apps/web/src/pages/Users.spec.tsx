@@ -1,6 +1,7 @@
 import { GlobalWindow } from 'happy-dom'
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render, waitFor } from '@testing-library/react'
+import { createQueryWrapper } from '../test-utils/query-wrapper'
 
 const happyWindow = new GlobalWindow({ url: 'http://localhost:5173/users' })
 const domGlobals = [
@@ -123,7 +124,7 @@ describe('Users page', () => {
   })
 
   it('renders live API users instead of hardcoded placeholder data', async () => {
-    const { getAllByText, queryByText } = render(<Users />)
+    const { getAllByText, queryByText } = render(<Users />, { wrapper: createQueryWrapper() })
 
     await waitFor(() => {
       expect(getAllByText('realadmin').length).toBeGreaterThan(0)
