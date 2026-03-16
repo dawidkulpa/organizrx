@@ -40,6 +40,7 @@ coverage/
 
 # Test artifacts
 .test-data/
+e2e/.auth/
 
 # Windows artifacts
 nul
@@ -62,6 +63,9 @@ tmp/
 
 # Manual QA artifacts
 manual-qa-*.png
+e2e/.auth/
+playwright-report/
+test-results/
 
 # Sisyphus session files
 .sisyphus/

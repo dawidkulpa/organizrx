@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import client from '../../api/client'
+import { queryKeys } from '../../api/query-keys'
 import { useAuthStore } from '../../store'
 
 export function useLogin() {
@@ -22,23 +24,13 @@ export function useLogin() {
   const [tempToken, setTempToken] = useState('')
   const [useBackupCode, setUseBackupCode] = useState(false)
 
-  // Settings state
-  const [authSettings, setAuthSettings] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await client.get('/settings/public')
-        const data = res.data.data
-        if (typeof data === 'object' && data !== null) {
-          setAuthSettings(data as Record<string, string>)
-        }
-      } catch {
-        // Graceful degradation
-      }
-    }
-    fetchSettings()
-  }, [])
+  // Settings query using React Query
+  const settingsQuery = useQuery({
+    queryKey: queryKeys.settings.public,
+    queryFn: () => client.get('/settings/public'),
+  })
+  const authSettings: Record<string, string> =
+    (settingsQuery.data?.data?.data as Record<string, string> | null) ?? {}
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

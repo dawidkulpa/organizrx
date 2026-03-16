@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { X, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '../../api/client'
-import { useUIStore } from '../../store'
+import { queryKeys } from '../../api/query-keys'
 import { typedZodResolver } from '../../utils'
 import { tabSchema, type TabFormData, type Tab, type Category, type Group } from './schema'
 import { TabFormFields } from './TabFormFields'
@@ -18,7 +19,7 @@ interface TabFormProps {
 }
 
 export default function TabForm({ tab, categories, groups, open, onClose, onSaved }: TabFormProps) {
-  const bumpSidebar = useUIStore((s) => s.bumpSidebar)
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -47,6 +48,8 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
 
   // Reset form when tab changes (Create vs Edit)
   useEffect(() => {
+    void open
+
     if (tab) {
       const isUrl = tab.image?.startsWith('http') || tab.image?.startsWith('/')
       reset({
@@ -108,7 +111,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
         toast.success('Tab created successfully')
       }
       onSaved()
-      bumpSidebar()
+      queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all })
       onClose()
     } catch (error) {
       toast.error('Failed to save tab')
@@ -131,6 +134,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
           >

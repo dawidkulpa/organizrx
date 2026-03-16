@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { FieldValues, SubmitHandler, useForm, UseFormReturn } from 'react-hook-form'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Loader2, Save, AlertCircle } from 'lucide-react'
 import { api } from '../api/client'
 import { cn, typedZodResolver } from '../utils'
+import { queryKeys } from '../api/query-keys'
 
 interface SettingsFormProps<T extends FieldValues> {
   schema: z.ZodType<T>
@@ -21,8 +23,6 @@ export function SettingsForm<T extends FieldValues>({
   description,
   children,
 }: SettingsFormProps<T>) {
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null)
 
   const form = useForm<T>({
@@ -30,25 +30,19 @@ export function SettingsForm<T extends FieldValues>({
     mode: 'onChange',
   })
 
-  // Fetch settings on mount
+  // Fetch settings with React Query
+  const settingsQuery = useQuery({
+    queryKey: queryKeys.settings.all(settingsKey),
+    queryFn: () => api.settings.getAll(settingsKey),
+  })
+
+  // Reset form when query data arrives
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        setIsLoading(true)
-        const response = await api.settings.getAll(settingsKey)
-        // API returns { data: { key: value, ... } } envelope
-        const data = response.data.data as Record<string, unknown>
-
-        form.reset(data as T)
-      } catch (error) {
-        toast.error('Failed to load settings. Please try again.')
-      } finally {
-        setIsLoading(false)
-      }
+    if (settingsQuery.data) {
+      const data = settingsQuery.data.data.data as Record<string, unknown>
+      form.reset(data as T)
     }
-
-    fetchSettings()
-  }, [settingsKey, form])
+  }, [settingsQuery.data, form])
 
   // Auto-clear success status after 3 seconds
   useEffect(() => {
@@ -61,23 +55,17 @@ export function SettingsForm<T extends FieldValues>({
     return undefined
   }, [saveStatus])
 
-  const onSubmit = async (data: T) => {
-    try {
-      setIsSaving(true)
+  const saveMutation = useMutation({
+    mutationFn: async (data: T) => {
       const dirtyFields = Object.keys(form.formState.dirtyFields)
 
       if (dirtyFields.length === 0) {
         toast.info('No changes to save')
-        return
+        return data
       }
 
-      // Update only dirty fields
-      // api.settings.update takes { key, value }
-      // We map the dirty fields to promises
       const updatePromises = dirtyFields.map((field) => {
         const value = data[field]
-        // Convert non-string values to string if necessary, or assume API handles it.
-        // client.ts says value: string. So we must stringify if it's not a string.
         const stringValue = typeof value === 'string' ? value : JSON.stringify(value)
 
         return api.settings.update({
@@ -87,18 +75,22 @@ export function SettingsForm<T extends FieldValues>({
       })
 
       await Promise.all(updatePromises)
-
-      // Re-fetch or just reset dirty state with new values
+      return data
+    },
+    onSuccess: (data) => {
       form.reset(data)
       setSaveStatus('success')
-    } catch (error) {
+    },
+    onError: () => {
       setSaveStatus('error')
-    } finally {
-      setIsSaving(false)
-    }
+    },
+  })
+
+  const onSubmit = async (data: T) => {
+    await saveMutation.mutateAsync(data)
   }
 
-  if (isLoading) {
+  if (settingsQuery.isLoading) {
     return (
       <div className="flex h-64 w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -134,13 +126,17 @@ export function SettingsForm<T extends FieldValues>({
 
           <button
             type="submit"
-            disabled={!form.formState.isDirty || isSaving}
+            disabled={!form.formState.isDirty || saveMutation.isPending}
             className={cn(
               'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
               'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
             )}
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saveMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             Save Changes
           </button>
         </div>

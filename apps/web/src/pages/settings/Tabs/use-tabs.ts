@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { DropResult } from '@hello-pangea/dnd'
 import { api } from '../../../api/client'
-import { useUIStore } from '../../../store'
+import { queryKeys } from '../../../api/query-keys'
 
 export interface Tab {
   id: number
@@ -40,11 +41,25 @@ export interface Group {
 }
 
 export function useTabs() {
-  const bumpSidebar = useUIStore((s) => s.bumpSidebar)
-  const [tabs, setTabs] = useState<Tab[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [groups, setGroups] = useState<Group[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const tabsQuery = useQuery({ queryKey: queryKeys.tabs.all, queryFn: () => api.tabs.getAll() })
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.categories.all,
+    queryFn: () => api.categories.getAll(),
+  })
+  const groupsQuery = useQuery({
+    queryKey: queryKeys.groups.all,
+    queryFn: () => api.groups.getAll(),
+  })
+
+  const tabs = (tabsQuery.data?.data?.data as Tab[] | undefined) ?? []
+  const categories = (categoriesQuery.data?.data?.data as Category[] | undefined) ?? []
+  const groupData = groupsQuery.data?.data?.data
+  const groups: Group[] = Array.isArray(groupData)
+    ? (groupData as Group[])
+    : ((groupData as { groups?: Group[] } | undefined)?.groups ?? [])
+  const isLoading = tabsQuery.isLoading || categoriesQuery.isLoading || groupsQuery.isLoading
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedTabs, setSelectedTabs] = useState<number[]>([])
@@ -53,32 +68,13 @@ export function useTabs() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTab, setEditingTab] = useState<Tab | null>(null)
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const [tabsRes, catsRes, groupsRes] = await Promise.all([
-        api.tabs.getAll(),
-        api.categories.getAll(),
-        api.groups.getAll(),
-      ])
-      const tabsData = tabsRes.data.data
-      setTabs(Array.isArray(tabsData) ? tabsData : [])
-      const catsData = catsRes.data.data
-      setCategories(Array.isArray(catsData) ? catsData : [])
-      const groupData = groupsRes.data.data
-      setGroups(
-        Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || []
-      )
-    } catch {
-      toast.error('Failed to load tabs configuration')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  const fetchData = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
+    ])
+  }
 
   const filteredTabs = useMemo(() => {
     let result = [...tabs]
@@ -109,19 +105,22 @@ export function useTabs() {
     const [reorderedItem] = items.splice(result.source.index, 1)
     items.splice(result.destination.index, 0, reorderedItem)
 
-    // Optimistic Update
     const updatedTabs = items.map((item, index) => ({ ...item, order: index }))
-    setTabs(updatedTabs)
+    const snapshot = queryClient.getQueryData(queryKeys.tabs.all)
+    queryClient.setQueryData(queryKeys.tabs.all, (old: typeof tabsQuery.data) => ({
+      ...old,
+      data: { ...old?.data, data: updatedTabs },
+    }))
 
     try {
       await api.tabs.reorder({
         tabs: updatedTabs.map((t) => ({ id: t.id, order: t.order })),
       })
       toast.success('Order updated')
-      bumpSidebar()
+      queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all })
     } catch (error) {
       toast.error('Failed to save order')
-      fetchData() // Revert
+      queryClient.setQueryData(queryKeys.tabs.all, snapshot)
     }
   }
 
@@ -135,9 +134,8 @@ export function useTabs() {
     if (!confirm('Are you sure you want to delete this tab?')) return
     try {
       await api.tabs.delete(id)
-      setTabs((prev) => prev.filter((t) => t.id !== id))
       toast.success('Tab deleted')
-      bumpSidebar()
+      queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all })
     } catch (error) {
       toast.error('Failed to delete tab')
     }
@@ -151,10 +149,9 @@ export function useTabs() {
     if (deletableIds.length === 0) return
     try {
       await Promise.all(deletableIds.map((id) => api.tabs.delete(id)))
-      setTabs((prev) => prev.filter((t) => !deletableIds.includes(t.id)))
       setSelectedTabs([])
       toast.success('Selected tabs deleted')
-      bumpSidebar()
+      queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all })
     } catch (error) {
       toast.error('Failed to delete some tabs')
     }

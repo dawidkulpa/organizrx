@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { cn, typedZodResolver } from '../../utils'
 import { toast } from 'sonner'
 import { Users, Plus, Pencil, Trash2, Shield, X, Save, Image as ImageIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useState } from 'react'
+import { queryKeys } from '../../api/query-keys'
 import { EmptyState } from '../../components/EmptyState'
 
 interface Group {
@@ -34,9 +36,7 @@ function isBuiltInGroup(group: Group): boolean {
 }
 
 export default function SettingsGroups() {
-  const [groups, setGroups] = useState<Group[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
 
@@ -49,26 +49,60 @@ export default function SettingsGroups() {
     resolver: typedZodResolver(groupSchema),
   })
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const [groupsRes, usersRes] = await Promise.all([api.groups.getAll(), api.users.getAll()])
-      const groupData = groupsRes.data.data
-      setGroups(
-        Array.isArray(groupData) ? groupData : (groupData as { groups: Group[] }).groups || []
-      )
-      const userData = usersRes.data.data
-      setUsers(Array.isArray(userData) ? userData : (userData as { users: User[] }).users || [])
-    } catch (error) {
-      toast.error('Failed to load groups')
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch groups
+  const groupsQuery = useQuery({
+    queryKey: queryKeys.groups.all,
+    queryFn: async () => {
+      const res = await api.groups.getAll()
+      const data = res.data.data
+      return Array.isArray(data) ? data : (data as { groups: Group[] }).groups || []
+    },
+  })
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  const usersQuery = useQuery({
+    queryKey: queryKeys.users.all,
+    queryFn: async () => {
+      const res = await api.users.getAll()
+      const data = res.data.data
+      return Array.isArray(data) ? data : (data as { users: User[] }).users || []
+    },
+  })
+
+  const createMutation = useMutation({
+    mutationFn: (data: GroupFormData) => api.groups.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.all })
+      toast.success('Group created')
+      handleCloseModal()
+    },
+    onError: () => {
+      toast.error('Failed to save group')
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: number; formData: GroupFormData }) =>
+      api.groups.update(data.id, data.formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.all })
+      toast.success('Group updated')
+      handleCloseModal()
+    },
+    onError: () => {
+      toast.error('Failed to save group')
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (groupId: number) => api.groups.delete(groupId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.all })
+      toast.success('Group deleted')
+    },
+    onError: () => {
+      toast.error('Failed to delete group')
+    },
+  })
 
   const handleOpenModal = (group?: Group) => {
     if (group) {
@@ -94,22 +128,14 @@ export default function SettingsGroups() {
   }
 
   const onSubmit = async (data: GroupFormData) => {
-    try {
-      if (editingGroup) {
-        await api.groups.update(editingGroup.id, data)
-        toast.success('Group updated')
-      } else {
-        await api.groups.create(data)
-        toast.success('Group created')
-      }
-      fetchData()
-      handleCloseModal()
-    } catch (error) {
-      toast.error('Failed to save group')
+    if (editingGroup) {
+      updateMutation.mutate({ id: editingGroup.id, formData: data })
+    } else {
+      createMutation.mutate(data)
     }
   }
 
-  const handleDelete = async (group: Group) => {
+  const handleDelete = (group: Group) => {
     if (isBuiltInGroup(group)) {
       toast.error('Cannot delete a built-in group')
       return
@@ -117,18 +143,15 @@ export default function SettingsGroups() {
 
     if (!confirm(`Are you sure you want to delete group "${group.name}"?`)) return
 
-    try {
-      await api.groups.delete(group.id)
-      toast.success('Group deleted')
-      fetchData()
-    } catch (error) {
-      toast.error('Failed to delete group')
-    }
+    deleteMutation.mutate(group.id)
   }
 
   const getMemberCount = (groupId: number) => {
-    return users.filter((u) => u.group_id === groupId).length
+    return (usersQuery.data ?? []).filter((u) => u.group_id === groupId).length
   }
+
+  const loading = groupsQuery.isLoading || usersQuery.isLoading
+  const groups = groupsQuery.data ?? []
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
@@ -138,6 +161,7 @@ export default function SettingsGroups() {
           <p className="text-sm text-muted-foreground">Manage user groups and permissions.</p>
         </div>
         <button
+          type="button"
           onClick={() => handleOpenModal()}
           className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
         >
@@ -196,6 +220,7 @@ export default function SettingsGroups() {
               </div>
               <div className="flex items-center border-t border-border bg-muted/20 p-2">
                 <button
+                  type="button"
                   onClick={() => handleOpenModal(group)}
                   className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-3"
                 >
@@ -207,6 +232,7 @@ export default function SettingsGroups() {
                   <div className="flex-1 h-9" />
                 ) : (
                   <button
+                    type="button"
                     onClick={() => handleDelete(group)}
                     className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-destructive/10 hover:text-destructive h-9 px-3"
                     title="Delete group"
@@ -230,6 +256,7 @@ export default function SettingsGroups() {
                 {editingGroup ? 'Edit Group' : 'Create Group'}
               </h2>
               <button
+                type="button"
                 onClick={handleCloseModal}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -239,8 +266,11 @@ export default function SettingsGroups() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Name</label>
+                <label htmlFor="groupName" className="text-sm font-medium text-foreground">
+                  Name
+                </label>
                 <input
+                  id="groupName"
                   {...register('name')}
                   className={cn(
                     'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
@@ -252,10 +282,13 @@ export default function SettingsGroups() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Image URL (Optional)</label>
+                <label htmlFor="groupImage" className="text-sm font-medium text-foreground">
+                  Image URL (Optional)
+                </label>
                 <div className="relative">
                   <ImageIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
+                    id="groupImage"
                     {...register('image')}
                     className="flex h-10 w-full rounded-md border border-input bg-background pl-9 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="https://example.com/image.png"

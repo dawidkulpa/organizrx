@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Search, Download, Trash2, RefreshCw, Box, Loader2 } from 'lucide-react'
 import { api } from '../../api/client'
+import { queryKeys } from '../../api/query-keys'
 import { cn } from '../../utils'
 import { EmptyState } from '../../components/EmptyState'
 
@@ -18,30 +20,23 @@ const INPUT_CLASS =
   'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
 export default function PluginsSettings() {
-  const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([])
+  const queryClient = useQueryClient()
   const [searchResults, setSearchResults] = useState<Plugin[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
   const [isSearching, setIsSearching] = useState(false)
   const [processing, setProcessing] = useState<string | null>(null) // name of plugin being processed
 
-  const fetchInstalled = async () => {
-    try {
-      setIsLoading(true)
+  const pluginsQuery = useQuery({
+    queryKey: queryKeys.plugins.all,
+    queryFn: async () => {
       const res = await api.plugins.getAll()
-      // Assuming res.data is Plugin[]
       const response = res.data as { data: Plugin[] }
-      setInstalledPlugins(response.data)
-    } catch (error) {
-      toast.error('Failed to load installed plugins')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      return response.data
+    },
+  })
 
-  useEffect(() => {
-    fetchInstalled()
-  }, [])
+  const installedPlugins = pluginsQuery.data ?? []
+  const isLoading = pluginsQuery.isLoading
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query)
@@ -62,49 +57,76 @@ export default function PluginsSettings() {
     }
   }
 
-  const handleInstall = async (plugin: Plugin) => {
-    try {
-      setProcessing(plugin.name)
+  const installMutation = useMutation({
+    mutationFn: async (plugin: Plugin) => {
       await api.plugins.install({ name: plugin.name })
+      return plugin
+    },
+    onSuccess: (plugin) => {
       toast.success(`Installed ${plugin.name}`)
-      await fetchInstalled()
+      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
       // Remove from search results or mark as installed
       setSearchResults((prev) =>
         prev.map((p) => (p.name === plugin.name ? { ...p, installed: true } : p))
       )
-    } catch (error) {
+    },
+    onError: (_error, plugin) => {
       toast.error(`Failed to install ${plugin.name}`)
-    } finally {
+    },
+    onSettled: () => {
       setProcessing(null)
-    }
+    },
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: async (plugin: Plugin) => {
+      await api.plugins.remove(plugin.name)
+      return plugin
+    },
+    onSuccess: (plugin) => {
+      toast.success(`Removed ${plugin.name}`)
+      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
+    },
+    onError: (_error, plugin) => {
+      toast.error(`Failed to remove ${plugin.name}`)
+    },
+    onSettled: () => {
+      setProcessing(null)
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async (plugin: Plugin) => {
+      await api.plugins.update(plugin.name)
+      return plugin
+    },
+    onSuccess: (plugin) => {
+      toast.success(`Updated ${plugin.name}`)
+      queryClient.invalidateQueries({ queryKey: queryKeys.plugins.all })
+    },
+    onError: (_error, plugin) => {
+      toast.error(`Failed to update ${plugin.name}`)
+    },
+    onSettled: () => {
+      setProcessing(null)
+    },
+  })
+
+  const handleInstall = async (plugin: Plugin) => {
+    setProcessing(plugin.name)
+    installMutation.mutate(plugin)
   }
 
   const handleRemove = async (plugin: Plugin) => {
     if (!confirm(`Are you sure you want to remove ${plugin.name}?`)) return
 
-    try {
-      setProcessing(plugin.name)
-      await api.plugins.remove(plugin.name)
-      toast.success(`Removed ${plugin.name}`)
-      await fetchInstalled()
-    } catch (error) {
-      toast.error(`Failed to remove ${plugin.name}`)
-    } finally {
-      setProcessing(null)
-    }
+    setProcessing(plugin.name)
+    removeMutation.mutate(plugin)
   }
 
   const handleUpdate = async (plugin: Plugin) => {
-    try {
-      setProcessing(plugin.name)
-      await api.plugins.update(plugin.name)
-      toast.success(`Updated ${plugin.name}`)
-      await fetchInstalled()
-    } catch (error) {
-      toast.error(`Failed to update ${plugin.name}`)
-    } finally {
-      setProcessing(null)
-    }
+    setProcessing(plugin.name)
+    updateMutation.mutate(plugin)
   }
 
   const PluginCard = ({
@@ -141,6 +163,7 @@ export default function PluginsSettings() {
             <>
               {plugin.updateAvailable && (
                 <button
+                  type="button"
                   onClick={() => handleUpdate(plugin)}
                   className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                   title="Update"
@@ -152,6 +175,7 @@ export default function PluginsSettings() {
 
               {isInstalledList ? (
                 <button
+                  type="button"
                   onClick={() => handleRemove(plugin)}
                   className="inline-flex h-9 items-center justify-center rounded-md border border-destructive/50 bg-destructive/10 px-3 text-sm font-medium text-destructive shadow-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
                   title="Uninstall"
@@ -161,6 +185,7 @@ export default function PluginsSettings() {
                 </button>
               ) : (
                 <button
+                  type="button"
                   onClick={() => handleInstall(plugin)}
                   disabled={plugin.installed}
                   className={cn(

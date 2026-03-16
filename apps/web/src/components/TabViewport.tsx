@@ -1,7 +1,9 @@
 import type { Tab } from '@organizrx/shared'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo } from 'react'
 import { useMatch } from 'react-router-dom'
 import { api } from '../api/client'
+import { queryKeys } from '../api/query-keys'
 import { cn } from '../utils'
 import { useTabStore } from '../store'
 import { useTabPingStore } from '../store/tab-ping'
@@ -26,7 +28,6 @@ interface SidebarResponse {
 }
 
 export default function TabViewport() {
-  const [tabs, setTabs] = useState<ViewportTab[]>([])
   const activeTabId = useTabStore((s) => s.activeTabId)
   const mountedTabs = useTabStore((s) => s.mountedTabs)
   const mountTab = useTabStore((s) => s.mountTab)
@@ -34,19 +35,12 @@ export default function TabViewport() {
 
   const isLocalNetwork = false
 
-  const fetchTabs = useCallback(async () => {
-    try {
-      const res = await api.tabs.sidebar()
-      const data = res.data?.data as SidebarResponse
-      setTabs(data?.tabs ?? [])
-    } catch {
-      setTabs([])
-    }
-  }, [])
+  const { data } = useQuery({
+    queryKey: queryKeys.tabs.sidebar,
+    queryFn: () => api.tabs.sidebar(),
+  })
 
-  useEffect(() => {
-    fetchTabs()
-  }, [fetchTabs])
+  const tabs = (data?.data?.data as SidebarResponse | undefined)?.tabs ?? []
 
   useEffect(() => {
     if (activeTabId !== null) {
@@ -54,13 +48,10 @@ export default function TabViewport() {
     }
   }, [activeTabId, mountTab])
 
-  const resolveUrl = useCallback(
-    (tab: ViewportTab): string | null => {
-      if (isLocalNetwork && tab.url_local) return tab.url_local
-      return tab.url
-    },
-    [isLocalNetwork]
-  )
+  const resolveUrl = (tab: ViewportTab): string | null => {
+    if (isLocalNetwork && tab.url_local) return tab.url_local
+    return tab.url
+  }
 
   const externalTabs = useMemo(
     () => tabs.filter((tab) => tab.enabled !== 0 && (tab.type === 0 || tab.type === null)),

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { render, waitFor, cleanup } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { useTabStore } from '../store'
+import { createQueryWrapper } from '../test-utils/query-wrapper'
 
 const happyWindow = new GlobalWindow({ url: 'http://localhost:5173' })
 const domGlobals = [
@@ -89,7 +90,8 @@ describe('Tabs route bridge', () => {
           <Route path="/tab/:id" element={<Tabs />} />
           <Route path="/" element={<div>Dashboard</div>} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
+      { wrapper: createQueryWrapper() }
     )
 
     await waitFor(() => {
@@ -107,7 +109,8 @@ describe('Tabs route bridge', () => {
           <Route path="/tab/:id" element={<Tabs />} />
           <Route path="/" element={<div>Dashboard</div>} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
+      { wrapper: createQueryWrapper() }
     )
 
     await waitFor(() => {
@@ -135,7 +138,8 @@ describe('Tabs route bridge', () => {
           <Route path="/tab/:id" element={<Tabs />} />
           <Route path="/" element={<div>Dashboard</div>} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
+      { wrapper: createQueryWrapper() }
     )
 
     await waitFor(() => {

@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore, useUIStore, useLockscreenStore } from '../../store'
 import { api } from '../../api/client'
+import { queryKeys } from '../../api/query-keys'
 import { useTabPing } from '../../hooks/use-tab-ping'
 
 export interface SidebarTab {
@@ -40,12 +42,16 @@ export function getTabRoute(tab: SidebarTab): string {
 }
 
 export function useSidebar() {
-  const { sidebarOpen, toggleSidebar, sidebarVersion } = useUIStore()
+  const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user, logout } = useAuthStore()
   const lockScreen = useLockscreenStore((s) => s.lock)
-  const [tabs, setTabs] = useState<SidebarTab[]>([])
-  const [categories, setCategories] = useState<SidebarCategory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.tabs.sidebar,
+    queryFn: () => api.tabs.sidebar(),
+  })
+
+  const tabs: SidebarTab[] = data?.data?.data?.tabs ?? []
+  const categories: SidebarCategory[] = data?.data?.data?.categories ?? []
 
   const [isMobile, setIsMobile] = useState(false)
 
@@ -55,24 +61,6 @@ export function useSidebar() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-
-  const fetchSidebarData = useCallback(async () => {
-    try {
-      const res = await api.tabs.sidebar()
-      const { tabs: fetchedTabs, categories: fetchedCategories } = res.data.data
-      setTabs(fetchedTabs)
-      setCategories(fetchedCategories)
-    } catch {
-      // Sidebar fetch failed silently — user will see empty sidebar
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  // Re-fetch when sidebarVersion changes (tab CRUD triggers bump)
-  useEffect(() => {
-    fetchSidebarData()
-  }, [fetchSidebarData, sidebarVersion])
 
   const enabledTabs = useMemo(() => tabs.filter((t) => t.enabled !== 0), [tabs])
   useTabPing(enabledTabs)
