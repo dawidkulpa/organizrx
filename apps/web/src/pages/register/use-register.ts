@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api/client'
+import { queryKeys } from '../../api/query-keys'
 import { toast } from 'sonner'
 import { AxiosError } from 'axios'
 
@@ -8,9 +10,18 @@ export function useRegister() {
   const [searchParams] = useSearchParams()
   const code = searchParams.get('code')
 
-  const [verifying, setVerifying] = useState(true)
-  const [codeValid, setCodeValid] = useState(false)
-  const [codeError, setCodeError] = useState<string | null>(null)
+  const verifyQuery = useQuery({
+    queryKey: queryKeys.invites.verify(code ?? ''),
+    queryFn: () => api.invites.verify(code!),
+    enabled: !!code,
+  })
+
+  const verifying = verifyQuery.isLoading && !!code
+  const codeValid = verifyQuery.data?.data?.data?.valid ?? false
+  const codeError = verifyQuery.isError
+    ? ((verifyQuery.error as AxiosError<{ error?: { message: string } }>)?.response?.data?.error
+        ?.message ?? 'Invalid or expired invite code')
+    : null
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -24,38 +35,12 @@ export function useRegister() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (!code) {
-      setVerifying(false)
-      return
+    const emailFromInvite = verifyQuery.data?.data?.data?.email
+    if (emailFromInvite) {
+      setInviteEmail(emailFromInvite)
+      setEmail(emailFromInvite)
     }
-
-    let mounted = true
-    const verifyCode = async () => {
-      try {
-        setVerifying(true)
-        const res = await api.invites.verify(code)
-        if (!mounted) return
-
-        setCodeValid(res.data.data.valid)
-        if (res.data.data.email) {
-          setInviteEmail(res.data.data.email)
-          setEmail(res.data.data.email)
-        }
-      } catch (err) {
-        if (!mounted) return
-        const error = err as AxiosError<{ error?: { message: string } }>
-        setCodeError(error.response?.data?.error?.message || 'Invalid or expired invite code')
-        setCodeValid(false)
-      } finally {
-        if (mounted) setVerifying(false)
-      }
-    }
-
-    verifyCode()
-    return () => {
-      mounted = false
-    }
-  }, [code])
+  }, [verifyQuery.data])
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
