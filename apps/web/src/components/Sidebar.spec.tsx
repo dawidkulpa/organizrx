@@ -79,7 +79,11 @@ mock.module('../api/client', () => ({
 
 import { MemoryRouter } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import { useAuthStore, useUIStore } from '../store'
+import TabViewport from './TabViewport'
+import { createQueryWrapper } from '../test-utils/query-wrapper'
+import { useAuthStore, useUIStore, useTabStore } from '../store'
+
+const Wrapper = createQueryWrapper()
 
 // ============================================================================
 // Sidebar Component
@@ -87,6 +91,9 @@ import { useAuthStore, useUIStore } from '../store'
 
 describe('Sidebar', () => {
   beforeEach(() => {
+    mockSidebar.mockClear()
+    mockCheckUrl.mockClear()
+    useTabStore.getState().resetTabs()
     useAuthStore.getState().setToken('test-token')
     useAuthStore.getState().setUser({
       id: 1,
@@ -114,15 +121,18 @@ describe('Sidebar', () => {
 
   afterEach(() => {
     cleanup()
+    useTabStore.getState().resetTabs()
     useAuthStore.getState().clearAuth()
     useUIStore.getState().setSidebarOpen(true)
   })
 
   it('should show OrganizrX brand text when sidebar is open', async () => {
     const { getByText } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -157,9 +167,11 @@ describe('Sidebar', () => {
     )
 
     const { getByText } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -194,9 +206,11 @@ describe('Sidebar', () => {
     )
 
     const { getByText } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -240,9 +254,11 @@ describe('Sidebar', () => {
     )
 
     const { getByText } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -288,9 +304,11 @@ describe('Sidebar', () => {
     )
 
     const { getByText } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -308,9 +326,11 @@ describe('Sidebar', () => {
     )
 
     const { container } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -345,14 +365,63 @@ describe('Sidebar', () => {
     )
 
     const { findByTestId } = render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+        </MemoryRouter>
+      </Wrapper>
     )
 
     const dot = await findByTestId('ping-dot-1')
     await waitFor(() => {
       expect(dot.className).toContain('bg-emerald-500')
     })
+  })
+
+  it('shares sidebar query cache with TabViewport via a single query key', async () => {
+    useTabStore.getState().setActiveTabId(501)
+    mockSidebar.mockImplementation(() =>
+      Promise.resolve({
+        data: {
+          data: {
+            tabs: [
+              {
+                id: 501,
+                order: 1,
+                category_id: 0,
+                name: 'Shared Cache Tab',
+                url: 'https://shared-cache.example',
+                url_local: null,
+                enabled: 1,
+                group_id: 0,
+                image: null,
+                type: 0,
+                preload: 0,
+                splash: 1,
+                timeout: 10000,
+                timeout_ms: null,
+              },
+            ],
+            categories: [],
+          },
+        },
+      })
+    )
+
+    const { getByText, container } = render(
+      <Wrapper>
+        <MemoryRouter>
+          <Sidebar />
+          <TabViewport />
+        </MemoryRouter>
+      </Wrapper>
+    )
+
+    await waitFor(() => {
+      expect(getByText('Shared Cache Tab')).toBeTruthy()
+      expect(container.querySelector('[data-mounted-tab-id="501"]')).toBeTruthy()
+    })
+
+    expect(mockSidebar).toHaveBeenCalledTimes(1)
   })
 })

@@ -2,8 +2,11 @@ import { GlobalWindow } from 'happy-dom'
 import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
 import { render, waitFor, cleanup } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { createQueryWrapper } from '../test-utils/query-wrapper'
 import { useTabStore } from '../store'
 import type { Tab } from '@organizrx/shared'
+
+const Wrapper = createQueryWrapper()
 
 const happyWindow = new GlobalWindow({ url: 'http://localhost:5173' })
 const domGlobals = [
@@ -126,12 +129,14 @@ describe('TabViewport', () => {
     useTabStore.getState().setActiveTabId(101)
 
     const { container, rerender } = render(
-      <MemoryRouter initialEntries={['/tab/101']}>
-        <Routes>
-          <Route path="/tab/:id" element={<TabViewport />} />
-          <Route path="/settings" element={<TabViewport />} />
-        </Routes>
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter initialEntries={['/tab/101']}>
+          <Routes>
+            <Route path="/tab/:id" element={<TabViewport />} />
+            <Route path="/settings" element={<TabViewport />} />
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -141,12 +146,14 @@ describe('TabViewport', () => {
     useTabStore.getState().setActiveTabId(null)
 
     rerender(
-      <MemoryRouter initialEntries={['/settings']}>
-        <Routes>
-          <Route path="/tab/:id" element={<TabViewport />} />
-          <Route path="/settings" element={<TabViewport />} />
-        </Routes>
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter initialEntries={['/settings']}>
+          <Routes>
+            <Route path="/tab/:id" element={<TabViewport />} />
+            <Route path="/settings" element={<TabViewport />} />
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -161,11 +168,13 @@ describe('TabViewport', () => {
     useTabStore.getState().setActiveTabId(202)
 
     const { container } = render(
-      <MemoryRouter initialEntries={['/tab/202']}>
-        <Routes>
-          <Route path="/tab/:id" element={<TabViewport />} />
-        </Routes>
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter initialEntries={['/tab/202']}>
+          <Routes>
+            <Route path="/tab/:id" element={<TabViewport />} />
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -207,12 +216,14 @@ describe('TabViewport', () => {
     )
 
     const { container } = render(
-      <MemoryRouter initialEntries={['/settings']}>
-        <Routes>
-          <Route path="/tab/:id" element={<TabViewport />} />
-          <Route path="/settings" element={<TabViewport />} />
-        </Routes>
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter initialEntries={['/settings']}>
+          <Routes>
+            <Route path="/tab/:id" element={<TabViewport />} />
+            <Route path="/settings" element={<TabViewport />} />
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
@@ -249,11 +260,13 @@ describe('TabViewport', () => {
     useTabStore.getState().setActiveTabId(303)
 
     const { container, queryByTestId } = render(
-      <MemoryRouter initialEntries={['/tab/303']}>
-        <Routes>
-          <Route path="/tab/:id" element={<TabViewport />} />
-        </Routes>
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter initialEntries={['/tab/303']}>
+          <Routes>
+            <Route path="/tab/:id" element={<TabViewport />} />
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
     )
 
     await waitFor(() => {
