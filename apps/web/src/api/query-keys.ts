@@ -10,6 +10,9 @@ export const queryKeys = {
   groups: {
     all: ['groups'] as const,
   },
+  categories: {
+    all: ['categories'] as const,
+  },
   settings: {
     all: (key: string) => ['settings', key] as const,
     public: ['settings', 'public'] as const,

@@ -44,7 +44,7 @@ export function useTabs() {
   const queryClient = useQueryClient()
   const tabsQuery = useQuery({ queryKey: queryKeys.tabs.all, queryFn: () => api.tabs.getAll() })
   const categoriesQuery = useQuery({
-    queryKey: ['categories'] as const,
+    queryKey: queryKeys.categories.all,
     queryFn: () => api.categories.getAll(),
   })
   const groupsQuery = useQuery({
@@ -71,7 +71,7 @@ export function useTabs() {
   const fetchData = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.tabs.all }),
-      queryClient.invalidateQueries({ queryKey: ['categories'] as const }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all }),
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
     ])
   }
