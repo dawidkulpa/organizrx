@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
+import { queryKeys } from '../api/query-keys'
 import { discoverWidgets, PluginWidgetRegistration } from '../plugins/widget-registry'
 import { WidgetGrid } from '../components/WidgetGrid'
 import { EmptyState } from '../components/EmptyState'
@@ -10,21 +12,38 @@ import { toast } from 'sonner'
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [widgets, setWidgets] = useState<PluginWidgetRegistration[]>([])
   const [layout, setLayout] = useState<LayoutItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [widgetsLoading, setWidgetsLoading] = useState(true)
 
-  const loadData = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const [discovered, settingsRes] = await Promise.all([
-        discoverWidgets(),
-        api.settings.getAll('dashboard_layout').catch(() => ({ data: [] })),
-      ])
+  // Fetch dashboard layout settings via React Query
+  const layoutQuery = useQuery({
+    queryKey: queryKeys.dashboard.layout,
+    queryFn: () => api.settings.getAll('dashboard_layout').catch(() => ({ data: [] })),
+  })
 
-      setWidgets(discovered)
+  // Discover widgets (client-side plugin discovery — NOT an API call)
+  useEffect(() => {
+    const loadWidgets = async () => {
+      setWidgetsLoading(true)
+      try {
+        const discovered = await discoverWidgets()
+        setWidgets(discovered)
+      } catch {
+        toast.error('Failed to discover dashboard widgets')
+      } finally {
+        setWidgetsLoading(false)
+      }
+    }
 
-      // Parse layout
+    loadWidgets()
+  }, [])
+
+  // Parse layout from query data
+  useEffect(() => {
+    if (layoutQuery.data) {
+      const settingsRes = layoutQuery.data
       // API typically returns an array of settings. Find the specific key.
       const layoutSetting = Array.isArray(settingsRes.data)
         ? settingsRes.data.find((s: { key: string; value: string }) => s.key === 'dashboard_layout')
@@ -39,23 +58,17 @@ export default function Dashboard() {
         } catch {
           // Layout parse failed — use defaults
         }
+      } else {
+        setLayout([])
       }
-    } catch {
-      toast.error('Failed to load dashboard widgets')
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
-
-  useEffect(() => {
-    loadData()
-  }, [loadData])
+  }, [layoutQuery.data])
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
     setLayout(newLayout)
 
     // We only save if not loading to avoid overwriting with empty
-    if (!isLoading && widgets.length > 0) {
+    if (!widgetsLoading && !layoutQuery.isLoading && widgets.length > 0) {
       api.settings
         .update({
           key: 'dashboard_layout',
@@ -66,6 +79,8 @@ export default function Dashboard() {
         })
     }
   }
+
+  const isLoading = widgetsLoading || layoutQuery.isLoading
 
   if (isLoading) {
     return (
@@ -92,7 +107,8 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
         </div>
         <button
-          onClick={loadData}
+          type="button"
+          onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.layout })}
           className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
           title="Refresh Widgets"
         >
