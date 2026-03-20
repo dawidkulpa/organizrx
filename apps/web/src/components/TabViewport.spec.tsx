@@ -287,6 +287,25 @@ describe('TabViewport', () => {
     expect(container.querySelector('iframe')).toBeNull()
   })
 
+  it('shows blocked overlay when server marks site as unreachable (reachable: false)', async () => {
+    useTabPingStore.getState().setResult(101, {
+      reachable: false,
+      iframeAllowed: false,
+      status: 0,
+      checkedAt: Date.now(),
+    })
+    useTabStore.getState().setActiveTabId(101)
+
+    const { container, getByTestId } = await renderTabViewport(['/tab/101'])
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-mounted-tab-id="101"]')).toBeTruthy()
+      expect(getByTestId('iframe-error-overlay')).toBeTruthy()
+    })
+
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+
   it('uses the public url instead of url_local because local network detection is disabled', async () => {
     mockSidebar.mockResolvedValueOnce(
       createSidebarResponse([

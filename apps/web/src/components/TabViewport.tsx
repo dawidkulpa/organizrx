@@ -85,7 +85,7 @@ export default function TabViewport() {
 
         const isVisible = tabRouteMatch !== null && tab.id === activeTabId
         const pingResult = pingResults[tab.id]
-        const isIframeBlocked = pingResult?.reachable === true && pingResult.iframeAllowed === false
+        const isIframeBlocked = pingResult !== undefined && pingResult.iframeAllowed === false
 
         return (
           <div
