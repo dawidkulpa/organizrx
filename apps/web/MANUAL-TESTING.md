@@ -194,19 +194,28 @@ The loading overlay `[data-testid="iframe-loading-overlay"]` with the "OrganizrX
 **Expected Result:**
 The loading overlay `[data-testid="iframe-loading-overlay"]` never appears. The iframe (or empty background) is visible immediately.
 
-### Scenario 3.3: Blocked tab actions [Playwright-automatable]
+### Scenario 3.3: Blocked tab → error overlay appears, then "Open in New Tab" [Playwright-automatable]
 
 **Preconditions:**
 
-- Tab pointing to `https://github.com` (blocked)
+- Tab pointing to `https://github.com` (blocked by X-Frame-Options)
 
 **Steps:**
 
-1. Open the blocked tab
-2. Click the "Open in New Tab" link in the error overlay
+1. Open the blocked tab in the sidebar
+2. Wait up to 30 seconds for the background ping check to complete
+3. Verify `[data-testid="iframe-error-overlay"]` is visible with the message "This site blocks iframe embedding"
+4. Click the "Open in New Tab" link in the error overlay
 
 **Expected Result:**
-A new browser tab opens with `https://github.com`. The link has `rel="noopener noreferrer"`.
+Step 3: The error overlay appears. No `<iframe>` element exists in the DOM for this tab.
+Step 4: A new browser tab opens with `https://github.com`. The link has `rel="noopener noreferrer"`.
+
+**Notes:**
+
+- The blocked overlay is driven by a background server-side HEAD request (`/api/tabs/check-url`). It is **asynchronous** — a brief loading overlay may show first while the ping completes.
+- The server checks `X-Frame-Options` and `Content-Security-Policy: frame-ancestors` headers. If `iframeAllowed` is `false` (regardless of whether the server could reach the target), the overlay appears.
+- If the server is running in a restricted network environment and cannot reach the external URL, `reachable` will be `false` but `iframeAllowed` will also be `false` — the overlay still shows correctly.
 
 ### Scenario 3.4: Retry button on timed-out tab [Manual-only]
 
