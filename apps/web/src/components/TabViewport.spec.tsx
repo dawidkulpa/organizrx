@@ -69,7 +69,9 @@ type SidebarTab = Pick<
 
 const createSidebarResponse = (tabs: SidebarTab[]) => ({
   data: {
-    tabs,
+    data: {
+      tabs,
+    },
   },
 })
 
