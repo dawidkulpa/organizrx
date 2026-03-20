@@ -38,7 +38,7 @@ export default function Tabs() {
 
     // Query success: validate tab and handle navigation/mounting
     if (query.data) {
-      const tab = query.data.data?.data as {
+      const tab = query.data.data as {
         id: number
         enabled: number | null
         type: number | null
