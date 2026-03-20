@@ -95,6 +95,58 @@ describe('ManagedIframe', () => {
     expect(getByTitle('Radarr')).toBeTruthy()
   })
 
+  it('renders iframe element with correct src', () => {
+    const { container } = render(
+      <ManagedIframe
+        src="https://example.com"
+        title="Example"
+        tabId={1}
+        isActive
+        iframeBlocked={false}
+      />
+    )
+
+    const iframe = container.querySelector('iframe[src="https://example.com"]')
+
+    expect(iframe).toBeTruthy()
+    expect(iframe?.getAttribute('src')).toBe('https://example.com')
+  })
+
+  it('does NOT render iframe element when iframeBlocked is true', () => {
+    const { container } = render(
+      <ManagedIframe src="https://blocked.com" title="Blocked" tabId={1} isActive iframeBlocked />
+    )
+
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  it('shows error overlay with correct text when iframeBlocked is true', async () => {
+    const { getByTestId, getByText } = render(
+      <ManagedIframe src="https://blocked.com" title="Blocked" tabId={1} isActive iframeBlocked />
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('iframe-error-overlay')).toBeTruthy()
+    })
+
+    expect(getByText('This site blocks iframe embedding')).toBeTruthy()
+    expect(
+      getByText(
+        'The remote server disallows loading this page inside dashboards for security reasons.'
+      )
+    ).toBeTruthy()
+  })
+
+  it('error overlay Open in New Tab link has correct href', async () => {
+    const { getByRole } = render(
+      <ManagedIframe src="https://blocked.com" title="Blocked" tabId={1} isActive iframeBlocked />
+    )
+
+    const link = await waitFor(() => getByRole('link', { name: 'Open in New Tab' }))
+
+    expect(link.getAttribute('href')).toBe('https://blocked.com')
+  })
+
   it('shows a timeout error and retries by remounting the iframe', async () => {
     const { container, getByRole, getByText, getByTestId, queryByTestId, queryByText } = render(
       <ManagedIframe

@@ -1,6 +1,6 @@
 import { GlobalWindow } from 'happy-dom'
 import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test'
-import { render, waitFor, cleanup } from '@testing-library/react'
+import { act, render, waitFor, cleanup } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { createQueryWrapper } from '../test-utils/query-wrapper'
 import { useTabStore } from '../store'
@@ -114,6 +114,25 @@ mock.module('../api/client', () => ({
 
 import TabViewport from './TabViewport'
 
+async function renderTabViewport(initialEntries: string[], includeSettingsRoute = false) {
+  let rendered: ReturnType<typeof render>
+
+  await act(async () => {
+    rendered = render(
+      <Wrapper>
+        <MemoryRouter initialEntries={initialEntries}>
+          <Routes>
+            <Route path="/tab/:id" element={<TabViewport />} />
+            {includeSettingsRoute && <Route path="/settings" element={<TabViewport />} />}
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
+    )
+  })
+
+  return rendered!
+}
+
 describe('TabViewport', () => {
   beforeEach(() => {
     useTabStore.getState().resetTabs()
@@ -128,33 +147,28 @@ describe('TabViewport', () => {
   it('keeps visited iframe tab mounted while hidden after navigation', async () => {
     useTabStore.getState().setActiveTabId(101)
 
-    const { container, rerender } = render(
-      <Wrapper>
-        <MemoryRouter initialEntries={['/tab/101']}>
-          <Routes>
-            <Route path="/tab/:id" element={<TabViewport />} />
-            <Route path="/settings" element={<TabViewport />} />
-          </Routes>
-        </MemoryRouter>
-      </Wrapper>
-    )
+    const { container, rerender } = await renderTabViewport(['/tab/101'], true)
 
     await waitFor(() => {
       expect(container.querySelector('[data-mounted-tab-id="101"]')).toBeTruthy()
     })
 
-    useTabStore.getState().setActiveTabId(null)
+    await act(async () => {
+      useTabStore.getState().setActiveTabId(null)
+    })
 
-    rerender(
-      <Wrapper>
-        <MemoryRouter initialEntries={['/settings']}>
-          <Routes>
-            <Route path="/tab/:id" element={<TabViewport />} />
-            <Route path="/settings" element={<TabViewport />} />
-          </Routes>
-        </MemoryRouter>
-      </Wrapper>
-    )
+    await act(async () => {
+      rerender(
+        <Wrapper>
+          <MemoryRouter initialEntries={['/settings']}>
+            <Routes>
+              <Route path="/tab/:id" element={<TabViewport />} />
+              <Route path="/settings" element={<TabViewport />} />
+            </Routes>
+          </MemoryRouter>
+        </Wrapper>
+      )
+    })
 
     await waitFor(() => {
       const mounted = container.querySelector('[data-mounted-tab-id="101"]')
@@ -167,15 +181,7 @@ describe('TabViewport', () => {
   it('does not render internal tabs as iframes', async () => {
     useTabStore.getState().setActiveTabId(202)
 
-    const { container } = render(
-      <Wrapper>
-        <MemoryRouter initialEntries={['/tab/202']}>
-          <Routes>
-            <Route path="/tab/:id" element={<TabViewport />} />
-          </Routes>
-        </MemoryRouter>
-      </Wrapper>
-    )
+    const { container } = await renderTabViewport(['/tab/202'])
 
     await waitFor(() => {
       expect(mockSidebar).toHaveBeenCalled()
@@ -215,16 +221,7 @@ describe('TabViewport', () => {
       ])
     )
 
-    const { container } = render(
-      <Wrapper>
-        <MemoryRouter initialEntries={['/settings']}>
-          <Routes>
-            <Route path="/tab/:id" element={<TabViewport />} />
-            <Route path="/settings" element={<TabViewport />} />
-          </Routes>
-        </MemoryRouter>
-      </Wrapper>
-    )
+    const { container } = await renderTabViewport(['/settings'], true)
 
     await waitFor(() => {
       expect(useTabStore.getState().mountedTabs).toContain(303)
@@ -259,20 +256,71 @@ describe('TabViewport', () => {
 
     useTabStore.getState().setActiveTabId(303)
 
-    const { container, queryByTestId } = render(
-      <Wrapper>
-        <MemoryRouter initialEntries={['/tab/303']}>
-          <Routes>
-            <Route path="/tab/:id" element={<TabViewport />} />
-          </Routes>
-        </MemoryRouter>
-      </Wrapper>
-    )
+    const { container, queryByTestId } = await renderTabViewport(['/tab/303'])
 
     await waitFor(() => {
       expect(container.querySelector('[data-mounted-tab-id="303"]')).toBeTruthy()
     })
 
     expect(queryByTestId('iframe-loading-overlay')).toBeNull()
+  })
+
+  it('renders iframe with correct src when tab is active', async () => {
+    mockSidebar.mockResolvedValueOnce(
+      createSidebarResponse([
+        {
+          id: 10,
+          name: 'Example',
+          url: 'https://example.com',
+          url_local: null,
+          enabled: 1,
+          type: 0,
+          timeout: 10000,
+          timeout_ms: null,
+          preload: 0,
+          splash: 1,
+        },
+      ])
+    )
+
+    useTabStore.getState().setActiveTabId(10)
+
+    const { container } = await renderTabViewport(['/tab/10'])
+
+    await waitFor(() => {
+      const iframe = container.querySelector('iframe[src="https://example.com"]')
+      expect(iframe).toBeTruthy()
+      expect(iframe?.getAttribute('src')).toBe('https://example.com')
+    })
+  })
+
+  it('does not render anything when no tabs match activeTabId', async () => {
+    mockSidebar.mockResolvedValueOnce(
+      createSidebarResponse([
+        {
+          id: 10,
+          name: 'Example',
+          url: 'https://example.com',
+          url_local: null,
+          enabled: 1,
+          type: 0,
+          timeout: 10000,
+          timeout_ms: null,
+          preload: 0,
+          splash: 1,
+        },
+      ])
+    )
+
+    useTabStore.getState().setActiveTabId(99)
+
+    const { container } = await renderTabViewport(['/tab/99'])
+
+    await waitFor(() => {
+      expect(mockSidebar).toHaveBeenCalled()
+    })
+
+    expect(container.firstChild).toBeNull()
+    expect(container.querySelector('iframe')).toBeNull()
   })
 })
