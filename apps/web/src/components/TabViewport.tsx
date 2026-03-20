@@ -40,7 +40,7 @@ export default function TabViewport() {
     queryFn: () => api.tabs.sidebar(),
   })
 
-  const tabs = (data?.data?.data as SidebarResponse | undefined)?.tabs ?? []
+  const tabs = (data?.data as SidebarResponse | undefined)?.tabs ?? []
 
   useEffect(() => {
     if (activeTabId !== null) {
