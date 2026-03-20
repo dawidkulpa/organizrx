@@ -21,7 +21,7 @@ This guide provides scenario-based manual testing procedures for the tab managem
 | Iframe element        | `iframe[src="{url}"]`                    |
 | Error overlay         | `[data-testid="iframe-error-overlay"]`   |
 | Loading overlay       | `[data-testid="iframe-loading-overlay"]` |
-| Tab container div     | `div[data-tab-id="{id}"]`                |
+| ManagedIframe wrapper | `div[data-tab-id="{id}"]`                |
 
 ---
 
