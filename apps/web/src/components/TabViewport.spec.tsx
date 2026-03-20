@@ -268,6 +268,56 @@ describe('TabViewport', () => {
     expect(queryByTestId('iframe-loading-overlay')).toBeNull()
   })
 
+  it('shows the iframe error overlay when the ping store marks iframe access as blocked', async () => {
+    useTabPingStore.getState().setResult(101, {
+      reachable: true,
+      iframeAllowed: false,
+      status: 403,
+      checkedAt: Date.now(),
+    })
+    useTabStore.getState().setActiveTabId(101)
+
+    const { container, getByTestId } = await renderTabViewport(['/tab/101'])
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-mounted-tab-id="101"]')).toBeTruthy()
+      expect(getByTestId('iframe-error-overlay')).toBeTruthy()
+    })
+
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  it('uses the public url instead of url_local because local network detection is disabled', async () => {
+    mockSidebar.mockResolvedValueOnce(
+      createSidebarResponse([
+        {
+          id: 505,
+          name: 'Remote Preferred',
+          url: 'https://remote.example',
+          url_local: 'http://192.168.1.10',
+          enabled: 1,
+          type: 0,
+          timeout: 10000,
+          timeout_ms: null,
+          preload: 0,
+          splash: 1,
+        },
+      ])
+    )
+
+    useTabStore.getState().setActiveTabId(505)
+
+    const { container } = await renderTabViewport(['/tab/505'])
+
+    await waitFor(() => {
+      const iframe = container.querySelector('iframe[src="https://remote.example"]')
+      expect(iframe).toBeTruthy()
+      expect(iframe?.getAttribute('src')).toBe('https://remote.example')
+    })
+
+    expect(container.querySelector('iframe')?.getAttribute('src')).not.toBe('http://192.168.1.10')
+  })
+
   it('renders iframe with correct src when tab is active', async () => {
     mockSidebar.mockResolvedValueOnce(
       createSidebarResponse([

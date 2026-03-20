@@ -277,6 +277,24 @@ The iframe loads the NEW URL (`https://status.public.dkulpa.eu`).
 **Expected Result:**
 "Hidden Tab" reappears in the sidebar and functions normally.
 
+### Scenario 4.4: Change tab type from External to non-external [Playwright-automatable]
+
+**Preconditions:**
+
+- An existing external tab "External Tab" pointing to `https://example.com` is enabled and visible in the sidebar
+
+**Steps:**
+
+1. Go to Settings > Tabs
+2. Edit "External Tab"
+3. Change Tab Type from "External" to any non-external type (e.g., "Internal")
+4. Save
+5. Navigate to Dashboard
+6. Click "External Tab" in the sidebar
+
+**Expected Result:**
+No `<iframe>` is rendered. The tab does NOT attempt to load `https://example.com` in an iframe. The user is redirected to `/` or the appropriate internal route. The `[data-mounted-tab-id]` container, if present, does not contain an `<iframe>` element.
+
 ---
 
 ## Group 5: Tab Deletion
@@ -353,3 +371,19 @@ The "Plex" tab appears nested under the "Media" category header.
 
 **Expected Result:**
 Each tab shows the correct content. The sidebar highlight moves correctly to the active tab. No performance degradation or "ghost" iframes from previous clicks (only the active one is visible).
+
+### Scenario 6.4: Tab ordering matches configured order [Manual-only]
+
+**Preconditions:**
+
+- At least 3 tabs exist with explicitly set `order` values (e.g., Tab A: order=1, Tab B: order=2, Tab C: order=3)
+- Logged in as admin
+
+**Steps:**
+
+1. Go to Settings > Tabs and note the configured `order` values for each tab
+2. Navigate to the Dashboard
+3. Compare the visual order of tabs in the sidebar against the configured `order` values
+
+**Expected Result:**
+Tabs appear in the sidebar in ascending `order` value sequence. Tab A (order=1) appears first, Tab B (order=2) second, Tab C (order=3) third. Changing an order value in Settings and saving causes the sidebar order to update accordingly.
