@@ -70,9 +70,11 @@ export default function Layout() {
 
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 bg-black/50 z-10 backdrop-blur-sm"
           onClick={() => toggleSidebar()}
+          aria-label="Close sidebar overlay"
         />
       )}
 
@@ -84,6 +86,7 @@ export default function Layout() {
             {isAdmin && (
               <div className="relative" ref={bellRef}>
                 <button
+                  type="button"
                   onClick={() => setBellOpen(!bellOpen)}
                   className="relative p-2 rounded-md hover:bg-muted transition-colors"
                   aria-label="Update notifications"
@@ -113,13 +116,11 @@ export default function Layout() {
 
         <main className="flex-1 overflow-hidden relative">
           <TabViewport />
-          {!tabRouteMatch && (
-            <div className="h-full overflow-auto p-6 scroll-smooth">
-              <div className="max-w-7xl mx-auto animate-reveal">
-                <Outlet />
-              </div>
+          <div className={tabRouteMatch ? 'hidden' : 'h-full overflow-auto p-6 scroll-smooth'}>
+            <div className="max-w-7xl mx-auto animate-reveal">
+              <Outlet />
             </div>
-          )}
+          </div>
         </main>
       </div>
     </div>
