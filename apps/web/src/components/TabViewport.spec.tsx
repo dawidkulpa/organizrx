@@ -4,6 +4,7 @@ import { act, render, waitFor, cleanup } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { createQueryWrapper } from '../test-utils/query-wrapper'
 import { useTabStore } from '../store'
+import { useTabPingStore } from '../store/tab-ping'
 import type { Tab } from '@organizrx/shared'
 
 const Wrapper = createQueryWrapper()
@@ -136,12 +137,14 @@ async function renderTabViewport(initialEntries: string[], includeSettingsRoute 
 describe('TabViewport', () => {
   beforeEach(() => {
     useTabStore.getState().resetTabs()
+    useTabPingStore.getState().clear()
     mockSidebar.mockClear()
   })
 
   afterEach(() => {
     cleanup()
     useTabStore.getState().resetTabs()
+    useTabPingStore.getState().clear()
   })
 
   it('keeps visited iframe tab mounted while hidden after navigation', async () => {
