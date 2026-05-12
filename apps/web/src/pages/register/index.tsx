@@ -89,10 +89,10 @@ export default function Register() {
           </div>
         ) : registered ? (
           <div className="mt-8 space-y-6 text-center">
-            <div className="rounded-md bg-green-500/10 p-4 border border-green-500/20 flex flex-col items-center">
-              <CheckCircle className="h-10 w-10 text-green-500 mb-2" />
-              <h3 className="text-sm font-medium text-green-500">Account created successfully!</h3>
-              <p className="text-sm text-green-500/80 mt-1">
+            <div className="rounded-md bg-success/10 p-4 border border-success/20 flex flex-col items-center">
+              <CheckCircle className="h-10 w-10 text-success mb-2" />
+              <h3 className="text-sm font-medium text-success">Registration successful!</h3>
+              <p className="text-sm text-success/80 mt-1">
                 Redirecting to login in {countdown} seconds...
               </p>
             </div>

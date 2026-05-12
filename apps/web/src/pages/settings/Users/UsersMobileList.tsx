@@ -37,7 +37,7 @@ export function UsersMobileList({
           <div className="flex items-start gap-3">
             <input
               type="checkbox"
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary"
               checked={selectedUsers.includes(user.id)}
               onChange={() => handleSelectUser(user.id)}
             />
@@ -60,12 +60,14 @@ export function UsersMobileList({
           <div className="flex flex-col gap-1">
             <button
               onClick={() => handleEdit(user)}
+              aria-label="Edit user"
               className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground"
             >
               <Pencil className="h-4 w-4" />
             </button>
             <button
               onClick={() => handleDelete(user)}
+              aria-label="Delete user"
               className="p-2 hover:bg-destructive/10 rounded-md text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />

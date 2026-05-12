@@ -95,6 +95,7 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
           <h2 className="text-lg font-semibold text-foreground">Edit User: {user.username}</h2>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-5 w-5" />
@@ -141,7 +142,7 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
               <span
                 className={cn(
                   'text-xs px-2 py-0.5 rounded-full font-semibold',
-                  isLocked ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600'
+                  isLocked ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'
                 )}
               >
                 {isLocked ? 'Locked' : 'Active'}
@@ -150,10 +151,10 @@ export default function UserForm({ user, groups, open, onClose, onSaved }: UserF
             <button
               type="button"
               onClick={() => setValue('locked', !isLocked)}
-              className={cn(
-                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                isLocked ? 'bg-input' : 'bg-green-500'
-              )}
+               className={cn(
+                 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                 isLocked ? 'bg-input' : 'bg-success'
+               )}
             >
               <span
                 className={cn(

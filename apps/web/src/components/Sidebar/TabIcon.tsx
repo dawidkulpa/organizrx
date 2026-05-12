@@ -26,10 +26,10 @@ function getDotClassName(
   }
 
   if (!result.iframeAllowed) {
-    return 'bg-yellow-500'
+    return 'bg-warning'
   }
 
-  return 'bg-emerald-500'
+  return 'bg-success'
 }
 
 export function TabIcon({ tabId, image, sidebarOpen }: TabIconProps) {

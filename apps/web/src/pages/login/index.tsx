@@ -134,7 +134,7 @@ export default function Login() {
                 type="button"
                 onClick={handleLdapLogin}
                 disabled={isLoading}
-                className="group relative flex w-full justify-center rounded-md border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-sm font-semibold text-blue-500 hover:bg-blue-500/20 disabled:opacity-50 transition-all"
+                className="group relative flex w-full justify-center rounded-md border border-info/20 bg-info/10 px-3 py-2 text-sm font-semibold text-info hover:bg-info/20 disabled:opacity-50 transition-all"
               >
                 <Server className="mr-2 h-4 w-4" />
                 Sign in with LDAP

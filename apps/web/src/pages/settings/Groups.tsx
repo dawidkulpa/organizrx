@@ -258,6 +258,7 @@ export default function SettingsGroups() {
               <button
                 type="button"
                 onClick={handleCloseModal}
+                aria-label="Close dialog"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-5 w-5" />

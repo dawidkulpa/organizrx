@@ -40,6 +40,7 @@ export default function Sidebar() {
         {!isMobile && (
           <button
             onClick={toggleSidebar}
+            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             className="p-1 rounded-md hover:bg-muted text-muted-foreground transition-colors"
           >
             {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
@@ -95,6 +96,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-1 ml-auto">
               <button
                 onClick={lockScreen}
+                aria-label="Lock screen"
                 className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                 title="Lock screen"
               >
@@ -102,6 +104,7 @@ export default function Sidebar() {
               </button>
               <button
                 onClick={logout}
+                aria-label="Log out"
                 className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors"
                 title="Logout"
               >

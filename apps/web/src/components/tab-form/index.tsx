@@ -136,6 +136,7 @@ export default function TabForm({ tab, categories, groups, open, onClose, onSave
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
           >
             <X className="w-5 h-5" />

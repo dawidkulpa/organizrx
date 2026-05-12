@@ -8,8 +8,8 @@ interface CompleteStepProps {
 export function CompleteStep({ data }: CompleteStepProps) {
   return (
     <div className="space-y-4 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-        <CheckCircle2 className="h-8 w-8 text-green-500" />
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+        <CheckCircle2 className="h-8 w-8 text-success" />
       </div>
       <h3 className="text-xl font-semibold">Ready to Go!</h3>
       <div className="text-left bg-muted/30 rounded-md p-4 space-y-2 text-sm">

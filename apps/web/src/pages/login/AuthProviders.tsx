@@ -44,7 +44,7 @@ export function AuthProviders({
             type="button"
             onClick={() => handleExternalLogin('oidc')}
             disabled={isLoading}
-            className="flex w-full items-center justify-center gap-3 rounded-md bg-blue-500/10 px-3 py-2 text-sm font-semibold text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 transition-all disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-3 rounded-md bg-info/10 px-3 py-2 text-sm font-semibold text-info hover:bg-info/20 border border-info/20 transition-all disabled:opacity-50"
           >
             <ExternalLink className="h-4 w-4" />
             Sign in with SSO

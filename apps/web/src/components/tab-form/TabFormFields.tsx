@@ -33,11 +33,11 @@ export function TabFormFields({
             className="w-full px-3 py-2 bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
             placeholder="My Dashboard"
           />
-          {errors.name && (
-            <p className="text-xs text-red-500 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" /> {errors.name.message}
-            </p>
-          )}
+           {errors.name && (
+             <p className="text-xs text-destructive flex items-center gap-1">
+               <AlertCircle className="w-3 h-3" /> {errors.name.message}
+             </p>
+           )}
         </div>
 
         {/* URL */}
@@ -69,11 +69,11 @@ export function TabFormFields({
               placeholder="https://example.com"
             />
           )}
-          {errors.url && (
-            <p className="text-xs text-red-500 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" /> {errors.url.message}
-            </p>
-          )}
+           {errors.url && (
+             <p className="text-xs text-destructive flex items-center gap-1">
+               <AlertCircle className="w-3 h-3" /> {errors.url.message}
+             </p>
+           )}
         </div>
 
         {/* Local URL */}

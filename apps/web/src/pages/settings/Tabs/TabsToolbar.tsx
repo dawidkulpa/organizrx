@@ -75,7 +75,8 @@ export function TabsToolbar({
             </span>
             <button
               onClick={handleBulkDelete}
-              className="p-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+              aria-label="Delete selected tabs"
+              className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
               title="Delete Selected"
             >
               <Trash2 className="w-4 h-4" />

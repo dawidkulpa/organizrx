@@ -34,7 +34,7 @@ export function UsersTable({
             <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[50px]">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
                 checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
                 onChange={handleSelectAll}
               />
@@ -61,7 +61,7 @@ export function UsersTable({
               <td className="p-4 align-middle">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                     className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
                   checked={selectedUsers.includes(user.id)}
                   onChange={() => handleSelectUser(user.id)}
                 />
@@ -88,10 +88,10 @@ export function UsersTable({
                     <Lock className="h-3 w-3" /> Locked
                   </span>
                 ) : (
-                  <span className="inline-flex items-center text-xs font-medium text-green-600 gap-1">
-                    <Check className="h-3 w-3" /> Active
-                  </span>
-                )}
+                   <span className="inline-flex items-center text-xs font-medium text-success gap-1">
+                     <Check className="h-3 w-3" /> Active
+                   </span>
+                 )}
               </td>
               <td className="p-4 align-middle">
                 {user.auth_service && (
@@ -104,12 +104,14 @@ export function UsersTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => handleEdit(user)}
+                    aria-label="Edit user"
                     className="p-2 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(user)}
+                    aria-label="Delete user"
                     className="p-2 hover:bg-destructive/10 rounded-md text-muted-foreground hover:text-destructive transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />

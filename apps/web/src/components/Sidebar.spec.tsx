@@ -374,7 +374,7 @@ describe('Sidebar', () => {
 
     const dot = await findByTestId('ping-dot-1')
     await waitFor(() => {
-      expect(dot.className).toContain('bg-emerald-500')
+      expect(dot.className).toContain('bg-success')
     })
   })
 

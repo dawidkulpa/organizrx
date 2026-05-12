@@ -93,7 +93,7 @@ export default function Layout() {
                 >
                   <Bell size={20} />
                   {updateAvailable && (
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-warning rounded-full" />
                   )}
                 </button>
                 {bellOpen && updateAvailable && (

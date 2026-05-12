@@ -116,7 +116,7 @@ export default function Migration() {
             <div className="bg-muted/30 p-4 rounded-md text-left text-sm space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status</span>
-                <span className="text-amber-500 font-medium flex items-center gap-1">
+                <span className="text-warning font-medium flex items-center gap-1">
                   <AlertTriangle size={14} /> Update Needed
                 </span>
               </div>
@@ -134,11 +134,11 @@ export default function Migration() {
               )}
             </div>
           ) : status?.alreadyMigrated ? (
-            <div className="text-green-500 bg-green-500/10 p-4 rounded-md flex items-center gap-2 justify-center">
+            <div className="text-success bg-success/10 p-4 rounded-md flex items-center gap-2 justify-center">
               <CheckCircle2 size={16} /> Schema is up to date
             </div>
           ) : (
-            <div className="text-green-500 bg-green-500/10 p-4 rounded-md flex items-center gap-2 justify-center">
+            <div className="text-success bg-success/10 p-4 rounded-md flex items-center gap-2 justify-center">
               <CheckCircle2 size={16} /> No update needed
             </div>
           )}
@@ -197,8 +197,8 @@ export default function Migration() {
       )
     return (
       <div className="space-y-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-          <CheckCircle2 className="h-8 w-8 text-green-500" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+          <CheckCircle2 className="h-8 w-8 text-success" />
         </div>
         <h3 className="text-xl font-semibold">Schema Update Complete!</h3>
         <div className="bg-muted/30 p-4 rounded-md text-left text-sm space-y-2">

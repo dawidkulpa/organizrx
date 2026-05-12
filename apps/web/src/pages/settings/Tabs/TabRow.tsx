@@ -55,7 +55,7 @@ export function TabRow({
               type="checkbox"
               checked={isSelected}
               onChange={() => toggleSelection(tab.id)}
-              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+               className="w-4 h-4 rounded border-input text-primary focus:ring-primary"
             />
           </div>
 
@@ -89,7 +89,7 @@ export function TabRow({
             <div
               className={cn(
                 'w-2.5 h-2.5 rounded-full',
-                tab.enabled ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500'
+                tab.enabled ? 'bg-success shadow-[0_0_8px_color-mix(in_srgb,var(--color-success)_50%,transparent)]' : 'bg-destructive'
               )}
               title={tab.enabled ? 'Enabled' : 'Disabled'}
             />
@@ -99,6 +99,7 @@ export function TabRow({
           <div className="flex items-center justify-end gap-2 transition-opacity">
             <button
               onClick={() => handleEdit(tab)}
+              aria-label="Edit tab"
               className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
               title="Edit"
             >
@@ -107,7 +108,8 @@ export function TabRow({
             {tab.isDefault !== 1 ? (
               <button
                 onClick={() => handleDelete(tab.id)}
-                className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                aria-label="Delete tab"
+                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                 title="Delete"
               >
                 <Trash2 className="w-4 h-4" />

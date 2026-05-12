@@ -114,13 +114,13 @@ export function SettingsForm<T extends FieldValues>({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {form.formState.isDirty ? (
               <>
-                <AlertCircle className="h-4 w-4 text-amber-500" />
-                <span className="text-amber-500 font-medium">Unsaved changes</span>
+                <AlertCircle className="h-4 w-4 text-warning" />
+                <span className="text-warning font-medium">Unsaved changes</span>
               </>
             ) : saveStatus === 'success' ? (
-              <span className="text-green-600 font-medium">Settings saved successfully</span>
+              <span className="text-success font-medium">Settings saved successfully</span>
             ) : saveStatus === 'error' ? (
-              <span className="text-red-600 font-medium">Failed to save settings</span>
+              <span className="text-destructive font-medium">Failed to save settings</span>
             ) : null}
           </div>
 

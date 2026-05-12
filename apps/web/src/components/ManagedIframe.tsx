@@ -123,15 +123,15 @@ export default function ManagedIframe({
           role="alert"
           className="absolute inset-0 z-20 flex h-full w-full flex-col items-center justify-center gap-4 bg-background p-8"
         >
-          <div
-            className={cn(
-              'flex h-16 w-16 items-center justify-center rounded-full',
-              iframeBlocked ? 'bg-yellow-500/10' : 'bg-destructive/10'
-            )}
-          >
-            <AlertTriangle
-              className={cn('h-8 w-8', iframeBlocked ? 'text-yellow-600' : 'text-destructive')}
-            />
+           <div
+             className={cn(
+               'flex h-16 w-16 items-center justify-center rounded-full',
+               iframeBlocked ? 'bg-warning/10' : 'bg-destructive/10'
+             )}
+           >
+             <AlertTriangle
+               className={cn('h-8 w-8', iframeBlocked ? 'text-warning' : 'text-destructive')}
+             />
           </div>
           <h3 className="text-lg font-semibold text-foreground">
             {loadError === 'timeout'
