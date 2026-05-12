@@ -23,6 +23,16 @@ const bookmarks = new Hono()
 // Bookmark Categories
 // ---------------------------------------------------------------------------
 
+// GET /api/bookmarks — List all bookmark categories
+bookmarks.get('/', authMiddleware(), async (c) => {
+  try {
+    const result = await listBookmarkCategories()
+    return c.json({ data: result })
+  } catch (error) {
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to list bookmarks' } }, 500)
+  }
+})
+
 // GET /api/bookmarks/categories — List all bookmark categories ordered by order
 bookmarks.get('/categories', authMiddleware(), async (c) => {
   try {

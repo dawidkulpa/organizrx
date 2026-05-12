@@ -24,6 +24,23 @@ const updateSsoConfigSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// GET /api/sso — SSO status summary (admin-only)
+// ---------------------------------------------------------------------------
+
+sso.get('/', authMiddleware(), requireGroup(0), async (c) => {
+  try {
+    const config = await getSsoConfig()
+    const services = DEFAULT_SSO_SERVICES.map((s) => ({
+      name: s.name,
+      description: s.description,
+    }))
+    return c.json({ data: { services, config } })
+  } catch (error) {
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get SSO status' } }, 500)
+  }
+})
+
+// ---------------------------------------------------------------------------
 // GET /api/sso/services — list all SSO-configurable services (admin-only)
 // ---------------------------------------------------------------------------
 
