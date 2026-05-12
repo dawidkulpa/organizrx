@@ -142,7 +142,7 @@ organizrx/
 
 ## Migrating from Organizr
 
-OrganizrX supports in-place migrations from your existing PHP Organizr setup. The system can connect to your legacy database, detect the schema version, and automatically migrate your settings and users. Refer to the [migration guide](https://github.com/organizrx/organizrx/docs) for specific steps.
+OrganizrX supports in-place migrations from your existing PHP Organizr setup. The system can connect to your legacy database, detect the schema version, and automatically migrate your settings and users. Refer to the [migration guide](./docs/docs/user-guide/migration.md) for specific steps.
 
 ## Documentation
 
