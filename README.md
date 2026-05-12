@@ -2,7 +2,7 @@
 
 A modern, TypeScript-native media server dashboard rebuilt from the ground up.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://github.com/organizrx/organizrx/workflows/CI/badge.svg)](https://github.com/organizrx/organizrx/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.1-black.svg)](https://bun.sh/)
@@ -154,4 +154,4 @@ We welcome contributions. Please review [CONTRIBUTING.md](CONTRIBUTING.md) befor
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.

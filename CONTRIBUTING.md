@@ -110,4 +110,4 @@ The changelog is automatically updated based on commit messages. Ensure your com
 
 ---
 
-By contributing to this project, you agree that your contributions will be licensed under the MIT License.
+By contributing to this project, you agree that your contributions will be licensed under the GNU General Public License v3.0.
