@@ -60,7 +60,7 @@ graph TD
 Run the dashboard with a single command:
 
 ```bash
-docker run -d --name organizrx -p 3001:3001 -v ./data:/app/data organizrx/organizrx:latest
+docker run -d --name organizrx -p 3001:3001 -v ./data:/app/data dawidkulpa/organizrx:latest
 ```
 
 ### Docker Compose
@@ -68,7 +68,7 @@ docker run -d --name organizrx -p 3001:3001 -v ./data:/app/data organizrx/organi
 ```yaml
 services:
   organizrx:
-    image: organizrx:latest
+    image: dawidkulpa/organizrx:latest
     container_name: organizrx
     ports:
       - '3001:3001'

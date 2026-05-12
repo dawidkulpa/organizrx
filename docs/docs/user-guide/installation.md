@@ -19,7 +19,7 @@ docker run -d \
   --name organizrx \
   -p 3001:3001 \
   -v ./data:/app/data \
-  organizrx:latest
+  dawidkulpa/organizrx:latest
 ```
 
 ### Docker Compose
@@ -29,7 +29,7 @@ For more control and better management, use a `docker-compose.yml` file.
 ```yaml
 services:
   organizrx:
-    image: organizrx:latest
+    image: dawidkulpa/organizrx:latest
     container_name: organizrx
     ports:
       - "3001:3001"
@@ -52,7 +52,7 @@ services:
 ```yaml
 services:
   organizrx:
-    image: organizrx:latest
+    image: dawidkulpa/organizrx:latest
     container_name: organizrx
     ports:
       - "3001:3001"
@@ -83,7 +83,7 @@ volumes:
 ```yaml
 services:
   organizrx:
-    image: organizrx:latest
+    image: dawidkulpa/organizrx:latest
     container_name: organizrx
     ports:
       - "3001:3001"
