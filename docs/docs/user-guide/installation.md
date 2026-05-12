@@ -18,6 +18,7 @@ To start OrganizrX with a simple SQLite database and default settings:
 docker run -d \
   --name organizrx \
   -p 3001:3001 \
+  -e JWT_SECRET="change-me-to-a-secure-secret-at-least-32-chars" \
   -v ./data:/app/data \
   dawidkulpa/organizrx:latest
 ```
@@ -40,7 +41,6 @@ services:
       - DATABASE_DIALECT=sqlite # Options: sqlite, mysql, postgresql
       - DATABASE_URL=/app/data/organizr.db
       - JWT_SECRET=your-secure-secret-minimum-32-characters
-      - BCRYPT_ROUNDS=12
       - LOG_LEVEL=info # Options: debug, info, warn, error
     volumes:
       - ./data:/app/data
@@ -120,7 +120,7 @@ If you prefer to run OrganizrX directly on your host machine, you will need Bun 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/organizrx/organizrx.git
+   git clone https://github.com/dawidkulpa/organizrx.git
    cd organizrx
    ```
 
@@ -135,7 +135,7 @@ If you prefer to run OrganizrX directly on your host machine, you will need Bun 
    ```
 4. **Start the server:**
    ```bash
-   bun run start
+   bun run apps/server/src/index.ts
    ```
 
 ## Reverse Proxy Configuration
@@ -199,7 +199,6 @@ labels:
 | `DATABASE_DIALECT` | String | `sqlite` | The database driver to use (sqlite, mysql, postgresql). | No |
 | `DATABASE_URL` | String | (varies) | The connection string or file path for your database. | No |
 | `JWT_SECRET` | String | (none) | A secure string for signing tokens. Must be at least 32 characters in production. | **Yes** |
-| `BCRYPT_ROUNDS` | Number | `12` | The number of hashing rounds for passwords. | No |
 | `LOG_LEVEL` | String | `info` | The verbosity of logs (debug, info, warn, error). | No |
 | `LEGACY_DB_PATH` | String | (none) | Path to an existing Organizr v2 SQLite database for migration. | No |
 | `LEGACY_DB_URL` | String | (none) | Connection URL for an existing Organizr v2 MySQL/PG database for migration. | No |

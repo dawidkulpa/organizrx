@@ -10,7 +10,7 @@ This guide covers how to contribute new features to OrganizrX core: adding API e
 
 ```bash
 # Clone and install
-git clone https://github.com/organizrx/organizrx.git
+git clone https://github.com/dawidkulpa/organizrx.git
 cd organizrx
 bun install
 

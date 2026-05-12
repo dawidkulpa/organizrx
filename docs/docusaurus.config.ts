@@ -47,7 +47,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/organizrx/organizrx/tree/main/docs/',
+            'https://github.com/dawidkulpa/organizrx/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -79,7 +79,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/organizrx/organizrx',
+          href: 'https://github.com/dawidkulpa/organizrx',
           label: 'GitHub',
           position: 'right',
         },
@@ -106,11 +106,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/organizrx/organizrx/discussions',
+              href: 'https://github.com/dawidkulpa/organizrx/discussions',
             },
             {
               label: 'Issues',
-              href: 'https://github.com/organizrx/organizrx/issues',
+              href: 'https://github.com/dawidkulpa/organizrx/issues',
             },
           ],
         },
@@ -119,11 +119,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/organizrx/organizrx',
+              href: 'https://github.com/dawidkulpa/organizrx',
             },
             {
               label: 'Contributing',
-              href: 'https://github.com/organizrx/organizrx/blob/main/CONTRIBUTING.md',
+              href: 'https://github.com/dawidkulpa/organizrx/blob/main/CONTRIBUTING.md',
             },
           ],
         },

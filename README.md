@@ -3,7 +3,7 @@
 A modern, TypeScript-native media server dashboard rebuilt from the ground up.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://github.com/organizrx/organizrx/workflows/CI/badge.svg)](https://github.com/organizrx/organizrx/actions)
+[![Build Status](https://github.com/dawidkulpa/organizrx/workflows/CI/badge.svg)](https://github.com/dawidkulpa/organizrx/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.1-black.svg)](https://bun.sh/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](https://www.docker.com/)
@@ -60,7 +60,7 @@ graph TD
 Run the dashboard with a single command:
 
 ```bash
-docker run -d --name organizrx -p 3001:3001 -v ./data:/app/data dawidkulpa/organizrx:latest
+docker run -d --name organizrx -p 3001:3001 -e JWT_SECRET="change-me-to-a-secure-secret-at-least-32-chars" -v ./data:/app/data dawidkulpa/organizrx:latest
 ```
 
 ### Docker Compose
@@ -93,7 +93,7 @@ services:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/organizrx/organizrx.git
+   git clone https://github.com/dawidkulpa/organizrx.git
    cd organizrx
    ```
 
@@ -146,7 +146,7 @@ OrganizrX supports in-place migrations from your existing PHP Organizr setup. Th
 
 ## Documentation
 
-Full documentation is available at [https://github.com/organizrx/organizrx](https://github.com/organizrx/organizrx).
+Full documentation is available at [https://github.com/dawidkulpa/organizrx](https://github.com/dawidkulpa/organizrx).
 
 ## Contributing
 

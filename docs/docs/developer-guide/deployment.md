@@ -165,7 +165,7 @@ Key Dockerfile features:
 
 ```bash
 # Clone and install
-git clone https://github.com/organizrx/organizrx.git
+git clone https://github.com/dawidkulpa/organizrx.git
 cd organizrx
 bun install
 
