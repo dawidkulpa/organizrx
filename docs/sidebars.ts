@@ -59,6 +59,7 @@ const sidebars: SidebarsConfig = {
         'developer-guide/api-reference',
         'developer-guide/plugin-development',
         'developer-guide/database',
+        'developer-guide/migration-api',
         'developer-guide/frontend',
         'developer-guide/deployment',
         'developer-guide/contributing-core',

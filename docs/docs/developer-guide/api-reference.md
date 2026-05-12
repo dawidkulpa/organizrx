@@ -360,14 +360,7 @@ The wizard endpoints are only functional when no admin user exists. After setup,
 | GET    | `/api/migration/progress` | Admin | Get current migration progress   |
 | POST   | `/api/migration/start`    | Admin | Start migration (SSE stream)     |
 
-The `POST /api/migration/start` endpoint returns a Server-Sent Events (SSE) stream with real-time progress updates:
-
-```
-data: {"step": "users", "progress": 25, "message": "Migrating users..."}
-data: {"step": "tabs", "progress": 50, "message": "Migrating tabs..."}
-data: {"step": "settings", "progress": 75, "message": "Migrating settings..."}
-data: {"step": "complete", "progress": 100, "message": "Migration complete"}
-```
+For detailed endpoint documentation, request/response schemas, and SSE event format, see the [Migration API Reference](./migration-api.md).
 
 ---
 
