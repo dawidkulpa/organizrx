@@ -2,7 +2,7 @@ import { getSetting, setSetting } from './settings'
 
 // Constants
 const APP_VERSION = '0.0.1'
-const GITHUB_API_URL = 'https://api.github.com/repos/organizrx/organizrx/releases/latest'
+const GITHUB_API_URL = 'https://api.github.com/repos/dawidkulpa/organizrx/releases/latest'
 const DEFAULT_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 // Types

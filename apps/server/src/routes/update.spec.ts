@@ -128,7 +128,7 @@ function mockGitHubRelease(tagName = 'v1.0.0', body = 'Release notes') {
       new Response(
         JSON.stringify({
           tag_name: tagName,
-          html_url: `https://github.com/organizrx/organizrx/releases/tag/${tagName}`,
+          html_url: `https://github.com/dawidkulpa/organizrx/releases/tag/${tagName}`,
           body,
         }),
         {
@@ -312,7 +312,7 @@ describe('update routes', () => {
           new Response(
             JSON.stringify({
               tag_name: 'v1.0.0',
-              html_url: 'https://github.com/organizrx/organizrx/releases/tag/v1.0.0',
+              html_url: 'https://github.com/dawidkulpa/organizrx/releases/tag/v1.0.0',
               body: 'Notes',
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
