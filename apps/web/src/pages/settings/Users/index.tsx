@@ -94,6 +94,7 @@ export default function SettingsUsers() {
           <div className="h-4 w-[1px] bg-border mx-1" />
           <button
             onClick={() => handleBulkLock(true)}
+            aria-label="Lock selected users"
             className="p-2 hover:bg-background rounded-md text-muted-foreground hover:text-foreground"
             title="Lock Selected"
           >
@@ -101,6 +102,7 @@ export default function SettingsUsers() {
           </button>
           <button
             onClick={() => handleBulkLock(false)}
+            aria-label="Unlock selected users"
             className="p-2 hover:bg-background rounded-md text-muted-foreground hover:text-foreground"
             title="Unlock Selected"
           >
@@ -108,6 +110,7 @@ export default function SettingsUsers() {
           </button>
           <button
             onClick={() => setIsBulkGroupOpen(true)}
+            aria-label="Change group for selected users"
             className="p-2 hover:bg-background rounded-md text-muted-foreground hover:text-foreground"
             title="Change Group"
           >
@@ -116,6 +119,7 @@ export default function SettingsUsers() {
           <div className="h-4 w-[1px] bg-border mx-1" />
           <button
             onClick={handleBulkDelete}
+            aria-label="Delete selected users"
             className="p-2 hover:bg-destructive/10 rounded-md text-muted-foreground hover:text-destructive"
             title="Delete Selected"
           >

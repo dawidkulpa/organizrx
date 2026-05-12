@@ -124,6 +124,7 @@ export default function InviteDialog({ open, onClose }: InviteDialogProps) {
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close dialog"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-5 w-5" />
@@ -154,6 +155,7 @@ export default function InviteDialog({ open, onClose }: InviteDialogProps) {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(invite.code)}
+                        aria-label="Copy invite code"
                         className="text-muted-foreground hover:text-primary transition-colors p-1"
                         title="Copy Code"
                       >
@@ -187,6 +189,7 @@ export default function InviteDialog({ open, onClose }: InviteDialogProps) {
                           deleteMutation.mutate(invite.id)
                         }
                       }}
+                      aria-label="Delete invite"
                       className="text-muted-foreground hover:text-destructive transition-colors p-2 rounded-md hover:bg-destructive/10"
                       title="Delete Invite"
                     >

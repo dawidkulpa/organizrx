@@ -50,7 +50,7 @@ export function TabsList({
             type="checkbox"
             checked={selectedTabs.length === filteredTabs.length && filteredTabs.length > 0}
             onChange={toggleSelectAll}
-            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+             className="w-4 h-4 rounded border-input text-primary focus:ring-primary"
           />
           <span className="sr-only">Select All</span>
         </div>
