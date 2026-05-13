@@ -29,7 +29,7 @@ To upgrade your OrganizrX instance when running in Docker, follow these steps:
 
 1. **Pull New Image:** Pull the latest OrganizrX image from the Docker registry.
    ```bash
-   docker pull dawidkulpa/organizrx:latest
+   docker pull buggy121/organizrx:latest
    ```
 2. **Stop Container:** Stop the running OrganizrX container.
    ```bash
@@ -45,7 +45,7 @@ To upgrade your OrganizrX instance when running in Docker, follow these steps:
      --name organizrx \
      -p 3001:3001 \
      -v ./data:/app/data \
-      dawidkulpa/organizrx:latest
+      buggy121/organizrx:latest
    ```
 
 ## Upgrade Procedure (Bare Metal)
@@ -80,7 +80,7 @@ If you encounter issues after upgrading your OrganizrX instance, you can easily 
    ```
 3. **Pull Previous Image:** (Docker) Pull the previous OrganizrX image from the Docker registry.
    ```bash
-   docker pull dawidkulpa/organizrx:<previous-version>
+   docker pull buggy121/organizrx:<previous-version>
    ```
 
 Once the rollback procedure is complete, your OrganizrX instance will be restored to the state it was in before the upgrade.

@@ -98,7 +98,7 @@ Migration runs automatically at server startup. No wizard, no API calls needed f
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     ports:
       - "3001:3001"
     volumes:
@@ -112,7 +112,7 @@ services:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     ports:
       - "3001:3001"
     environment:
@@ -124,7 +124,7 @@ services:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     ports:
       - "3001:3001"
     environment:

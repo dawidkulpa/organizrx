@@ -60,7 +60,7 @@ graph TD
 Run the dashboard with a single command:
 
 ```bash
-docker run -d --name organizrx -p 3001:3001 -e JWT_SECRET="change-me-to-a-secure-secret-at-least-32-chars" -v ./data:/app/data dawidkulpa/organizrx:latest
+docker run -d --name organizrx -p 3001:3001 -e JWT_SECRET="change-me-to-a-secure-secret-at-least-32-chars" -v ./data:/app/data buggy121/organizrx:latest
 ```
 
 ### Docker Compose
@@ -68,7 +68,7 @@ docker run -d --name organizrx -p 3001:3001 -e JWT_SECRET="change-me-to-a-secure
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     ports:
       - '3001:3001'

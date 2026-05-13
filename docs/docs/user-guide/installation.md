@@ -20,7 +20,7 @@ docker run -d \
   -p 3001:3001 \
   -e JWT_SECRET="change-me-to-a-secure-secret-at-least-32-chars" \
   -v ./data:/app/data \
-  dawidkulpa/organizrx:latest
+  buggy121/organizrx:latest
 ```
 
 ### Docker Compose
@@ -30,7 +30,7 @@ For more control and better management, use a `docker-compose.yml` file.
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     ports:
       - "3001:3001"
@@ -52,7 +52,7 @@ services:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     ports:
       - "3001:3001"
@@ -83,7 +83,7 @@ volumes:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     ports:
       - "3001:3001"

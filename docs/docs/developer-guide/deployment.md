@@ -18,7 +18,7 @@ docker run -d \
   -e DATABASE_DIALECT=sqlite \
   -e DATABASE_URL=/app/data/organizr.db \
   -v ./data:/app/data \
-  dawidkulpa/organizrx:latest
+  buggy121/organizrx:latest
 ```
 
 ### Docker Compose
@@ -28,7 +28,7 @@ The repository includes a `docker-compose.yml` with full configuration:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     build:
       context: .
@@ -58,7 +58,7 @@ services:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     ports:
       - '3001:3001'
@@ -97,7 +97,7 @@ volumes:
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     container_name: organizrx
     ports:
       - '3001:3001'
@@ -266,7 +266,7 @@ organizrx.example.com {
 ```yaml
 services:
   organizrx:
-    image: dawidkulpa/organizrx:latest
+    image: buggy121/organizrx:latest
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.organizrx.rule=Host(`organizrx.example.com`)'
