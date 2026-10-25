@@ -9,7 +9,7 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "drizzle-orm": "^0.45.1",
     "file-type": "^21.3.0",
     "hono": "^4.0.0",
@@ -25,7 +25,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/adm-zip": "^0.5.7",
+    "@types/adm-zip": "^0.6.0",
     "@types/bun": "latest",
     "@types/pino": "^7.0.5",
     "drizzle-kit": "^0.31.9",
