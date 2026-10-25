@@ -6,7 +6,7 @@
     "dev": "bun run --watch src/index.ts",
     "build": "bun build src/index.ts --outdir dist --format esm --target bun",
     "start": "bun dist/index.js",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src"
   },
   "dependencies": {
     "adm-zip": "^0.6.0",
