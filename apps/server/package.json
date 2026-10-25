@@ -21,7 +21,7 @@
     "otpauth": "^9.5.0",
     "pino": "^10.3.1",
     "postgres": "^3.4.8",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
