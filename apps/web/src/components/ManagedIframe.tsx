@@ -30,7 +30,7 @@ export default function ManagedIframe({
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<LoadErrorState>(null)
   const [reloadKey, setReloadKey] = useState(0)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const effectiveTimeoutMs = timeoutMs && timeoutMs > 0 ? timeoutMs : splash ? 30000 : 10000
 
   const clearTimeoutRef = useCallback(() => {
