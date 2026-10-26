@@ -12,7 +12,7 @@ services:
       POSTGRES_USER: authentik
       POSTGRES_PASSWORD: authentik-test-password
     volumes:
-      - authentik-db-data:/var/lib/postgresql/data
+      - authentik-db-data:/var/lib/postgresql
     networks:
       - test-auth-net
     healthcheck:
