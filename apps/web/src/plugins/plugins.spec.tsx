@@ -2,7 +2,7 @@ import { GlobalWindow } from 'happy-dom'
 import { describe, it, expect, beforeEach, afterEach, spyOn } from 'bun:test'
 import { render, waitFor, cleanup } from '@testing-library/react'
 import { lazy } from 'react'
-import type { ComponentType } from 'react'
+import type { ComponentType, JSX } from 'react'
 
 // ---------------------------------------------------------------------------
 // Setup happy-dom globals for React component testing

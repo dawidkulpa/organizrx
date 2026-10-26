@@ -18,7 +18,7 @@ export function useIdleTimeout() {
   const lock = useLockscreenStore((s) => s.lock)
   const isLocked = useLockscreenStore((s) => s.isLocked)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current)

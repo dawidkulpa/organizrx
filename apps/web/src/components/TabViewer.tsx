@@ -17,7 +17,7 @@ interface TabViewerProps {
 export function useTabPing(tab: Tab | null) {
   const [isOnline, setIsOnline] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval>>()
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
 
   useEffect(() => {
     if (!tab || tab.ping !== 1) {
@@ -66,7 +66,7 @@ export default function TabViewer({
   isLocalNetwork = false,
 }: TabViewerProps) {
   const [splashTabId, setSplashTabId] = useState<number | null>(null)
-  const splashTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const splashTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // Resolve the URL for a tab (local vs remote)
   const resolveUrl = useCallback(

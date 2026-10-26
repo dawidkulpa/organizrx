@@ -20,7 +20,7 @@ function getTokenExpiry(token: string): number | null {
 export function useAutoRefresh() {
   const token = useAuthStore((s) => s.token)
   const refresh = useAuthStore((s) => s.refresh)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const scheduleRefresh = useCallback(
     (accessToken: string) => {
