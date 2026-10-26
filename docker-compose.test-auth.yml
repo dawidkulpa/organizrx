@@ -6,13 +6,13 @@
 
 services:
   authentik-db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: authentik
       POSTGRES_USER: authentik
       POSTGRES_PASSWORD: authentik-test-password
     volumes:
-      - authentik-db-data:/var/lib/postgresql/data
+      - authentik-db-data:/var/lib/postgresql
     networks:
       - test-auth-net
     healthcheck:
