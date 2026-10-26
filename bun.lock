@@ -24,7 +24,7 @@
         "hono": "^4.0.0",
         "hono-rate-limiter": "^0.5.3",
         "jose": "^6.1.3",
-        "ldapts": "^8.1.7",
+        "ldapts": "^9.0.0",
         "mysql2": "^3.18.2",
         "openid-client": "^6.8.2",
         "otpauth": "^9.5.0",
@@ -1381,7 +1381,7 @@
 
     "keyv": ["keyv@5.6.0", "", { "dependencies": { "@keyv/serialize": "^1.1.1" } }, "sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw=="],
 
-    "ldapts": ["ldapts@8.1.7", "", { "dependencies": { "strict-event-emitter-types": "2.0.0" } }, "sha512-TJl6T92eIwMf/OJ0hDfKVa6ISwzo+lqCWCI5Mf//ARlKa3LKQZaSrme/H2rCRBhW0DZCQlrsV+fgoW5YHRNLUw=="],
+    "ldapts": ["ldapts@9.2.0", "", { "dependencies": { "strict-event-emitter-types": "2.0.0" } }, "sha512-5mDg3OT5fDP9DUXga9dCLW8cMW24OTOKT4pv/Qj+f2zCV3qxb+gkZLCzMAqzVTOANoycidKkYpPvkclUQU2aXw=="],
 
     "levn": ["levn@0.4.1", "", { "dependencies": { "prelude-ls": "^1.2.1", "type-check": "~0.4.0" } }, "sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ=="],
 
